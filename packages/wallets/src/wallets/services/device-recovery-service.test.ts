@@ -658,6 +658,32 @@ describe("DeviceRecoveryService with quorum recovery methods", () => {
             expect(addSigner).not.toHaveBeenCalled();
         });
 
+        it("keeps the device key when the app switches to Erin's wallet while the quorum's registration is in flight", async () => {
+            const storage = makeStorage();
+            const quorum = createQuorumApiEntry();
+            const [alice] = quorum.members;
+            // The API created the registration, waiting on the quorum's members; only its response was lost.
+            const getSigner = vi.fn().mockResolvedValue({
+                type: "device",
+                locator: "device:newkey",
+                publicKey: { x: "0x01", y: "0x02" },
+                chains: { "base-sepolia": { id: "txn-add", status: "awaiting-approval" } },
+            });
+            const manager = makeRealSignerManager([quorum, asRecovery(EXTERNAL_WALLET_RECOVERY)], storage, {
+                getSigner,
+            });
+            manager.selectRecoveryMember(asRecovery({ type: "email", email: alice.email }), alice.locator);
+            const addSigner = vi.fn(async () => {
+                manager.selectRecovery(1);
+                throw new Error("network timeout");
+            });
+            const { service } = setup({ storage, manager, addSigner });
+
+            await expect(service.recover()).rejects.toThrow("network timeout");
+
+            expect(storage.deleteKey).not.toHaveBeenCalled();
+        });
+
         it("falls back to the selected external wallet when the provider rejects device signers", async () => {
             const storage = makeStorage();
             const manager = makeRealSignerManager(
