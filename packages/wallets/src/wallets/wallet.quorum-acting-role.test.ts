@@ -267,6 +267,34 @@ describe("a creating call with a key that is only a quorum member", () => {
         });
     });
 
+    describe("when the key's own add still awaits approval", () => {
+        // Bob's own signer entry, listed by the API while its add waits for approval on this chain.
+        const bobPendingOwnEntry = {
+            ...bob,
+            status: "awaiting-approval",
+            chains: { "base-sepolia": { id: "tx-own-add", status: "awaiting-approval" } },
+        };
+
+        it("creates the send as the installed quorum the key belongs to", async () => {
+            const treasury = createQuorumApiEntryWith([bob]);
+            const { wallet } = await walletWithBob(api, {
+                signers: [{ ...treasury, status: "success" }, bobPendingOwnEntry],
+            });
+
+            await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+
+            expect(sentSendSigner(api)).toBe(treasury.locator);
+        });
+
+        it("creates the send as the key itself when it is in no quorum, as before", async () => {
+            const { wallet } = await walletWithBob(api, { signers: [bobPendingOwnEntry] });
+
+            await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+
+            expect(sentSendSigner(api)).toBe(bob.locator);
+        });
+    });
+
     describe("when the key is in an installed quorum and in one whose registration still awaits approval", () => {
         it("creates the send as the installed quorum, without the ambiguous error", async () => {
             const treasury = createQuorumApiEntryWith([bob]);
