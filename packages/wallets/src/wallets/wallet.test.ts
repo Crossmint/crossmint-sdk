@@ -2405,7 +2405,7 @@ describe("Wallet - useSigner()", () => {
             // Set the matching recovery server signer
             await wallet.useSigner({ type: "server", secret: "recovery-secret" } as any);
 
-            // Now addSigner should succeed — withRecoverySigner validates the active signer matches
+            // Now addSigner should succeed — resolveApprover validates the active signer matches
             mockApiClient.registerSigner.mockResolvedValue({
                 type: "email",
                 address: "0xNewEmail",
@@ -2437,7 +2437,7 @@ describe("Wallet - useSigner()", () => {
                 mockApiClient as unknown as ApiClient
             );
 
-            // Don't call useSigner — #recovery still has no secret, so withRecoverySigner
+            // Don't call useSigner — #recovery still has no secret, so resolveApprover
             // will fail when trying to build the internal config.
             await expect(wallet.addSigner({ type: "server", secret: "new-signer-secret" } as any)).rejects.toThrow(
                 "no secret available"
@@ -2484,7 +2484,7 @@ describe("Wallet - useSigner()", () => {
             await wallet.useSigner({ type: "email", email: "delegated@example.com" } as any);
 
             // #recovery still has no secret (useSigner with email didn't upgrade it),
-            // so withRecoverySigner will fail when trying to build the internal config.
+            // so resolveApprover will fail when trying to build the internal config.
             await expect(wallet.addSigner({ type: "server", secret: "new-signer-secret" } as any)).rejects.toThrow(
                 "no secret available"
             );

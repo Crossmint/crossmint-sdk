@@ -330,7 +330,7 @@ describe("approve() on a transaction with a pending quorum entry", () => {
     });
 
     describe("when only a flat entry for the useRecoveryMethod key is pending", () => {
-        it("throws InvalidSignerError, as before", async () => {
+        it("signs it with the selected recovery method while another key is active", async () => {
             const recoveryAddress = "0x3333333333333333333333333333333333333333";
             wallet = await createSigningWallet("base-sepolia", api, [
                 { type: "api-key" },
@@ -345,12 +345,15 @@ describe("approve() on a transaction with a pending quorum entry", () => {
                 signer: { type: "external-wallet", locator: `external-wallet:${recoveryAddress}` },
                 message: "0xflat",
             };
-            api.getTransaction.mockResolvedValue(awaiting("txn-1", [flat]) as never);
+            api.getTransaction.mockResolvedValueOnce(awaiting("txn-1", [flat]) as never);
+            api.getTransaction.mockResolvedValue(SUCCESS as never);
 
             const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
 
-            expect(error).toBeInstanceOf(InvalidSignerError);
-            expect(api.approveTransaction).not.toHaveBeenCalled();
+            expect(error).toBeUndefined();
+            expect(sentApprovals(api)).toEqual([
+                [{ signer: `external-wallet:${recoveryAddress}`, signature: signatureOver("0xflat") }],
+            ]);
         });
     });
 
