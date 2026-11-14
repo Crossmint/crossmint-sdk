@@ -30,9 +30,11 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 signer: wallet.signer,
                 signers: Wallet.getInitialSigners(wallet),
                 quorumMemberLocator: Wallet.getQuorumMemberLocator(wallet),
+                recoveryMember: Wallet.getRecoveryMember(wallet),
             },
             Wallet.getApiClient(wallet)
         );
+        Wallet.copyServerRecoveryKeys(wallet, this);
     }
 
     static from(wallet: Wallet<Chain>) {
