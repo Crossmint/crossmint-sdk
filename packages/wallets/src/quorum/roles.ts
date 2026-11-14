@@ -1,6 +1,7 @@
 import type { QuorumLocator, QuorumSigner, SignerLocator } from "../signers/types";
 import { QuorumSelectionAmbiguousError } from "../utils/errors";
-import { isSameSignerLocator, quorumsWithMember } from "./members";
+import { isSameSignerLocator } from "../utils/signer-locator";
+import { quorumsWithMember } from "./members";
 
 /** What the held key signs as: itself, a quorum it belongs to, or nothing (signer changes only). */
 export type ActingRole =

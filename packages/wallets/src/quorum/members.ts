@@ -1,26 +1,5 @@
-import { getAddress, isAddress } from "viem";
 import type { QuorumSigner, SignerLocator } from "../signers/types";
-
-// The API's `normalizeLocator` rule: an EVM address, bare or after the type, compares checksummed.
-// Every other value compares exactly; callers pass locators from getSignerLocator, which normalizes emails.
-function comparableLocator(locator: string): string {
-    const separator = locator.indexOf(":");
-    if (separator === -1) {
-        return checksummedIfEvmAddress(locator);
-    }
-    return `${locator.slice(0, separator)}:${checksummedIfEvmAddress(locator.slice(separator + 1))}`;
-}
-
-function checksummedIfEvmAddress(value: string): string {
-    if (isAddress(value, { strict: false })) {
-        return getAddress(value);
-    }
-    return value;
-}
-
-export function isSameSignerLocator(left: string, right: string): boolean {
-    return comparableLocator(left) === comparableLocator(right);
-}
+import { comparableLocator, isSameSignerLocator } from "../utils/signer-locator";
 
 /** Every quorum that lists `memberLocator` as a member. */
 export function quorumsWithMember(quorums: QuorumSigner[], memberLocator: SignerLocator): QuorumSigner[] {
