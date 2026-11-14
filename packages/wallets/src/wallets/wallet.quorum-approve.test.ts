@@ -12,17 +12,21 @@ import { Base64, Hex } from "ox";
 import type { Wallet } from "./wallet";
 import {
     activeSignerMember,
+    createAwaitingRequest,
     createExpiredRequest,
     createHeldSigner,
     createMockApiClient,
     createMockWallet,
     createQuorumApiEntry,
+    createQuorumApiEntryWith,
     createQuorumPendingApproval,
     createSigningWallet,
     randomStellarMessage,
     settle,
     signatureOver,
     TRANSACTION_EXPIRED_API_MESSAGE,
+    UNSIGNED_SIGNATURE,
+    UNSIGNED_TRANSACTION,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 
@@ -33,21 +37,12 @@ const SUCCESS = {
     onChain: { txId: "0xhash", explorerLink: "https://explorer.example/tx/0xhash" },
 };
 // What approve() returns while other members must still sign (EDD 007 §7 "Approval").
-const AWAITING_TRANSACTION = { hash: undefined, explorerLink: undefined, transactionId: "txn-1" };
-const AWAITING_SIGNATURE = { signature: undefined, signatureId: "sig-1" };
+const AWAITING_TRANSACTION = UNSIGNED_TRANSACTION;
+const AWAITING_SIGNATURE = UNSIGNED_SIGNATURE;
 
-// A quorum of `threshold` whose first members are `members`, the rest random email members.
-function quorumWith(members: QuorumMember[], { threshold = 2, memberCount = 3 } = {}) {
-    const quorum = createQuorumApiEntry({ threshold, memberCount });
-    return { ...quorum, members: [...members, ...quorum.members.slice(members.length)] };
-}
+const quorumWith = createQuorumApiEntryWith;
 
-const awaiting = (id: string, pending: object[], chainType = "evm") => ({
-    id,
-    status: "awaiting-approval",
-    chainType,
-    approvals: { pending, submitted: [] },
-});
+const awaiting = createAwaitingRequest;
 
 const sentApprovals = (api: MockedApiClient) => api.approveTransaction.mock.calls.map((call) => call[2].approvals);
 

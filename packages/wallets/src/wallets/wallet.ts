@@ -54,6 +54,7 @@ import {
     TransactionNotAvailableError,
     WalletNotAvailableError,
     WalletTypeNotSupportedError,
+    quorumSignerNotSupported,
     throwIfCrossmintApiAuthError,
     throwIfQuorumApiError,
     throwIfRequestExpired,
@@ -89,13 +90,20 @@ import { ServerSignerResolver } from "../signers/server/resolver";
 import { getSignerDescriptor } from "../signers/descriptors";
 import { walletsLogger } from "../logger";
 
-import { getSignerLocator, hasQuorumLocatorPrefix, passkeyCredentialId } from "../utils/signer-locator";
+import { recoveryMethodsFromWalletConfig } from "../utils/recovery";
+import {
+    getSignerLocator,
+    hasQuorumLocatorPrefix,
+    isSameSignerLocator,
+    passkeyCredentialId,
+} from "../utils/signer-locator";
 import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
 import { SignerManager } from "./services/signer-manager";
 import { DeviceRecoveryService } from "./services/device-recovery-service";
 import { isQuorumPendingApproval, quorumsAwaitOnlyOthers, splitPendingApprovals } from "../quorum/approvals";
 import { quorumsWithMember } from "../quorum/members";
+import { resolveTransactionRole } from "../quorum/roles";
 import { type ApprovalSigning, collectApprovals } from "./services/approval-collector";
 import { fetchDeviceSignerActivity } from "./services/device-signer-activity";
 import {
@@ -117,6 +125,8 @@ type WalletContructorType<C extends Chain> = {
     apiDelegatedServerSignerAddresses?: string[];
     signers?: SignerConfigForChain<C>[];
     signer?: SignerAdapter;
+    /** The active `signer`'s locator when it was selected as only a quorum member. */
+    quorumMemberLocator?: SignerLocator | null;
 };
 
 // How `useSigner` holds a key: as a recovery method, a registered signer, or a member of one of the wallet's quorums.
@@ -157,6 +167,8 @@ export class Wallet<C extends Chain> {
     #apiDelegatedServerSignerAddresses: string[] = [];
     #signerInitialization: Promise<void>;
     #recovering: Promise<void> | null = null;
+    // The active key when useSigner selected it as only a quorum member: creating calls then act as its quorum.
+    #quorumMemberLocator: SignerLocator | null = null;
     // approve() calls in flight, by request id: a second call for the same request joins the first (one signing pass).
     #approving = new Map<string, Promise<unknown>>();
 
@@ -172,6 +184,7 @@ export class Wallet<C extends Chain> {
             apiDelegatedServerSignerAddresses,
             signers,
             signer,
+            quorumMemberLocator,
             apiSigners,
         } = args as WalletFactoryConstructorArgs<C>;
         this.#apiClient = apiClient;
@@ -191,6 +204,7 @@ export class Wallet<C extends Chain> {
                 .map((s) => s.address);
         this.#apiDelegatedServerSignerAddresses = apiDelegatedServerSignerAddresses ?? [];
         this.#initialSigners = signers ?? [];
+        this.#quorumMemberLocator = quorumMemberLocator ?? null;
         this.#serverSignerResolver = new ServerSignerResolver({
             chain,
             projectId: this.#apiClient.projectId,
@@ -340,6 +354,10 @@ export class Wallet<C extends Chain> {
         return wallet.#initialSigners;
     }
 
+    protected static getQuorumMemberLocator<C extends Chain>(wallet: Wallet<C>): SignerLocator | null {
+        return wallet.#quorumMemberLocator;
+    }
+
     protected static getApiRecoveryServerSignerAddresses<C extends Chain>(wallet: Wallet<C>): string[] {
         return wallet.#serverSignerResolver.apiRecoveryAddresses;
     }
@@ -368,11 +386,54 @@ export class Wallet<C extends Chain> {
     }
 
     /** The `signer` field of a create call: the call's `signer` option, or else the active signer. */
-    protected resolveSignerParams(options?: { signer?: SignerOption }): { signer: string } {
-        if (options?.signer == null) {
-            return { signer: this.#signerManager.require().locator() };
+    protected async resolveSignerParams(
+        options?: { signer?: SignerOption },
+        requestChain: Chain = this.chain
+    ): Promise<{ signer: string }> {
+        if (options?.signer != null) {
+            return { signer: this.resolveSignerOption(options.signer) };
         }
-        return { signer: this.resolveSignerOption(options.signer) };
+        const activeLocator = this.#signerManager.require().locator();
+        if (this.#quorumMemberLocator == null || !isSameSignerLocator(activeLocator, this.#quorumMemberLocator)) {
+            return { signer: activeLocator };
+        }
+        return { signer: await this.#actingRoleLocator(activeLocator, requestChain) };
+    }
+
+    // A member-only key acts as its quorum (EDD 007 §7 "Role"). Recovery methods and delegated quorums come from one
+    // fresh read of the wallet's config, so no per-signer lookup can silently drop a quorum from the decision.
+    async #actingRoleLocator(heldLocator: SignerLocator, requestChain: Chain): Promise<string> {
+        const walletResponse = await this.#apiClient.getWallet(this.walletLocator);
+        if ("error" in walletResponse) {
+            throw new WalletNotAvailableError(JSON.stringify(walletResponse));
+        }
+        // A response the role cannot be read from counts as a failed read: guessing could name the wrong role.
+        if (!isSupportedSmartWallet(walletResponse) || walletResponse.config == null) {
+            throw new WalletNotAvailableError(JSON.stringify(walletResponse));
+        }
+        // A signer acts only once its add landed on the request's chain (EDD 008 I10): a recovery method or quorum
+        // still awaiting approval, or installed on another chain only, is neither a candidate nor a reason for the
+        // ambiguous error. The API lists such entries with their status; the curated spec omits those fields.
+        const installedOnChain = (entry: object) => {
+            const onChain = mapApiSignerToSigner(entry as APISigner, requestChain);
+            return onChain != null && this.#signerManager.isApprovedSignerStatus(onChain.status);
+        };
+        const recoveryMethods = recoveryMethodsFromWalletConfig<C>(walletResponse.config).filter(installedOnChain);
+        const configSigners = walletResponse.config.delegatedSigners ?? [];
+        const role = resolveTransactionRole({
+            held: heldLocator,
+            recoveryMethodLocators: recoveryMethods
+                .filter((recovery) => !isQuorumSigner(recovery))
+                .map((recovery) => this.#signerManager.recoveryLocator(recovery))
+                .filter((locator) => locator != null),
+            recoveryQuorums: recoveryMethods.filter(isQuorumSigner),
+            delegatedQuorums: configSigners.filter(isQuorumSigner).filter(installedOnChain),
+            // Registered on the request's chain: an EVM signer registered on other chains only is just a member there.
+            registeredOnChain: configSigners.some(
+                (signer) => isSameSignerLocator(signer.locator, heldLocator) && installedOnChain(signer)
+            ),
+        });
+        return role.kind === "none" ? heldLocator : role.locator;
     }
 
     /** A quorum acting signer creates the request unsigned and returns it, as `prepareOnly: true` does (EDD 007 §7). */
@@ -392,7 +453,7 @@ export class Wallet<C extends Chain> {
      * Get the primary recovery signer config: the first recovery method that signs on its own. Use
      * {@link recoveryMethods} for the full list, quorums included.
      * @returns The recovery signer config
-     * @throws {QuorumSignerNotSupportedError} If every recovery method is a quorum
+     * @throws {RecoveryMethodRequiredError} If every recovery method is a quorum
      * @experimental This API is experimental and may change in the future
      */
     public get recovery(): SignerConfigForChain<C> {
@@ -552,8 +613,8 @@ export class Wallet<C extends Chain> {
 
     /**
      * Send a token to a wallet or user locator
-     * When the signer is a quorum (`quorum:…`), the call returns the created transaction unsigned and without a
-     * hash, as with `prepareOnly: true`. Pass `prepareOnly: true` for that type.
+     * When the signer is a quorum, named (`quorum:…`) or inferred from a key that is only a member, the call returns
+     * the transaction unsigned and without a hash, as with `prepareOnly: true`; pass `prepareOnly: true` for that type.
      * @param {string | UserLocator} to - The recipient (address or user locator)
      * @param {string} token - The token (address or currency symbol)
      * @param {string} amount - The amount to send (decimal units)
@@ -593,7 +654,7 @@ export class Wallet<C extends Chain> {
 
         await this.preAuthIfNeeded();
 
-        const signerParams = this.resolveSignerParams(options);
+        const signerParams = await this.resolveSignerParams(options);
         const sendParams = {
             recipient,
             amount,
@@ -1133,6 +1194,10 @@ export class Wallet<C extends Chain> {
                 ? this.#signerManager.assembleMember(internalConfig, role.status)
                 : await this.#signerManager.assemble(internalConfig, { isAdminSigner: role.kind === "recovery" });
         this.#signerManager.setActiveSigner(activeSigner);
+        this.#quorumMemberLocator = null;
+        if (role.kind === "member") {
+            this.#quorumMemberLocator = activeSigner.locator();
+        }
         walletsLogger.info("wallet.useSigner.success", { signerLocator });
     }
 
@@ -1223,9 +1288,10 @@ export class Wallet<C extends Chain> {
 
         // Check if this is a registered signer
         const locator = this.resolveSignerLocator(signer);
-        if (await this.signerIsRegistered(locator)) {
+        const registered = await this.#signerManager.registeredSigner(locator);
+        if (registered != null) {
             this.#deviceRecovery.onSignerSelected();
-            return REGISTERED;
+            return this.#registeredRole(locator, registered.status);
         }
 
         // Not a registered signer — fall back to recovery
@@ -1264,9 +1330,12 @@ export class Wallet<C extends Chain> {
             memberLocators
         );
         switch (resolution.kind) {
-            case "delegated":
+            case "delegated": {
                 this.#deviceRecovery.onSignerSelected();
-                return REGISTERED;
+                const locator = this.resolveServerSignerApiLocator(signer);
+                const own = existingSigners.find((existing) => existing.locator === locator);
+                return this.#registeredRole(locator, own?.status, existingSigners);
+            }
             case "member":
                 this.#deviceRecovery.onSignerSelected();
                 return (await this.#memberRole(resolution.locator, existingSigners)) ?? REGISTERED;
@@ -1284,6 +1353,18 @@ export class Wallet<C extends Chain> {
     // The wallet's recovery quorums (from its config), then its delegated quorums (from `signers`).
     #quorums(signers: WalletSigner[]): QuorumSigner[] {
         return [...this.recoveryMethods.filter(isQuorumSigner), ...signers.filter(isWalletQuorum)];
+    }
+
+    // A key acts alone only once its own add has landed (EDD 008 I10); until then a member acts as its quorum.
+    async #registeredRole(
+        locator: string,
+        status: SignerStatus | undefined,
+        signers?: WalletSigner[]
+    ): Promise<HeldKeyRole> {
+        if (this.#signerManager.isApprovedSignerStatus(status)) {
+            return REGISTERED;
+        }
+        return (await this.#memberRole(locator, signers)) ?? REGISTERED;
     }
 
     // A key that is only a quorum member acts as its quorum (EDD 007 §7 "Role"); a recovery quorum is always active.
@@ -1561,8 +1642,9 @@ export class Wallet<C extends Chain> {
     // Quorum approvals ship chain by chain: on a chain whose adapter does not support them yet,
     // a pending quorum entry fails with an actionable error instead of being signed.
     #requireSupportedApprovals<P extends { signer: { type: string; locator: string } }>(pendingApprovals: P[]): P[] {
-        if (!this.chainAdapter.supportsQuorumApprovals) {
-            pendingApprovals.forEach((pendingApproval) => throwIfQuorumSigner(pendingApproval.signer));
+        const quorumEntry = pendingApprovals.find((pendingApproval) => isQuorumSigner(pendingApproval.signer));
+        if (!this.chainAdapter.supportsQuorumApprovals && quorumEntry != null) {
+            throw quorumSignerNotSupported([quorumEntry.signer.locator]);
         }
         return pendingApprovals;
     }

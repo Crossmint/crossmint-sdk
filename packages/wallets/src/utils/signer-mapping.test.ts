@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Signer as APISigner } from "../api";
-import { getPendingSignerOperation, mapApiSignerToSigner } from "./signer-mapping";
+import { getPendingSignerOperation, isSignerOnChain, mapApiSignerToSigner } from "./signer-mapping";
 import { createQuorumApiEntry } from "../wallets/__tests__/test-helpers";
 
 describe("getPendingSignerOperation", () => {
@@ -140,5 +140,39 @@ describe("mapApiSignerToSigner", () => {
 
             expect(mapApiSignerToSigner(apiSigner, "base-sepolia")).toBeNull();
         });
+    });
+});
+
+describe("isSignerOnChain", () => {
+    const signer = { type: "external-wallet", address: "0x123", locator: "external-wallet:0x123" };
+
+    it.each([
+        {
+            name: "an EVM signer that lists this chain",
+            listed: { ...signer, chains: { "base-sepolia": {} } },
+            chain: "base-sepolia",
+            expected: true,
+        },
+        {
+            name: "an EVM signer that lists other chains only",
+            listed: { ...signer, chains: { polygon: {} } },
+            chain: "base-sepolia",
+            expected: false,
+        },
+        {
+            name: "an EVM signer created with the wallet (no chains)",
+            listed: signer,
+            chain: "base-sepolia",
+            expected: true,
+        },
+        {
+            name: "an EVM signer with an empty chains map",
+            listed: { ...signer, chains: {} },
+            chain: "base-sepolia",
+            expected: true,
+        },
+        { name: "a Stellar signer", listed: { ...signer, chains: { polygon: {} } }, chain: "stellar", expected: true },
+    ] as const)("is $expected for $name", ({ listed, chain, expected }) => {
+        expect(isSignerOnChain(listed, chain)).toBe(expected);
     });
 });

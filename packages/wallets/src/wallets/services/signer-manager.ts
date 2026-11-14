@@ -16,7 +16,7 @@ import {
     type SignerLocator,
     throwIfQuorumSigner,
 } from "../../signers/types";
-import { InvalidRecoveryConfigError, quorumSignerNotSupported, RecoveryMethodRequiredError } from "../../utils/errors";
+import { InvalidRecoveryConfigError, RecoveryMethodRequiredError } from "../../utils/errors";
 import { getSignerLocator, isSameSignerLocator } from "../../utils/signer-locator";
 import { getPendingSignerOperation, mapApiSignerToSigner } from "../../utils/signer-mapping";
 import { walletsLogger } from "../../logger";
@@ -103,12 +103,14 @@ export class SignerManager<C extends Chain> {
         return this.#recoverySigners.filter((entry): entry is SingleRecoverySigner<C> => !isQuorumSigner(entry));
     }
 
-    /** The default recovery method; throws when every recovery method is a quorum, as none signs alone yet. */
+    /** The default recovery method; throws when every recovery method is a quorum, which signs only through its members. */
     requireDefaultRecovery(): SingleRecoverySigner<C> {
         const recovery = this.defaultRecovery;
         if (recovery == null) {
-            throw quorumSignerNotSupported(
-                this.#recoverySigners.filter(isQuorumSigner).map((quorum) => quorum.locator)
+            const quorums = this.#recoverySigners.filter(isQuorumSigner).map((quorum) => quorum.locator);
+            throw new RecoveryMethodRequiredError(
+                `Every recovery method of this wallet is a quorum (${quorums.join(", ")}), which signs only through its members. ` +
+                    "Call wallet.useSigner() with a member's key to act as the quorum, or read wallet.recoveryMethods."
             );
         }
         return recovery;
@@ -397,8 +399,13 @@ export class SignerManager<C extends Chain> {
     }
 
     async signerIsRegistered(signerLocator: SignerLocator | string): Promise<boolean> {
+        return (await this.registeredSigner(signerLocator)) != null;
+    }
+
+    /** The wallet's own entry for this key, with its status on this chain, or null when the key has none. */
+    async registeredSigner(signerLocator: SignerLocator | string): Promise<WalletSigner | null> {
         const existingSigners = await this.#signers();
-        return existingSigners.some((s) => s.locator === signerLocator);
+        return existingSigners.find((s) => s.locator === signerLocator) ?? null;
     }
 
     async isSignerApproved(signerLocator: SignerLocator | string): Promise<boolean> {

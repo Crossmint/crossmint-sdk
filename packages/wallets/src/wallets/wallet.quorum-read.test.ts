@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiClient, GetWalletSuccessResponse } from "../api";
 import type { Chain } from "../chains/chains";
 import type { RecoverySignerConfigForChain, SignerConfigForChain } from "../signers/types";
-import { QuorumSignerNotSupportedError } from "../utils/errors";
+import { InvalidSignerError, RecoveryMethodRequiredError } from "../utils/errors";
 import { Wallet } from "./wallet";
 import {
     createMockApiClient,
@@ -166,13 +166,14 @@ describe("Wallet - quorum entries", () => {
         });
 
         describe("when every recovery method is a quorum", () => {
-            it("throws QuorumSignerNotSupportedError naming the quorum", async () => {
+            it("throws RecoveryMethodRequiredError naming the quorum and pointing to recoveryMethods", async () => {
                 const quorum = createQuorumApiEntry();
                 const wallet = walletWithRecovery([quorum]);
                 await wallet.waitForInit();
 
-                expect(() => wallet.recovery).toThrow(QuorumSignerNotSupportedError);
+                expect(() => wallet.recovery).toThrow(RecoveryMethodRequiredError);
                 expect(() => wallet.recovery).toThrow(quorum.locator);
+                expect(() => wallet.recovery).toThrow("wallet.recoveryMethods");
             });
         });
     });
@@ -200,7 +201,7 @@ describe("Wallet - quorum entries", () => {
     });
 
     describe.each(["useSigner", "useRecoveryMethod"] as const)("%s() with a quorum", (method) => {
-        it("throws QuorumSignerNotSupportedError and keeps the active signer", async () => {
+        it("throws InvalidSignerError asking for a member's key and keeps the active signer", async () => {
             const quorum = createQuorumApiEntry();
             const wallet = new Wallet(
                 {
@@ -216,9 +217,12 @@ describe("Wallet - quorum entries", () => {
             await wallet.waitForInit();
             const signerBefore = wallet.signer;
 
-            await expect(wallet[method](quorum as unknown as SignerConfigForChain<"solana">)).rejects.toThrow(
-                QuorumSignerNotSupportedError
+            const error = await wallet[method](quorum as unknown as SignerConfigForChain<"solana">).catch(
+                (caught: unknown) => caught
             );
+
+            expect(error).toBeInstanceOf(InvalidSignerError);
+            expect((error as Error).message).toContain("member");
             expect(wallet.signer).toBe(signerBefore);
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });

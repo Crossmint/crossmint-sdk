@@ -29,7 +29,11 @@ import type {
 } from "../signers/types";
 import { Wallet, type WalletFactoryConstructorArgs } from "./wallet";
 import type { RecoverySignerConfigFor, WalletArgsFor, WalletCreateArgs } from "./types";
-import { hasRecoveryMethodList, recoveryMethodsFromCreateArgs } from "../utils/recovery";
+import {
+    hasRecoveryMethodList,
+    recoveryMethodsFromCreateArgs,
+    recoveryMethodsFromWalletConfig,
+} from "../utils/recovery";
 import { compareSignerConfigs, normalizeValueForComparison } from "../utils/signer-validation";
 import { getSignerLocator } from "../utils/signer-locator";
 import { createPasskeyCredential } from "../signers/passkey";
@@ -341,9 +345,7 @@ export class WalletFactory {
         const walletConfig = walletResponse.config as SmartWalletConfig;
         // `recoveryMethods` holds every admin signer; older responses (and wallets created with a single
         // signer) only carry the deprecated singular `adminSigner`.
-        const apiRecoverySigners = (walletConfig.recoveryMethods ?? [walletConfig.adminSigner]) as Array<
-            RecoverySignerConfigForChain<C>
-        >;
+        const apiRecoverySigners = recoveryMethodsFromWalletConfig<C>(walletConfig);
         const recoverySigners = this.mergeRecoverySigners(
             apiRecoverySigners,
             recoveryMethodsFromCreateArgs(createArgs),
