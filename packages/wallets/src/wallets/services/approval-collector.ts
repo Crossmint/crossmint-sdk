@@ -24,7 +24,10 @@ export type ApprovalSigning = {
  */
 export async function collectApprovals(pending: PendingApproval[], signing: ApprovalSigning): Promise<Approval[]> {
     const { flat, quorums } = splitPendingApprovals(pending);
-    const approvals = await Promise.all(flat.map((entry) => signFlatEntry(entry, signing)));
+    // On Stellar a quorum's request can also wait on another party's auth entry: members sign theirs and leave it.
+    const leaveUnheld = quorums.length > 0;
+    const signedFlat = await Promise.all(flat.map((entry) => signFlatEntry(entry, signing, leaveUnheld)));
+    const approvals = signedFlat.filter((approval): approval is Approval => approval != null);
     const heldLocators = signing.held.map((signer) => signer.locator());
     for (const planned of planMemberApprovals(quorums, heldLocators, signing.limit)) {
         approvals.push(await signMember(planned, signing));
@@ -32,10 +35,17 @@ export async function collectApprovals(pending: PendingApproval[], signing: Appr
     return approvals;
 }
 
-async function signFlatEntry({ signer: { locator }, message }: FlatPendingApproval, signing: ApprovalSigning) {
+async function signFlatEntry(
+    { signer: { locator }, message }: FlatPendingApproval,
+    signing: ApprovalSigning,
+    leaveUnheld: boolean
+): Promise<Approval | null> {
     const signer =
         signing.held.find((held) => isSameSignerLocator(held.locator(), locator)) ??
         (await signing.resolveMissing(locator));
+    if (signer == null && leaveUnheld) {
+        return null;
+    }
     return await signAs(signer, locator, message, signing);
 }
 
