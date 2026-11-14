@@ -1,5 +1,5 @@
 import { vi, type MockedFunction } from "vitest";
-import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import { APIKeyEnvironmentPrefix, ApiClientError } from "@crossmint/common-sdk-base";
 import { Base64 } from "ox";
 import { Wallet } from "../wallet";
 import type { ApiClient } from "../../api";
@@ -249,6 +249,15 @@ export const UNSIGNED_TRANSACTION = { hash: undefined, explorerLink: undefined, 
 export const UNSIGNED_SIGNATURE = { signature: undefined, signatureId: "sig-1" };
 
 // A transaction or signature request as the wallets API returns it while `pending` approvals are outstanding.
+// What the real ApiClient.getSigner throws for a signer the wallet does not have: it throws on every non-OK status.
+export const signerNotFound = () =>
+    new ApiClientError(
+        "API request failed: 404 Not Found",
+        404,
+        "Not Found",
+        '{"error":true,"message":"Signer not found"}'
+    );
+
 export const createAwaitingRequest = (id: string, pending: object[], chainType = "evm") => ({
     id,
     status: "awaiting-approval",

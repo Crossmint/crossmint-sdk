@@ -1,7 +1,7 @@
 import type { Signer as APISigner, Scope } from "../api";
 import type { PendingSignerOperation, Signer, SignerStatus } from "../wallets/types";
 import type { Chain } from "../chains/chains";
-import { requireQuorumLocator, type QuorumMember, type QuorumSigner } from "../signers/types";
+import { requireQuorumLocator, type QuorumLocator, type QuorumMember, type QuorumSigner } from "../signers/types";
 
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never;
 type SignerBase = DistributiveOmit<Signer, "status">;
@@ -113,6 +113,50 @@ export function isSignerOnChain(
         return true;
     }
     return Object.keys(apiSigner.chains).length === 0 || apiSigner.chains[chain] != null;
+}
+
+/** The quorum that approves a signer's registration, from its request's approvals, or null when none does or the
+ * response does not say (an EVM chain entry drops its approvals once it lands). */
+export function registrationQuorum(apiSigner: APISigner, chain: Chain): QuorumLocator | null {
+    const quorumEntry = registrationApprovals(apiSigner, chain).find((entry) => entry.signer.type === "quorum");
+    return quorumEntry == null ? null : requireQuorumLocator(quorumEntry.signer.locator);
+}
+
+function registrationApprovals(
+    apiSigner: APISigner,
+    chain: Chain
+): Array<{ signer: { type: string; locator: string } }> {
+    const approvals = registrationRequest(apiSigner, chain)?.approvals;
+    return [...(approvals?.pending ?? []), ...(approvals?.submitted ?? [])] as Array<{
+        signer: { type: string; locator: string };
+    }>;
+}
+
+function registrationRequest(
+    apiSigner: APISigner,
+    chain: Chain
+): { approvals?: { pending?: unknown[]; submitted?: unknown[] } } | null {
+    if (chain === "solana" || chain === "stellar") {
+        return "transaction" in apiSigner && apiSigner.transaction != null ? apiSigner.transaction : null;
+    }
+    const chainEntry = "chains" in apiSigner ? apiSigner.chains?.[chain] : undefined;
+    return chainEntry != null && "approvals" in chainEntry ? chainEntry : null;
+}
+
+/** The id `approve` takes for a pending signer operation. */
+export function pendingOperationId(
+    operation: PendingSignerOperation
+): { transactionId: string } | { signatureId: string } {
+    switch (operation.type) {
+        case "transaction":
+            return { transactionId: operation.id };
+        case "signature":
+            return { signatureId: operation.id };
+        default: {
+            const _exhaustive: never = operation.type;
+            throw new Error(`Unknown pending operation type: ${_exhaustive}`);
+        }
+    }
 }
 
 export function getPendingSignerOperation(apiSigner: APISigner, chain: Chain): PendingSignerOperation | null {

@@ -14,6 +14,7 @@ export {
     RecoverySignerConflictError,
     RecoverySignerLimitExceededError,
     SignerLimitExceededError,
+    DeviceSignerAwaitingApprovalError,
     RecoveryMethodRequiredError,
     SignerRequiredError,
     WalletNotAvailableError,
@@ -82,6 +83,7 @@ export type {
     RemoveRecoveryMethodOptions,
     AddRecoveryMethodReturnType,
     RemoveRecoveryMethodReturnType,
+    RecoverResult,
 } from "./wallets/types";
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 

@@ -35,14 +35,20 @@ const mockedAssembleSigner = vi.mocked(assembleSigner);
 const mockedCreateDeviceSigner = vi.mocked(createDeviceSigner);
 
 const WALLET_ADDRESS = "0x1234567890123456789012345678901234567890";
-const NULL_STATE = { response: null, signer: null, pendingOperation: null };
+const NULL_STATE = { response: null, signer: null, pendingOperation: null, approvingQuorum: null, lookupFailed: false };
 
 function makeSigner(type: string, locatorValue: string, status?: string): SignerAdapter {
     return { type, status, locator: () => locatorValue } as unknown as SignerAdapter;
 }
 
 function pendingState(operationType: "signature" | "transaction", id: string) {
-    return { response: {}, signer: { status: "awaiting-approval" }, pendingOperation: { type: operationType, id } };
+    return {
+        response: {},
+        signer: { status: "awaiting-approval" },
+        pendingOperation: { type: operationType, id },
+        approvingQuorum: null,
+        lookupFailed: false,
+    };
 }
 
 function makeSignerManager(overrides: Record<string, unknown> = {}) {
@@ -56,8 +62,10 @@ function makeSignerManager(overrides: Record<string, unknown> = {}) {
             active = signer;
         }),
         recovery,
+        defaultRecovery: recovery,
         requireDefaultRecovery: overrides.requireDefaultRecovery ?? vi.fn(() => recovery),
         resolveAuthorizingRecovery: vi.fn(() => ({ recovery, approver: undefined })),
+        approvesAsQuorum: vi.fn(() => false),
         descriptorContext: vi.fn(() => ({ walletAddress: WALLET_ADDRESS })),
         isApprovedSignerStatus: (status: unknown) => status === "success" || status === "active",
         getSignerState: overrides.getSignerState ?? vi.fn().mockResolvedValue(NULL_STATE),
@@ -473,6 +481,23 @@ describe("DeviceRecoveryService", () => {
         });
     });
 
+    describe("recover() when the device signer cannot be read", () => {
+        it("goes on and registers the device signer through a recovery method that signs alone, as before", async () => {
+            const pendingDevice = makeSigner("device", "device:localKey");
+            const addSigner = vi.fn().mockResolvedValue(undefined);
+            const { service } = setup({
+                addSigner,
+                signerManager: {
+                    activeSigner: pendingDevice,
+                    getSignerState: vi.fn().mockResolvedValue({ ...NULL_STATE, lookupFailed: true }),
+                },
+            });
+
+            await expect(service.recover()).resolves.toBeUndefined();
+            expect(addSigner).toHaveBeenCalled();
+        });
+    });
+
     describe("initDeviceSigner", () => {
         it("is a no-op when no device key storage is configured", async () => {
             const { service, signers } = setup({ storage: null });
@@ -521,6 +546,32 @@ describe("DeviceRecoveryService", () => {
             expect(service.needsRecovery).toBe(false);
             expect(storage.saveSignerLocator).toHaveBeenCalledWith(WALLET_ADDRESS, "device:localKey");
         });
+
+        it.each([
+            { approver: "a recovery method that signs alone", approvingQuorum: null, saves: true },
+            {
+                approver: "a recovery quorum",
+                approvingQuorum: "quorum:0d3b3f6c-2c2a-4f43-9a2e-4b6a3c5d7e8f",
+                saves: false,
+            },
+        ])(
+            "with another device's locator saved, saves this one only when $approver approved it",
+            async ({ approvingQuorum, saves }) => {
+                const storage = makeStorage({
+                    getKey: vi.fn().mockResolvedValue("localKey"),
+                    getSavedSignerLocator: vi.fn().mockResolvedValue("device:oldKey"),
+                });
+                const signerManager = {
+                    assemble: vi.fn().mockResolvedValue(makeSigner("device", "device:localKey", "success")),
+                    getSignerState: vi.fn().mockResolvedValue({ ...NULL_STATE, approvingQuorum }),
+                };
+                const { service } = setup({ storage, signerManager });
+
+                await service.initDeviceSigner();
+
+                expect(storage.saveSignerLocator.mock.calls.length > 0).toBe(saves);
+            }
+        );
     });
 });
 
@@ -547,7 +598,7 @@ describe("DeviceRecoveryService with quorum recovery methods", () => {
     }
 
     describe("when every recovery method is a quorum", () => {
-        it("throws RecoveryMethodRequiredError and creates no device key", async () => {
+        it("throws RecoveryMethodRequiredError and creates no device key while no member is selected", async () => {
             const storage = makeStorage();
             const manager = makeRealSignerManager([createQuorumApiEntry()], storage);
             const { service } = setup({ storage, manager });
@@ -607,6 +658,32 @@ describe("DeviceRecoveryService with quorum recovery methods", () => {
             expect(addSigner).not.toHaveBeenCalled();
         });
 
+        it("keeps the device key when the app switches to Erin's wallet while the quorum's registration is in flight", async () => {
+            const storage = makeStorage();
+            const quorum = createQuorumApiEntry();
+            const [alice] = quorum.members;
+            // The API created the registration, waiting on the quorum's members; only its response was lost.
+            const getSigner = vi.fn().mockResolvedValue({
+                type: "device",
+                locator: "device:newkey",
+                publicKey: { x: "0x01", y: "0x02" },
+                chains: { "base-sepolia": { id: "txn-add", status: "awaiting-approval" } },
+            });
+            const manager = makeRealSignerManager([quorum, asRecovery(EXTERNAL_WALLET_RECOVERY)], storage, {
+                getSigner,
+            });
+            manager.selectRecoveryMember(asRecovery({ type: "email", email: alice.email }), alice.locator);
+            const addSigner = vi.fn(async () => {
+                manager.selectRecovery(1);
+                throw new Error("network timeout");
+            });
+            const { service } = setup({ storage, manager, addSigner });
+
+            await expect(service.recover()).rejects.toThrow("network timeout");
+
+            expect(storage.deleteKey).not.toHaveBeenCalled();
+        });
+
         it("falls back to the selected external wallet when the provider rejects device signers", async () => {
             const storage = makeStorage();
             const manager = makeRealSignerManager(
@@ -648,12 +725,42 @@ describe("DeviceRecoveryService with quorum recovery methods", () => {
 
             await service.recover();
 
-            expect(approveSignature).toHaveBeenCalledWith("sig-1");
+            // The external wallet signs the approval as an argument; the shared active signer is never swapped to it.
+            const recoverySigner = mockedAssembleSigner.mock.results.at(-1)?.value;
+            expect(approveSignature).toHaveBeenCalledWith("sig-1", recoverySigner);
             expect(mockedAssembleSigner).toHaveBeenCalledWith(
                 "base-sepolia",
                 expect.objectContaining({ type: "external-wallet" }),
                 storage
             );
+        });
+
+        it("leaves the pending device signer active while the external wallet approves its registration", async () => {
+            const storage = makeStorage();
+            const pendingDevice = makeSigner("device", "device:pendingKey");
+            const manager = makeRealSignerManager(
+                [createQuorumApiEntry(), asRecovery(EXTERNAL_WALLET_RECOVERY)],
+                storage,
+                {
+                    signer: pendingDevice,
+                    getSigner: vi.fn().mockResolvedValue({
+                        type: "device",
+                        locator: "device:pendingKey",
+                        publicKey: { x: "0x01", y: "0x02" },
+                        chains: { "base-sepolia": { id: "sig-1", status: "awaiting-approval" } },
+                    }),
+                }
+            );
+            let activeDuringApproval: SignerAdapter | undefined;
+            const approveSignature = vi.fn(async () => {
+                activeDuringApproval = manager.activeSigner;
+            });
+            const { service } = setup({ storage, manager, approveSignature });
+
+            await service.recover();
+
+            // A send running meanwhile reads this signer: it must never be the recovery method.
+            expect(activeDuringApproval).toBe(pendingDevice);
         });
     });
 });
