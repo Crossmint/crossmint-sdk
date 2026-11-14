@@ -333,13 +333,21 @@ describe("operation-poller", () => {
             });
         });
 
+        describe("when another party's flat entry is pending next to a quorum that still needs members", () => {
+            it("returns the awaiting outcome with the transaction id", async () => {
+                const quorumEntry = createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
+                mockApiClient.getTransaction.mockResolvedValue(
+                    txAwaiting("txn-mixed", { pending: [FLAT_APPROVAL, quorumEntry] })
+                );
+
+                expect(await settleValue(pollOutcome("txn-mixed"))).toStrictEqual({
+                    status: "awaiting-approval",
+                    transactionId: "txn-mixed",
+                });
+            });
+        });
+
         describe.each([
-            {
-                context: "a flat signer must still approve",
-                approvals: () => ({
-                    pending: [FLAT_APPROVAL, createQuorumPendingApproval({ quorum: createQuorumApiEntry() })],
-                }),
-            },
             {
                 context: "every quorum already has its approvals",
                 approvals: () => ({
