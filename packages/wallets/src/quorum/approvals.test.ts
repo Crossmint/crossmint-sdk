@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { PendingApproval } from "../wallets/types";
 import { createQuorumApiEntry, createQuorumPendingApproval } from "../wallets/__tests__/test-helpers";
-import { awaitsQuorumOnly, planMemberApprovals, splitPendingApprovals } from "./approvals";
+import { awaitsQuorumRequest, planMemberApprovals, splitPendingApprovals } from "./approvals";
 
 const MALFORMED_QUORUM_LOCATOR = "3f9c2b8e-5d1a-8c4f-9e2b-7a6d5c4b3a21";
 
@@ -33,7 +33,7 @@ describe("splitPendingApprovals", () => {
     });
 });
 
-describe("awaitsQuorumOnly", () => {
+describe("awaitsQuorumRequest", () => {
     const quorumNeedingMembers = () => createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
     const satisfiedQuorum = () => createQuorumPendingApproval({ quorum: createQuorumApiEntry(), remaining: 0 });
 
@@ -51,9 +51,15 @@ describe("awaitsQuorumOnly", () => {
             expected: true,
         },
         {
-            when: "a flat signer is still pending",
+            when: "another party's flat entry is pending next to a quorum that still needs members",
             status: "awaiting-approval",
             pending: () => [flatApproval(), quorumNeedingMembers()],
+            expected: true,
+        },
+        {
+            when: "only flat signers are pending, as before quorums",
+            status: "awaiting-approval",
+            pending: () => [flatApproval()],
             expected: false,
         },
         {
@@ -69,11 +75,21 @@ describe("awaitsQuorumOnly", () => {
             expected: false,
         },
     ])("returns $expected when $when", ({ status, pending, expected }) => {
-        expect(awaitsQuorumOnly({ status, approvals: { pending: pending() } })).toBe(expected);
+        expect(awaitsQuorumRequest({ status, approvals: { pending: pending() } })).toBe(expected);
+    });
+
+    it("returns true when the quorum is satisfied and another party's flat entry is still pending", () => {
+        const satisfied = { signer: { type: "quorum", locator: createQuorumApiEntry().locator } };
+        expect(
+            awaitsQuorumRequest({
+                status: "awaiting-approval",
+                approvals: { pending: [flatApproval()], submitted: [satisfied] },
+            })
+        ).toBe(true);
     });
 
     it("returns false when the operation has no approvals", () => {
-        expect(awaitsQuorumOnly({ status: "awaiting-approval" })).toBe(false);
+        expect(awaitsQuorumRequest({ status: "awaiting-approval" })).toBe(false);
     });
 });
 
