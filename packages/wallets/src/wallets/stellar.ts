@@ -36,6 +36,7 @@ export class StellarWallet extends Wallet<StellarChain> {
             },
             Wallet.getApiClient(wallet)
         );
+        Wallet.copyServerRecoveryKeys(wallet, this);
     }
 
     static from(wallet: Wallet<Chain>) {
