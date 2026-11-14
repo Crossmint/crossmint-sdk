@@ -42,7 +42,7 @@ import type {
     SignerOption,
 } from "./types";
 import { isSignerLocatorOption } from "./types";
-import { isSignerOnChain, mapApiSignerToSigner, pendingOperationId, toQuorumSigner } from "../utils/signer-mapping";
+import { mapApiSignerToSigner, pendingOperationId, toQuorumSigner } from "../utils/signer-mapping";
 import {
     DEVICE_SIGNER_NOT_SUPPORTED_ERROR_CODE,
     DeviceSignerAwaitingApprovalError,
@@ -451,7 +451,7 @@ export class Wallet<C extends Chain> {
             delegatedQuorums: configSigners.filter(isQuorumSigner).filter(installedOnChain),
             // Registered on the request's chain: an EVM signer registered on other chains only is just a member there.
             registeredOnChain: configSigners.some(
-                (signer) => isSameSignerLocator(signer.locator, heldLocator) && isSignerOnChain(signer, requestChain)
+                (signer) => isSameSignerLocator(signer.locator, heldLocator) && installedOnChain(signer)
             ),
         });
         return role.kind === "none" ? heldLocator : role.locator;
@@ -1449,9 +1449,14 @@ export class Wallet<C extends Chain> {
 
         // Check if this is a registered signer
         const locator = this.resolveSignerLocator(signer);
-        if (await this.signerIsRegistered(locator)) {
+        const registered = await this.#signerManager.registeredSigner(locator);
+        if (registered != null) {
             this.#deviceRecovery.onSignerSelected();
-            return REGISTERED;
+            if (this.#signerManager.isApprovedSignerStatus(registered.status)) {
+                return REGISTERED;
+            }
+            // A key acts alone only once its own add has landed (EDD 008 I10); until then a member acts as its quorum.
+            return (await this.#memberRole(locator)) ?? REGISTERED;
         }
 
         // Not a registered signer — fall back to recovery
