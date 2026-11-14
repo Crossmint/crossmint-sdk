@@ -38,6 +38,29 @@ describe("ApiClient makeRequest", () => {
         });
     });
 
+    describe("when the response is a 451 region block", () => {
+        test("throws an ApiClientError even when the body is labelled JSON but is not valid JSON", async () => {
+            const malformedJsonBody = '{ "error": { "code": 451, }, }';
+            vi.spyOn(globalThis, "fetch").mockResolvedValue(mockResponse(451, malformedJsonBody, "application/json"));
+
+            const error = await client.get("wallets/me", {}).catch((e) => e);
+
+            expect(error).toBeInstanceOf(ApiClientError);
+            expect(error.status).toBe(451);
+            expect(error.responseBody).toBe(malformedJsonBody);
+        });
+
+        test("throws an ApiClientError when the body is valid JSON", async () => {
+            const jsonBody = JSON.stringify({ error: { code: 451 } });
+            vi.spyOn(globalThis, "fetch").mockResolvedValue(mockResponse(451, jsonBody, "application/json"));
+
+            const error = await client.get("wallets/me", {}).catch((e) => e);
+
+            expect(error).toBeInstanceOf(ApiClientError);
+            expect(error.status).toBe(451);
+        });
+    });
+
     describe("when the response is a 5xx server error", () => {
         test("throws an ApiClientError regardless of content type", async () => {
             vi.spyOn(globalThis, "fetch").mockResolvedValue(mockResponse(502, "Bad Gateway", "text/plain"));
