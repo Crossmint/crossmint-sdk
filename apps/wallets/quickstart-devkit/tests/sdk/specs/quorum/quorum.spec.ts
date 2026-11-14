@@ -104,7 +104,8 @@ for (const { chain, member, recipient } of CHAINS) {
             );
             expect(added.locator).toMatch(/^quorum:/);
             const addRequest = requestOf(added);
-            await wallet.approve(addRequest);
+            // One of two required approvals: the add must still wait on another member.
+            expect(await wallet.approve(addRequest)).toMatchObject({ hash: undefined });
             await wallet.useRecoveryMethod(bob);
             await wallet.approve(addRequest);
 
@@ -145,14 +146,14 @@ for (const { chain, member, recipient } of CHAINS) {
             await wallet.useRecoveryMethod(alice);
             const registration = requestOf(await wallet.recover());
             expect(await wallet.recover()).toEqual(registration);
-            await wallet.approve(registration);
+            expect(await wallet.approve(registration)).toMatchObject({ hash: undefined });
             await wallet.useRecoveryMethod(bob);
             await wallet.approve(registration);
 
             const removal = requestOf(await wallet.recover());
             expect(wallet.needsRecovery()).toBe(false);
             expect(wallet.signer?.locator()).not.toBe(lostDevice);
-            await wallet.approve(removal);
+            expect(await wallet.approve(removal)).toMatchObject({ hash: undefined });
             await wallet.useRecoveryMethod(alice);
             await wallet.approve(removal);
 
@@ -181,7 +182,7 @@ test.describe("Quorum on base-sepolia — ERC-1271", { tag: "@quorum" }, () => {
             { prepareOnly: true }
         );
         const addRequest = requestOf(added);
-        await wallet.approve(addRequest);
+        expect(await wallet.approve(addRequest)).toMatchObject({ hash: undefined });
         await wallet.useRecoveryMethod(bob);
         await wallet.approve(addRequest);
 
@@ -193,7 +194,8 @@ test.describe("Quorum on base-sepolia — ERC-1271", { tag: "@quorum" }, () => {
             message,
             options: { prepareOnly: true, signer: added.locator },
         });
-        await wallet.approve({ signatureId: requested.signatureId });
+        const firstSignature = await wallet.approve({ signatureId: requested.signatureId });
+        expect(firstSignature.signature).toBeUndefined();
         await wallet.useSigner(erin);
         const signed = await wallet.approve({ signatureId: requested.signatureId });
 
