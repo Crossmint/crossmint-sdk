@@ -219,9 +219,9 @@ export class DeviceRecoveryService<C extends Chain> {
         }
 
         const existingDeviceSigners = existingSigners.filter((s) => s.type === "device");
-        // Resolves the approver as resolveApprover will (the member's quorum, else a recovery method), for its error only:
-        // no key is created when no approver can be resolved.
-        this.#signerManager.approvesAsQuorum();
+        // Resolves the approver as resolveApprover will, so no key is created when none can be resolved. The answer is
+        // kept: a selection made while the registration is in flight must not decide what happens to this key.
+        const approvedByQuorum = this.#signerManager.approvesAsQuorum();
         const newDeviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.#walletAddress);
         let staleDeviceSignerLocator = await this.#findSavedStaleSignerLocator(
             deviceSignerKeyStorage,
@@ -234,7 +234,8 @@ export class DeviceRecoveryService<C extends Chain> {
             ({ staleDeviceSignerLocator, awaitedRegistration } = await this.#registerDeviceSigner(
                 newDeviceSigner,
                 existingDeviceSigners,
-                staleDeviceSignerLocator
+                staleDeviceSignerLocator,
+                approvedByQuorum
             ));
         } catch (error) {
             if (error instanceof DeviceSignerNotSupportedError) {
@@ -282,7 +283,9 @@ export class DeviceRecoveryService<C extends Chain> {
                 throw error;
             } else {
                 walletsLogger.error("wallet.recover.device.error", { error });
-                if (!(await this.#registrationAwaitsQuorum(newDeviceSigner.locator as SignerLocator))) {
+                if (
+                    !(await this.#registrationAwaitsQuorum(newDeviceSigner.locator as SignerLocator, approvedByQuorum))
+                ) {
                     await deviceSignerKeyStorage.deleteKey(this.#walletAddress);
                 }
                 throw error;
@@ -318,20 +321,10 @@ export class DeviceRecoveryService<C extends Chain> {
         return undefined;
     }
 
-    // Whether a signer change made now would wait on quorum members; an approver that cannot be resolved counts as one,
-    // as nothing flat could sign it either.
-    #changeApprovedByQuorum(): boolean {
-        try {
-            return this.#signerManager.approvesAsQuorum();
-        } catch {
-            return true;
-        }
-    }
-
     // Quorum members may still approve a registration that exists, so deleting its key would strand it. A flat
     // approver's registration is made again with a new key, as before quorums.
-    async #registrationAwaitsQuorum(signerLocator: SignerLocator): Promise<boolean> {
-        if (!this.#changeApprovedByQuorum()) {
+    async #registrationAwaitsQuorum(signerLocator: SignerLocator, approvedByQuorum: boolean): Promise<boolean> {
+        if (!approvedByQuorum) {
             return false;
         }
         const registered = await this.#signerManager.getSignerState(signerLocator);
@@ -341,14 +334,15 @@ export class DeviceRecoveryService<C extends Chain> {
     async #registerDeviceSigner(
         newDeviceSigner: DeviceSignerConfig,
         existingDeviceSigners: DeviceWalletSigner[],
-        staleDeviceSignerLocator: string | undefined
+        staleDeviceSignerLocator: string | undefined,
+        approvedByQuorum: boolean
     ): Promise<{ staleDeviceSignerLocator: string | undefined; awaitedRegistration: RecoverResult }> {
         try {
             const change = await this.#addSigner(newDeviceSigner as SignerConfigForChain<C>);
             return { staleDeviceSignerLocator, awaitedRegistration: awaitedRequest(change) };
         } catch (error) {
             // Through a quorum, the removal would wait on its members and the next add would hit the limit again.
-            if (!(error instanceof SignerLimitExceededError) || this.#changeApprovedByQuorum()) {
+            if (!(error instanceof SignerLimitExceededError) || approvedByQuorum) {
                 throw error;
             }
             const signerLocatorToRemove =
