@@ -399,8 +399,13 @@ export class SignerManager<C extends Chain> {
     }
 
     async signerIsRegistered(signerLocator: SignerLocator | string): Promise<boolean> {
+        return (await this.registeredSigner(signerLocator)) != null;
+    }
+
+    /** The wallet's own entry for this key, with its status on this chain, or null when the key has none. */
+    async registeredSigner(signerLocator: SignerLocator | string): Promise<WalletSigner | null> {
         const existingSigners = await this.#signers();
-        return existingSigners.some((s) => s.locator === signerLocator);
+        return existingSigners.find((s) => s.locator === signerLocator) ?? null;
     }
 
     async isSignerApproved(signerLocator: SignerLocator | string): Promise<boolean> {
