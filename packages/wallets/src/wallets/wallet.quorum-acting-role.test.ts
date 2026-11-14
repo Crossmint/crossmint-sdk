@@ -23,6 +23,26 @@ import {
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 
+// A server key's secret derives to one fixed address, so its member entry can be listed by locator.
+const { SERVER_ADDRESS } = vi.hoisted(() => ({ SERVER_ADDRESS: "0x5555555555555555555555555555555555555555" }));
+vi.mock("@/signers/server", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@/signers/server")>();
+    const derived = () => ({ derivedKeyBytes: new Uint8Array(32), derivedAddress: SERVER_ADDRESS });
+    return {
+        ...actual,
+        deriveServerSignerDetails: vi.fn(derived),
+        deriveServerSignerCandidates: vi.fn(() => ({ primary: derived(), legacy: null })),
+        assembleServerSigner: vi.fn(() => ({
+            type: "server",
+            locator: () => `server:${SERVER_ADDRESS}`,
+            address: () => SERVER_ADDRESS,
+            status: undefined,
+            signMessage: vi.fn(),
+            signTransaction: vi.fn(),
+        })),
+    };
+});
+
 const EVM_ADDRESS = "0x1234567890123456789012345678901234567890";
 const STELLAR_ADDRESS = "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY";
 const RECIPIENT = "0x1111111111111111111111111111111111111111";
@@ -53,7 +73,11 @@ const walletConfigResponse = (
 // A wallet whose recovery methods and delegated signers are given, with Bob's member key selected.
 async function walletWithBob(
     api: MockedApiClient,
-    { recovery = [{ type: "api-key" }], signers = [] }: { recovery?: object[]; signers?: object[] },
+    {
+        recovery = [{ type: "api-key" }],
+        signers = [],
+        key,
+    }: { recovery?: object[]; signers?: object[]; key?: SignerConfigForChain<Chain> },
     chain: Chain = "base-sepolia"
 ) {
     const wallet = new Wallet(
@@ -68,7 +92,7 @@ async function walletWithBob(
     // Chain wallets are built with `from()`, a new object, so the spy goes on the shared prototype.
     const signersSpy = vi.spyOn(Wallet.prototype, "signers").mockResolvedValue(signers as never);
     api.getWallet.mockResolvedValue(walletConfigResponse(chain, signers, recovery) as never);
-    await wallet.useSigner(bobConfig(chain === "stellar" ? BOB_STELLAR : BOB_EVM));
+    await wallet.useSigner(key ?? bobConfig(chain === "stellar" ? BOB_STELLAR : BOB_EVM));
     return { wallet, signersSpy };
 }
 
@@ -292,6 +316,44 @@ describe("a creating call with a key that is only a quorum member", () => {
             await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
 
             expect(sentSendSigner(api)).toBe(bob.locator);
+        });
+    });
+
+    describe("when a server key's own add still awaits approval", () => {
+        const serverKey = { type: "server", secret: "bob-secret" } as SignerConfigForChain<Chain>;
+        const serverMember = {
+            type: "server",
+            address: SERVER_ADDRESS,
+            locator: `server:${SERVER_ADDRESS}`,
+        } as QuorumMember;
+        const ownEntry = (status: string) => ({
+            ...serverMember,
+            status,
+            chains: { "base-sepolia": { id: "tx-own-add", status } },
+        });
+
+        it("creates the send as the installed quorum the key belongs to", async () => {
+            const treasury = createQuorumApiEntryWith([serverMember]);
+            const { wallet } = await walletWithBob(api, {
+                signers: [{ ...treasury, status: "success" }, ownEntry("awaiting-approval")],
+                key: serverKey,
+            });
+
+            await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+
+            expect(sentSendSigner(api)).toBe(treasury.locator);
+        });
+
+        it("creates the send as the key itself once its own add has landed", async () => {
+            const treasury = createQuorumApiEntryWith([serverMember]);
+            const { wallet } = await walletWithBob(api, {
+                signers: [{ ...treasury, status: "success" }, ownEntry("success")],
+                key: serverKey,
+            });
+
+            await wallet.send(RECIPIENT, "usdc", "1", { prepareOnly: true });
+
+            expect(sentSendSigner(api)).toBe(serverMember.locator);
         });
     });
 

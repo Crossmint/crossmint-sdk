@@ -1478,11 +1478,7 @@ export class Wallet<C extends Chain> {
         const registered = await this.#signerManager.registeredSigner(locator);
         if (registered != null) {
             this.#deviceRecovery.onSignerSelected();
-            if (this.#signerManager.isApprovedSignerStatus(registered.status)) {
-                return REGISTERED;
-            }
-            // A key acts alone only once its own add has landed (EDD 008 I10); until then a member acts as its quorum.
-            return (await this.#memberRole(locator)) ?? REGISTERED;
+            return this.#registeredRole(locator, registered.status);
         }
 
         // Not a registered signer — fall back to recovery
@@ -1521,9 +1517,12 @@ export class Wallet<C extends Chain> {
             memberLocators
         );
         switch (resolution.kind) {
-            case "delegated":
+            case "delegated": {
                 this.#deviceRecovery.onSignerSelected();
-                return REGISTERED;
+                const locator = this.resolveServerSignerApiLocator(signer);
+                const own = existingSigners.find((existing) => existing.locator === locator);
+                return this.#registeredRole(locator, own?.status, existingSigners);
+            }
             case "member":
                 this.#deviceRecovery.onSignerSelected();
                 return (await this.#memberRole(resolution.locator, existingSigners)) ?? REGISTERED;
@@ -1541,6 +1540,18 @@ export class Wallet<C extends Chain> {
     // The wallet's recovery quorums (from its config), then its delegated quorums (from `signers`).
     #quorums(signers: WalletSigner[]): QuorumSigner[] {
         return [...this.recoveryMethods.filter(isQuorumSigner), ...signers.filter(isWalletQuorum)];
+    }
+
+    // A key acts alone only once its own add has landed (EDD 008 I10); until then a member acts as its quorum.
+    async #registeredRole(
+        locator: string,
+        status: SignerStatus | undefined,
+        signers?: WalletSigner[]
+    ): Promise<HeldKeyRole> {
+        if (this.#signerManager.isApprovedSignerStatus(status)) {
+            return REGISTERED;
+        }
+        return (await this.#memberRole(locator, signers)) ?? REGISTERED;
     }
 
     // A key that is only a quorum member acts as its quorum (EDD 007 §7 "Role"); a recovery quorum is always active.
