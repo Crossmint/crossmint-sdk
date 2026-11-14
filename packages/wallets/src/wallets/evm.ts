@@ -8,7 +8,6 @@ import type {
     SignMessageInput,
     SignTypedDataInput,
     Transaction,
-    TransactionInputOptions,
 } from "./types";
 import { toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
@@ -51,6 +50,8 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     /**
      * Send a raw EVM transaction.
+     * When the signer is a quorum (`quorum:…`), the call returns the created transaction unsigned and without a
+     * hash, as with `prepareOnly: true`. Pass `prepareOnly: true` for that type.
      * @param params - The transaction parameters (raw transaction, ABI call, or encoded data)
      * @returns The transaction result
      */
@@ -68,9 +69,10 @@ export class EVMWallet extends Wallet<EVMChain> {
 
         await this.preAuthIfNeeded();
         const builtTransaction = this.buildTransaction(params);
-        const createdTransaction = await this.createTransaction(builtTransaction, params.options);
+        const signerParams = this.resolveSignerParams(params.options);
+        const createdTransaction = await this.createTransaction(builtTransaction, signerParams);
 
-        if (params.options?.prepareOnly) {
+        if (this.isPrepareOnly(params.options, signerParams.signer)) {
             walletsLogger.info("evmWallet.sendTransaction.prepared", {
                 transactionId: createdTransaction.id,
             });
@@ -222,11 +224,11 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     private async createTransaction(
         transaction: FormattedEVMTransaction,
-        options?: TransactionInputOptions
+        signerParams: { signer: string }
     ): Promise<CreateTransactionSuccessResponse> {
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
-                ...this.resolveSignerParams(options),
+                ...signerParams,
                 chain: this.chain,
                 calls: [transaction],
             },

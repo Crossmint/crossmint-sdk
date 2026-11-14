@@ -84,7 +84,7 @@ import { ServerSignerResolver } from "../signers/server/resolver";
 import { getSignerDescriptor } from "../signers/descriptors";
 import { walletsLogger } from "../logger";
 
-import { getSignerLocator, passkeyCredentialId } from "../utils/signer-locator";
+import { getSignerLocator, hasQuorumLocatorPrefix, passkeyCredentialId } from "../utils/signer-locator";
 import { toRecipientLocator, toTokenLocator } from "../utils/locators";
 import { formatBalanceResponse } from "./services/balance-formatter";
 import { SignerManager } from "./services/signer-manager";
@@ -344,6 +344,11 @@ export class Wallet<C extends Chain> {
         return { signer: this.resolveSignerOption(options.signer) };
     }
 
+    /** A quorum acting signer creates the request unsigned and returns it, as `prepareOnly: true` does (EDD 007 §7). */
+    protected isPrepareOnly(options: Partial<PrepareOnly> | undefined, signerLocator: string): boolean {
+        return Boolean(options?.prepareOnly) || hasQuorumLocatorPrefix(signerLocator);
+    }
+
     /** The API locator of a call's `signer` option. */
     protected resolveSignerOption(signer: SignerOption): string {
         if (isSignerLocatorOption(signer)) {
@@ -516,6 +521,8 @@ export class Wallet<C extends Chain> {
 
     /**
      * Send a token to a wallet or user locator
+     * When the signer is a quorum (`quorum:…`), the call returns the created transaction unsigned and without a
+     * hash, as with `prepareOnly: true`. Pass `prepareOnly: true` for that type.
      * @param {string | UserLocator} to - The recipient (address or user locator)
      * @param {string} token - The token (address or currency symbol)
      * @param {string} amount - The amount to send (decimal units)
@@ -555,10 +562,11 @@ export class Wallet<C extends Chain> {
 
         await this.preAuthIfNeeded();
 
+        const signerParams = this.resolveSignerParams(options);
         const sendParams = {
             recipient,
             amount,
-            ...this.resolveSignerParams(options),
+            ...signerParams,
             ...(options?.transactionType != null ? { transactionType: options.transactionType } : {}),
         };
         const transactionCreationResponse = await this.#apiClient
@@ -575,7 +583,7 @@ export class Wallet<C extends Chain> {
             throw transactionNotCreatedError(transactionCreationResponse, "Failed to send token");
         }
 
-        if (options?.prepareOnly === true) {
+        if (this.isPrepareOnly(options, signerParams.signer)) {
             walletsLogger.info("wallet.send.prepared", {
                 transactionId: transactionCreationResponse.id,
             });
