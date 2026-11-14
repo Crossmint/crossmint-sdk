@@ -185,6 +185,65 @@ describe("<OrderIntentVerification />", () => {
         });
     });
 
+    describe("when the host opens the network page itself", () => {
+        const redirectUri = "https://src.mastercard.com/verify?session=abc";
+
+        async function launchedRedirect() {
+            await waitFor(() => {
+                expect(basisTheory.create).toHaveBeenCalledOnce();
+            });
+            return basisTheory.create.mock.calls[0][0].openRedirect as ((uri: string) => void) | undefined;
+        }
+
+        test("leaves the popup to Basis Theory when openRedirect is not set", async () => {
+            basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
+
+            render(<OrderIntentVerification orderIntent={orderIntent("agentpay")} />);
+
+            expect(await launchedRedirect()).toBeUndefined();
+        });
+
+        test("hands the redirect URI to openRedirect", async () => {
+            basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
+            const openRedirect = vi.fn();
+
+            render(<OrderIntentVerification orderIntent={orderIntent("agentpay")} openRedirect={openRedirect} />);
+            (await launchedRedirect())?.(redirectUri);
+
+            expect(openRedirect).toHaveBeenCalledWith(redirectUri);
+        });
+
+        test("polls for 5 minutes, so the buyer has time for the issuer step and the passkey", async () => {
+            basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
+
+            render(<OrderIntentVerification orderIntent={orderIntent("agentpay")} openRedirect={vi.fn()} />);
+
+            await waitFor(() => {
+                expect(basisTheory.create).toHaveBeenCalledWith(expect.objectContaining({ completePollAttempts: 25 }));
+            });
+        });
+
+        test("keeps the running verification and calls the latest openRedirect when the host passes a new one", async () => {
+            basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
+            const firstOpenRedirect = vi.fn();
+            const latestOpenRedirect = vi.fn();
+            const { rerender } = render(
+                <OrderIntentVerification orderIntent={orderIntent("agentpay")} openRedirect={firstOpenRedirect} />
+            );
+            const launch = await launchedRedirect();
+
+            rerender(
+                <OrderIntentVerification orderIntent={orderIntent("agentpay")} openRedirect={latestOpenRedirect} />
+            );
+            launch?.(redirectUri);
+
+            expect(basisTheory.create).toHaveBeenCalledOnce();
+            expect(basisTheory.dispose).not.toHaveBeenCalled();
+            expect(firstOpenRedirect).not.toHaveBeenCalled();
+            expect(latestOpenRedirect).toHaveBeenCalledWith(redirectUri);
+        });
+    });
+
     describe("when verification fails", () => {
         test("forwards the error", async () => {
             const error = new Error("Verification failed");
