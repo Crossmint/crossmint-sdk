@@ -4,6 +4,7 @@ import type { Chain } from "../chains/chains";
 import type { QuorumMember, QuorumSigner, RecoverySignerConfigForChain, SignerConfigForChain } from "../signers/types";
 import { deriveServerSignerCandidates, deriveServerSignerDetails } from "@/signers/server";
 import { InvalidRecoveryConfigError } from "../utils/errors";
+import { EVMWallet } from "./evm";
 import { Wallet } from "./wallet";
 import {
     createMockApiClient,
@@ -358,6 +359,20 @@ describe("signer changes with server keys", () => {
             expect(api.approveTransaction.mock.calls.map((call) => call[2].approvals)).toEqual([
                 [{ signer: SERVER_LOCATOR, signature: "0xmocksig" }],
             ]);
+        });
+
+        it("signs the member's entry from a chain wallet copied with from(), without the secret", async () => {
+            const wallet = await walletWith(api, { recovery: [{ type: "api-key" }, recoveryQuorum] });
+            await wallet.useRecoveryMethod(server.config);
+            const evmWallet = EVMWallet.from(wallet);
+            vi.mocked(deriveServerSignerCandidates).mockClear();
+
+            await removeSignerSignedByMember(evmWallet);
+
+            expect(api.approveTransaction.mock.calls.map((call) => call[2].approvals)).toEqual([
+                [{ signer: SERVER_LOCATOR, signature: "0xmocksig" }],
+            ]);
+            expect(deriveServerSignerCandidates).not.toHaveBeenCalled();
         });
 
         it("derives the key from the secret once, on selection, and signs without the secret", async () => {
