@@ -41,15 +41,22 @@ export function splitPendingApprovals(pending: PendingApproval[]): {
     return { flat, quorums };
 }
 
-/** True when only quorum members can move the operation forward: no flat signer is pending. */
-// Stellar seeds one entry per auth entry, so a quorum's request can also carry a single-signer entry for another
-// party's address; EVM and Solana seed one entry per request, so there the list has one kind only.
-export function awaitsQuorumOnly(operation: { status: string; approvals?: { pending: PendingApproval[] } }): boolean {
+/**
+ * True when a request a quorum takes part in still waits on someone: a member, or another party's auth entry (Stellar
+ * seeds one entry per auth entry). It returns unsigned, as with prepareOnly; a request without a quorum keeps the error.
+ */
+export function awaitsQuorumRequest(operation: {
+    status: string;
+    approvals?: { pending: PendingApproval[]; submitted?: Array<{ signer: { type: string } }> };
+}): boolean {
     if (operation.status !== "awaiting-approval" || operation.approvals == null) {
         return false;
     }
     const { flat, quorums } = splitPendingApprovals(operation.approvals.pending);
-    return flat.length === 0 && quorums.some((entry) => entry.quorumApprovals.remaining > 0);
+    const waitsOnSomeone = flat.length > 0 || quorums.some((entry) => entry.quorumApprovals.remaining > 0);
+    const hasQuorum =
+        quorums.length > 0 || (operation.approvals.submitted ?? []).some((entry) => isQuorumSigner(entry.signer));
+    return waitsOnSomeone && hasQuorum;
 }
 
 /** True when a quorum still needs approvals and none of the held keys is one of its members, pending or submitted. */

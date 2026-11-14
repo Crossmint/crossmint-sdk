@@ -5,7 +5,6 @@ import {
     InvalidSignerError,
     QuorumSignerNotSupportedError,
     SignatureFailedError,
-    TransactionAwaitingApprovalError,
     TransactionExpiredError,
     TransactionFailedError,
 } from "../utils/errors";
@@ -273,17 +272,6 @@ describe("approve() on a transaction with a pending quorum entry", () => {
     });
 
     describe("when a flat entry and a quorum entry are pending", () => {
-        it("throws InvalidSignerError and sends nothing when the flat signer is not held", async () => {
-            const flat = { signer: { type: "email", locator: "email:stranger@example.com" }, message: "0xflat" };
-            const quorumEntry = createQuorumPendingApproval({ quorum: quorumWith([member]) });
-            api.getTransaction.mockResolvedValue(awaiting("txn-1", [flat, quorumEntry]) as never);
-
-            const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
-
-            expect(error).toBeInstanceOf(InvalidSignerError);
-            expect(api.approveTransaction).not.toHaveBeenCalled();
-        });
-
         it("signs only the flat entry when the quorum needs no more approvals", async () => {
             const quorum = quorumWith([member]);
             const satisfied = createQuorumPendingApproval({ quorum, remaining: 0 });
@@ -524,7 +512,7 @@ describe("approve() with an api-key active signer", () => {
         });
 
         describe("and a flat entry still waits next to it after this client's approvals", () => {
-            it("throws TransactionAwaitingApprovalError with the transaction id, as before", async () => {
+            it("returns the transaction unsigned, as other members and the flat signer still approve", async () => {
                 const held = createQuorumApiEntry().members[0];
                 const flat = { signer: { type: "api-key", locator: "api-key" }, message: "0xflat" };
                 const quorum = quorumWith([held]);
@@ -543,7 +531,7 @@ describe("approve() with an api-key active signer", () => {
                     ]) as never
                 );
 
-                const { error } = await settle(
+                const { value, error } = await settle(
                     wallet.approve({
                         transactionId: "txn-1",
                         options: { additionalSigners: [createHeldSigner(held.locator)] },
@@ -551,8 +539,8 @@ describe("approve() with an api-key active signer", () => {
                 );
 
                 expect(sentApprovals(api)).toHaveLength(1);
-                expect(error).toBeInstanceOf(TransactionAwaitingApprovalError);
-                expect(error).toMatchObject({ transactionId: "txn-1" });
+                expect(error).toBeUndefined();
+                expect(value).toStrictEqual(AWAITING_TRANSACTION);
             });
         });
     });
@@ -758,6 +746,73 @@ describe("approve() on a Stellar transaction with pending quorum entries", () =>
         });
     });
 
+    describe("when the quorum's request also waits on Bob's auth entry", () => {
+        const bobEntry = { signer: { type: "external-wallet", locator: "external-wallet:GBOBSIGNER" } };
+
+        it("sends Alice's approval and leaves Bob's entry for him to sign", async () => {
+            const quorum = quorumWith([member]);
+            const entry = stellarEntry({ quorum });
+            const flat = { ...bobEntry, message: randomStellarMessage() };
+            const carolStillPending = stellarEntry({
+                quorum,
+                pending: quorum.members.slice(1),
+                submitted: [member],
+                remaining: 1,
+            });
+            api.getTransaction.mockResolvedValueOnce(awaiting("txn-1", [flat, entry], "stellar") as never);
+            api.getTransaction.mockResolvedValue(awaiting("txn-1", [flat, carolStillPending], "stellar") as never);
+
+            const { value, error } = await settle(wallet.approve({ transactionId: "txn-1" }));
+
+            expect(error).toBeUndefined();
+            expect(sentApprovals(api)).toEqual([
+                [{ signer: member.locator, signature: signatureOver(memberMessage(entry)) }],
+            ]);
+            expect(value).toStrictEqual(AWAITING_TRANSACTION);
+        });
+
+        it("returns the transaction unsigned when Alice completes the quorum and Bob's entry still waits", async () => {
+            const quorum = quorumWith([member]);
+            const entry = stellarEntry({ quorum, remaining: 1 });
+            const flat = { ...bobEntry, message: randomStellarMessage() };
+            const satisfied = { signer: { type: "quorum", locator: quorum.locator } };
+            api.getTransaction.mockResolvedValueOnce(awaiting("txn-1", [flat, entry], "stellar") as never);
+            api.getTransaction.mockResolvedValue({
+                ...awaiting("txn-1", [flat], "stellar"),
+                approvals: { pending: [flat], submitted: [satisfied] },
+            } as never);
+
+            const { value, error } = await settle(wallet.approve({ transactionId: "txn-1" }));
+
+            expect(error).toBeUndefined();
+            expect(value).toStrictEqual(AWAITING_TRANSACTION);
+        });
+
+        it("fails as before when Alice and Bob each have a single-key entry and Bob's key is not held", async () => {
+            const aliceFlat = {
+                signer: { type: member.type, locator: member.locator },
+                message: randomStellarMessage(),
+            };
+            const flat = { ...bobEntry, message: randomStellarMessage() };
+            api.getTransaction.mockResolvedValue(awaiting("txn-1", [aliceFlat, flat], "stellar") as never);
+
+            const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
+
+            expect(error).toBeInstanceOf(InvalidSignerError);
+            expect(api.approveTransaction).not.toHaveBeenCalled();
+        });
+
+        it("fails as before when only Bob's entry is pending", async () => {
+            const flat = { ...bobEntry, message: randomStellarMessage() };
+            api.getTransaction.mockResolvedValue(awaiting("txn-1", [flat], "stellar") as never);
+
+            const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
+
+            expect(error).toBeInstanceOf(InvalidSignerError);
+            expect(api.approveTransaction).not.toHaveBeenCalled();
+        });
+    });
+
     describe("when other members must still sign after this client's approval", () => {
         it("returns the transaction id without a hash", async () => {
             const quorum = quorumWith([member]);
@@ -808,22 +863,6 @@ describe("approve() on a Stellar transaction with pending quorum entries", () =>
 
             expect(api.approveTransaction).not.toHaveBeenCalled();
             expect(value).toStrictEqual(AWAITING_TRANSACTION);
-        });
-    });
-
-    describe("when a flat entry for a signer this client does not hold is pending next to the quorum entry", () => {
-        it("throws InvalidSignerError and sends nothing", async () => {
-            const flat = {
-                signer: { type: "external-wallet", locator: "external-wallet:GSTRANGER" },
-                message: randomStellarMessage(),
-            };
-            const entry = stellarEntry({ quorum: quorumWith([member]) });
-            api.getTransaction.mockResolvedValue(awaiting("txn-1", [flat, entry], "stellar") as never);
-
-            const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
-
-            expect(error).toBeInstanceOf(InvalidSignerError);
-            expect(api.approveTransaction).not.toHaveBeenCalled();
         });
     });
 
