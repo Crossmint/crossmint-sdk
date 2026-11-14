@@ -699,12 +699,42 @@ describe("DeviceRecoveryService with quorum recovery methods", () => {
 
             await service.recover();
 
-            expect(approveSignature).toHaveBeenCalledWith("sig-1");
+            // The external wallet signs the approval as an argument; the shared active signer is never swapped to it.
+            const recoverySigner = mockedAssembleSigner.mock.results.at(-1)?.value;
+            expect(approveSignature).toHaveBeenCalledWith("sig-1", recoverySigner);
             expect(mockedAssembleSigner).toHaveBeenCalledWith(
                 "base-sepolia",
                 expect.objectContaining({ type: "external-wallet" }),
                 storage
             );
+        });
+
+        it("leaves the pending device signer active while the external wallet approves its registration", async () => {
+            const storage = makeStorage();
+            const pendingDevice = makeSigner("device", "device:pendingKey");
+            const manager = makeRealSignerManager(
+                [createQuorumApiEntry(), asRecovery(EXTERNAL_WALLET_RECOVERY)],
+                storage,
+                {
+                    signer: pendingDevice,
+                    getSigner: vi.fn().mockResolvedValue({
+                        type: "device",
+                        locator: "device:pendingKey",
+                        publicKey: { x: "0x01", y: "0x02" },
+                        chains: { "base-sepolia": { id: "sig-1", status: "awaiting-approval" } },
+                    }),
+                }
+            );
+            let activeDuringApproval: SignerAdapter | undefined;
+            const approveSignature = vi.fn(async () => {
+                activeDuringApproval = manager.activeSigner;
+            });
+            const { service } = setup({ storage, manager, approveSignature });
+
+            await service.recover();
+
+            // A send running meanwhile reads this signer: it must never be the recovery method.
+            expect(activeDuringApproval).toBe(pendingDevice);
         });
     });
 });

@@ -46,8 +46,8 @@ export type DeviceRecoveryServiceParams<C extends Chain> = {
     addSigner: (signer: SignerConfigForChain<C>) => Promise<SignerChange>;
     /** `approver` names the quorum that approves the removal; without it the removal's approver is resolved as usual. */
     removeSigner: (signerLocator: string, approver?: QuorumLocator) => Promise<SignerChange>;
-    approveSignature: (signatureId: string) => Promise<unknown>;
-    approveTransaction: (transactionId: string) => Promise<unknown>;
+    approveSignature: (signatureId: string, walletSigner: SignerAdapter) => Promise<unknown>;
+    approveTransaction: (transactionId: string, walletSigner: SignerAdapter) => Promise<unknown>;
     deviceSignerActivity: () => Promise<Map<string, number>>;
 };
 
@@ -66,8 +66,8 @@ export class DeviceRecoveryService<C extends Chain> {
     #signers: () => Promise<WalletSigner[]>;
     #addSigner: (signer: SignerConfigForChain<C>) => Promise<SignerChange>;
     #removeSigner: (signerLocator: string, approver?: QuorumLocator) => Promise<SignerChange>;
-    #approveSignature: (signatureId: string) => Promise<unknown>;
-    #approveTransaction: (transactionId: string) => Promise<unknown>;
+    #approveSignature: (signatureId: string, walletSigner: SignerAdapter) => Promise<unknown>;
+    #approveTransaction: (transactionId: string, walletSigner: SignerAdapter) => Promise<unknown>;
     #deviceSignerActivity: () => Promise<Map<string, number>>;
 
     constructor(params: DeviceRecoveryServiceParams<C>) {
@@ -537,7 +537,6 @@ export class DeviceRecoveryService<C extends Chain> {
         deviceSigner: SignerAdapter,
         pendingOperation: PendingSignerOperation
     ): Promise<void> {
-        const originalSigner = this.#signerManager.activeSigner;
         // No recovery method signs alone: the approver must be chosen, as for any signer change (for the error only).
         if (this.#signerManager.defaultRecovery == null) {
             this.#signerManager.resolveAuthorizingRecovery();
@@ -564,23 +563,22 @@ export class DeviceRecoveryService<C extends Chain> {
             );
         }
         const recoveryInternalConfig = signerDescriptor.buildInternalConfig(recovery, signerDescriptorContext);
-        this.#signerManager.setActiveSigner(
-            assembleSigner(this.#chain, recoveryInternalConfig, this.#options?.deviceSignerKeyStorage)
+        // The recovery method signs the approval as an argument; the shared active signer is never swapped to it.
+        const recoverySigner = assembleSigner(
+            this.#chain,
+            recoveryInternalConfig,
+            this.#options?.deviceSignerKeyStorage
         );
 
         try {
             if (pendingOperation.type === "signature") {
-                await this.#approveSignature(pendingOperation.id);
+                await this.#approveSignature(pendingOperation.id, recoverySigner);
             } else {
-                await this.#approveTransaction(pendingOperation.id);
+                await this.#approveTransaction(pendingOperation.id, recoverySigner);
             }
         } catch (error) {
             this.#signerManager.setActiveSigner(deviceSigner);
             throw error;
-        } finally {
-            if (this.#signerManager.activeSigner !== deviceSigner) {
-                this.#signerManager.setActiveSigner(originalSigner);
-            }
         }
         deviceSigner.status = "success";
         walletsLogger.info("wallet.recover.device.success", {
