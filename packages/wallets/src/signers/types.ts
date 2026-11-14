@@ -10,7 +10,7 @@ import type {
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 import type { Callbacks, Signer, SignerStatus } from "@/wallets/types";
-import { parseSignerLocator } from "../utils/signer-locator";
+import { hasQuorumLocatorPrefix, parseSignerLocator } from "../utils/signer-locator";
 import { InvalidSignerError } from "../utils/errors";
 
 export type ExternalWalletSignerConfig = {
@@ -341,10 +341,24 @@ export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
       ? EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
       : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig;
 
-// api-key and device are never quorum members; Solana also takes no passkey members.
-export type QuorumMemberConfig<C extends Chain> = C extends SolanaChain
-    ? Exclude<SignerConfigForChain<C>, ApiKeySignerConfig | DeviceSignerConfig | PasskeySignerConfig>
-    : Exclude<SignerConfigForChain<C>, ApiKeySignerConfig | DeviceSignerConfig>;
+/** A passkey member, given by its registered credential: the SDK creates no passkey for a member. */
+export type PasskeyQuorumMemberConfig = {
+    type: "passkey";
+    id: string;
+    name: string;
+    publicKey: { x: string; y: string };
+};
+
+// A member's signer config, or only its identity when another device holds its key; the API gets identity fields only.
+// api-key and device are never members; Solana also takes no passkey members.
+export type QuorumMemberConfig<C extends Chain> =
+    | (EmailSignerConfig & { email: string })
+    | (PhoneSignerConfig & { phone: string })
+    | ExternalWalletSignerConfigForChain<C>
+    | ExternalWalletRegistrationConfig
+    | ServerSignerConfig
+    | ApiSourcedServerSignerConfig
+    | (C extends SolanaChain ? never : PasskeyQuorumMemberConfig);
 
 /** A quorum to create or add: `threshold` of its `members` must sign. */
 export type QuorumSignerConfig<C extends Chain> = {
@@ -352,6 +366,15 @@ export type QuorumSignerConfig<C extends Chain> = {
     threshold: number;
     members: Array<QuorumMemberConfig<C>>;
 };
+
+/** A quorum named by its locator, to remove it. A `QuorumSigner` from the wallet's lists is one too. */
+export type QuorumRef = { locator: QuorumLocator };
+
+/** True for `{ locator: "quorum:…" }`, whether or not its id is well formed; callers check the id. */
+export function isQuorumRef(target: QuorumRef | { type: string }): target is QuorumRef {
+    const { locator } = target as Partial<QuorumRef>;
+    return locator != null && hasQuorumLocatorPrefix(locator);
+}
 
 ////////////////////////////////////////////////////////////
 // Signer locator types

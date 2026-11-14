@@ -1705,7 +1705,11 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
         solanaWallet = await createMockWallet("solana", mockApiClient);
         stellarWallet = await createMockWallet("stellar", mockApiClient);
         mockApiClient.registerRecoveryMethod.mockResolvedValue({
-            recoveryMethods: { type: "external-wallet", address: "NewRecovery555" },
+            recoveryMethods: {
+                type: "external-wallet",
+                address: "NewRecovery555",
+                locator: "external-wallet:NewRecovery555",
+            },
             tx: pendingTransaction,
         } as any);
         mockApiClient.removeRecoveryMethod.mockResolvedValue(pendingTransaction as any);
@@ -1721,7 +1725,11 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
                 approver: "api-key",
             });
             expect(mockApiClient.getTransaction).toHaveBeenCalled();
-            expect(result).toEqual({ transactionId: "txn-recovery", status: "success" });
+            expect(result).toEqual({
+                transactionId: "txn-recovery",
+                status: "success",
+                locator: "external-wallet:NewRecovery555",
+            });
             expect(solanaWallet.recoveryMethods).toEqual([
                 { type: "api-key" },
                 { type: "external-wallet", address: "NewRecovery555" },
@@ -1744,13 +1752,22 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
                 { prepareOnly: true }
             );
 
-            expect(result).toEqual({ transactionId: "txn-recovery", status: undefined });
+            expect(result).toEqual({
+                transactionId: "txn-recovery",
+                status: undefined,
+                locator: "external-wallet:NewRecovery555",
+            });
             expect(mockApiClient.approveTransaction).not.toHaveBeenCalled();
             expect(mockApiClient.getTransaction).not.toHaveBeenCalled();
             expect(solanaWallet.recoveryMethods).toEqual([{ type: "api-key" }]);
         });
 
         it("registers the recovery method on EVM with the wallet's chain and reads the transaction id from tx", async () => {
+            mockApiClient.registerRecoveryMethod.mockResolvedValueOnce({
+                recoveryMethods: { type: "external-wallet", address: "0x456", locator: "external-wallet:0x456" },
+                tx: pendingTransaction,
+            } as any);
+
             const result = await evmWallet.addRecoveryMethod({ type: "external-wallet", address: "0x456" });
 
             expect(mockApiClient.registerRecoveryMethod).toHaveBeenCalledWith(expect.any(String), {
@@ -1758,7 +1775,11 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
                 approver: "api-key",
                 chain: "base-sepolia",
             });
-            expect(result).toEqual({ transactionId: "txn-recovery", status: "success" });
+            expect(result).toEqual({
+                transactionId: "txn-recovery",
+                status: "success",
+                locator: "external-wallet:0x456",
+            });
             expect(evmWallet.recoveryMethods).toEqual([
                 { type: "api-key" },
                 { type: "external-wallet", address: "0x456" },
@@ -2787,7 +2808,11 @@ describe("Wallet - useSigner()", () => {
             it("sends the recovery signer selected with useSigner as the approver of addRecoveryMethod / removeRecoveryMethod", async () => {
                 const wallet = await makeWallet();
                 mockApiClient.registerRecoveryMethod.mockResolvedValue({
-                    recoveryMethods: { type: "external-wallet", address: "ThirdRecovery777" },
+                    recoveryMethods: {
+                        type: "external-wallet",
+                        address: "ThirdRecovery777",
+                        locator: "external-wallet:ThirdRecovery777",
+                    },
                     tx: { id: "txn-add-recovery", status: "awaiting-approval" },
                 } as any);
                 mockApiClient.removeRecoveryMethod.mockResolvedValue({
