@@ -15,6 +15,7 @@
     "hidePageTitle": true,
     "parametersFormat": "table",
     "classPropertiesFormat": "table",
+    "useHTMLAnchors": true,
     "gitRevision": "main"
     // "theme": "crossmintTheme"
 }
