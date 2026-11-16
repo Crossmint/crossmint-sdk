@@ -1,5 +1,27 @@
 # @crossmint/client-sdk-react-ui
 
+## 5.3.1
+
+### Patch Changes
+
+- b0c2af7: `CrossmintAgentCardAuthorization`, `OrderIntentVerification` and `CrossmintCvcRecollection` now send SDK logs to Crossmint for each step of the card authorization (start, order intent created, rail selected, verification started, succeeded, failed or abandoned, authorized). The logs carry ids and error types only, never card data, JWTs or keys. In the browser, SDK logs still waiting to be sent are now sent when the page is closed.
+- Updated dependencies [b0c2af7]
+- Updated dependencies [2132d18]
+- Updated dependencies [8f12147]
+- Updated dependencies [e83b497]
+- Updated dependencies [2a2be6a]
+- Updated dependencies [807df98]
+- Updated dependencies [e618b86]
+- Updated dependencies [657836f]
+- Updated dependencies [7ffe513]
+- Updated dependencies [324a663]
+- Updated dependencies [ce91fdd]
+  - @crossmint/common-sdk-base@0.13.5
+  - @crossmint/wallets-sdk@1.24.0
+  - @crossmint/client-sdk-base@5.2.2
+  - @crossmint/client-sdk-react-base@2.6.1
+  - @crossmint/common-sdk-auth@1.1.39
+
 ## 5.3.0
 
 ### Minor Changes
