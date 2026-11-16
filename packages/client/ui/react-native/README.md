@@ -9,7 +9,7 @@ Get a **client** API key from the [Crossmint developer console](https://docs.cro
 ## Installation
 
 ```bash
-npx expo install @crossmint/client-sdk-react-native-ui@v1
+npx expo install @crossmint/client-sdk-react-native-ui@legacy-v1
 ```
 
 This is the 1.x maintenance line, for apps on Expo SDK 54 to 57. It keeps getting fixes. Apps on Expo SDK 58 or later use 2.x (`@crossmint/client-sdk-react-native-ui@latest`).
