@@ -1,5 +1,5 @@
 import CryptoKit
-import DeviceSigner
+import CrossmintDeviceSigner
 import ExpoModulesCore
 import Security
 
