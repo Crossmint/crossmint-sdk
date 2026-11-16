@@ -2,7 +2,10 @@ import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { StrictMode, createRef } from "react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import type { CrossmintPaymentMethodManagementRef } from "@crossmint/client-sdk-base";
+import type {
+    CrossmintPaymentMethodManagementProps,
+    CrossmintPaymentMethodManagementRef,
+} from "@crossmint/client-sdk-base";
 import { CrossmintPaymentMethodManagement } from "./CrossmintPaymentMethodManagement";
 
 const mocks = vi.hoisted(() => ({
@@ -38,6 +41,7 @@ const CARD = {
     },
 } as const;
 const SAVED = { status: "saved", paymentMethod: CARD } as const;
+const SKELETON = "crossmint-payment-method-management.skeleton";
 
 function mount({ load = true, onSelected }: { load?: boolean; onSelected?: (method: unknown) => void } = {}) {
     const ref = createRef<CrossmintPaymentMethodManagementRef>();
@@ -215,6 +219,75 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         const newListener = mocks.on.mock.calls.find(([event]) => event === "ui:height.changed")?.[1];
         act(() => newListener?.({ height: 500 }));
         expect(newIframe.style.height).toBe("500px");
+    });
+
+    test("shows the card form's skeleton until the form is ready and has a height", () => {
+        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+        render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" />);
+        const iframe = screen.getByRole("crossmint-payment-method-management.iframe");
+        expect(screen.getByTestId(SKELETON)).toBeTruthy();
+        expect(iframe.style.opacity).toBe("0");
+
+        act(() => listener("payment-method:ready")?.({}));
+        expect(screen.getByTestId(SKELETON)).toBeTruthy();
+
+        act(() => listener("ui:height.changed")?.({ height: 198 }));
+        expect(screen.queryByTestId(SKELETON)).toBeNull();
+        expect(iframe.style.opacity).toBe("1");
+        expect(iframe.style.position).toBe("");
+    });
+
+    test("shows the skeleton again when the iframe reloads in place, until the new form is ready", () => {
+        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+        render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" />);
+        const iframe = screen.getByRole("crossmint-payment-method-management.iframe");
+        fireEvent.load(iframe);
+        act(() => listener("ui:height.changed")?.({ height: 198 }));
+        act(() => listener("payment-method:ready")?.({}));
+        expect(screen.queryByTestId(SKELETON)).toBeNull();
+
+        fireEvent.load(iframe);
+        expect(screen.getByTestId(SKELETON)).toBeTruthy();
+
+        act(() => listener("payment-method:ready")?.({}));
+        expect(screen.queryByTestId(SKELETON)).toBeNull();
+    });
+
+    test("shows the skeleton again when a prop change reloads the iframe", () => {
+        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+        const view = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" />);
+        act(() => listener("ui:height.changed")?.({ height: 198 }));
+        act(() => listener("payment-method:ready")?.({}));
+
+        view.rerender(<CrossmintPaymentMethodManagement jwt="new-buyer" />);
+
+        expect(screen.getByTestId(SKELETON)).toBeTruthy();
+    });
+
+    test("styles the skeleton's fields from the appearance", () => {
+        render(
+            <CrossmintPaymentMethodManagement
+                jwt="buyer-jwt"
+                appearance={{
+                    variables: { borderRadius: "4px", colors: { borderPrimary: "#111111" } },
+                    rules: { Input: { colors: { background: "#222222" } } },
+                }}
+            />
+        );
+        const field = screen.getByTestId(SKELETON).firstElementChild as HTMLElement;
+        expect(field.style.borderRadius).toBe("4px");
+        expect(field.style.border).toBe("1px solid rgb(17, 17, 17)");
+        expect(field.style.backgroundColor).toBe("rgb(34, 34, 34)");
+    });
+
+    test.each<Partial<CrossmintPaymentMethodManagementProps>>([
+        { allowedModes: ["new", "existing"] },
+        { allowedModes: ["existing"] },
+        { allowedPaymentMethodTypes: ["bank-account-us", "card"] },
+    ])("shows no skeleton when the iframe may not open on the card form: %o", (formProps) => {
+        render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" {...formProps} />);
+        expect(screen.queryByTestId(SKELETON)).toBeNull();
+        expect(screen.getByRole("crossmint-payment-method-management.iframe").style.opacity).toBe("1");
     });
 
     test("calls onReady and onChange with the iframe's form state, and only for the live iframe", () => {

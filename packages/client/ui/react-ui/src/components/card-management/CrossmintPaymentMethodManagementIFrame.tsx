@@ -10,6 +10,7 @@ import {
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { generateRandomString } from "@crossmint/client-sdk-window";
 import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { CardFormSkeleton } from "./CardFormSkeleton";
 
 const useCommittedLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 // A save is two Basis Theory tokenizations, the create call and the card art lookup.
@@ -103,6 +104,9 @@ const PaymentMethodConnection = forwardRef<
     // new client.
     const [reloads, setReloads] = useState(0);
     const sawFirstLoad = useRef(false);
+    // Until the form is ready, a card form shows its skeleton and the iframe draws unseen behind it.
+    const [formReady, setFormReady] = useState(false);
+    const showSkeleton = showsCardFormFirst(props) && !(formReady && height > 0);
     const clientRef = useRef<{
         reloads: number;
         client: PaymentMethodManagementIFrameEmitter;
@@ -133,6 +137,7 @@ const PaymentMethodConnection = forwardRef<
             // The iframe navigated in place: the URL is the same, but the form starts over.
             if (reloads > 0) {
                 reportReload(lastChange, latestProps.current.onChange);
+                setFormReady(false);
             }
             const client = iframeService.iframe.createClient(iframe.current);
             // Keep successful readiness, but discard a failed handshake so a later
@@ -168,6 +173,7 @@ const PaymentMethodConnection = forwardRef<
         });
         const readyListener = client.on("payment-method:ready", () => {
             if (connection.current === active) {
+                setFormReady(true);
                 latestProps.current.onReady?.();
             }
         });
@@ -254,34 +260,45 @@ const PaymentMethodConnection = forwardRef<
     }));
 
     return (
-        <iframe
-            ref={iframe}
-            src={url}
-            onLoad={() => {
-                if (!sawFirstLoad.current) {
-                    sawFirstLoad.current = true;
-                    return;
-                }
-                setReloads((n) => n + 1);
-            }}
-            id="crossmint-payment-method-management.iframe"
-            role="crossmint-payment-method-management.iframe"
-            allow="payment *; microphone; camera"
-            style={{
-                boxShadow: "none",
-                border: "none",
-                padding: "0px",
-                width: "100%",
-                minWidth: "100%",
-                overflow: "hidden",
-                display: "block",
-                userSelect: "none",
-                transform: "translate(0px)",
-                opacity: "1",
-                transition: "ease 0s, opacity 0.4s ease 0.1s",
-                height: `${height}px`,
-                backgroundColor: "transparent",
-            }}
-        />
+        <div style={{ position: "relative", width: "100%" }} aria-busy={showSkeleton || undefined}>
+            {showSkeleton ? <CardFormSkeleton appearance={props.appearance} /> : null}
+            <iframe
+                ref={iframe}
+                src={url}
+                onLoad={() => {
+                    if (!sawFirstLoad.current) {
+                        sawFirstLoad.current = true;
+                        return;
+                    }
+                    setReloads((n) => n + 1);
+                }}
+                id="crossmint-payment-method-management.iframe"
+                role="crossmint-payment-method-management.iframe"
+                allow="payment *; microphone; camera"
+                style={{
+                    boxShadow: "none",
+                    border: "none",
+                    padding: "0px",
+                    width: "100%",
+                    minWidth: "100%",
+                    overflow: "hidden",
+                    display: "block",
+                    userSelect: "none",
+                    transform: "translate(0px)",
+                    opacity: "1",
+                    transition: "ease 0s, opacity 0.4s ease 0.1s",
+                    height: `${height}px`,
+                    backgroundColor: "transparent",
+                    ...(showSkeleton
+                        ? { position: "absolute", top: 0, left: 0, opacity: "0", pointerEvents: "none" }
+                        : {}),
+                }}
+            />
+        </div>
     );
 });
+
+// With saved methods allowed, the iframe may open on the saved list instead; other types have their own forms.
+function showsCardFormFirst({ allowedModes, allowedPaymentMethodTypes }: CrossmintPaymentMethodManagementProps) {
+    return !allowedModes?.includes("existing") && (allowedPaymentMethodTypes?.[0] ?? "card") === "card";
+}
