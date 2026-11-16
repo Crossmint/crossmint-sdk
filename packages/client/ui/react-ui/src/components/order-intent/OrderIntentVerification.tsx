@@ -138,13 +138,28 @@ export function OrderIntentVerification({
             }
         }
 
+        let abandonLogged = false;
+        const logAbandoned = () => {
+            if (settled || abandonLogged) {
+                return;
+            }
+            abandonLogged = true;
+            loggerRef.current?.info("react.orderIntentVerification.abandoned", { ...logContext, lastAction });
+        };
+        // Closing the tab does not unmount the component, and the logger's own page-exit flush has already
+        // run by then, so the page exit logs the abandonment and flushes it again.
+        const onPageHide = () => {
+            logAbandoned();
+            void loggerRef.current?.flush({ keepalive: true });
+        };
+        window.addEventListener("pagehide", onPageHide);
+
         void verifyAllowance();
 
         return () => {
             cancelled = true;
-            if (!settled) {
-                loggerRef.current?.info("react.orderIntentVerification.abandoned", { ...logContext, lastAction });
-            }
+            window.removeEventListener("pagehide", onPageHide);
+            logAbandoned();
             verification?.dispose();
         };
     }, [

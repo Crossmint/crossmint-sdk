@@ -471,18 +471,37 @@ function useFlowLifecycleLog(step: AgentCardAuthorizationStep, authorized: RefOb
     useEffect(() => {
         latestStep.current = step;
     }, [step]);
+    const logger = useContext(LoggerContext);
+    const loggerRef = useRef(logger);
+    useEffect(() => {
+        loggerRef.current = logger;
+    }, [logger]);
     useEffect(() => {
         log("info", "start");
-        return () => {
+        let abandonLogged = false;
+        const logAbandoned = () => {
             const last = latestStep.current;
             // `authorized` is set before onAuthorized runs, so a parent that unmounts this component from
             // onAuthorized (before the `done` step renders) is not logged as abandoned.
-            if (!authorized.current && last.kind !== "done") {
-                log("info", "abandoned", {
-                    step: last.kind,
-                    ...(last.kind === "select" ? {} : { orderIntentId: last.orderIntent.orderIntentId }),
-                });
+            if (abandonLogged || authorized.current || last.kind === "done") {
+                return;
             }
+            abandonLogged = true;
+            log("info", "abandoned", {
+                step: last.kind,
+                ...(last.kind === "select" ? {} : { orderIntentId: last.orderIntent.orderIntentId }),
+            });
+        };
+        // Closing the tab does not unmount the component, and the logger's own page-exit flush has already
+        // run by then, so the page exit logs the abandonment and flushes it again.
+        const onPageHide = () => {
+            logAbandoned();
+            void loggerRef.current?.flush({ keepalive: true });
+        };
+        window.addEventListener("pagehide", onPageHide);
+        return () => {
+            window.removeEventListener("pagehide", onPageHide);
+            logAbandoned();
         };
     }, [log]);
 }
