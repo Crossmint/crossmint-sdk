@@ -44,9 +44,13 @@ vi.mock("../order-intent", () => ({
     },
 }));
 
-vi.mock("@crossmint/client-sdk-react-base", () => ({
-    useCrossmint: () => stubs.crossmint,
-}));
+vi.mock("@crossmint/client-sdk-react-base", async () => {
+    const { createContext } = await vi.importActual<typeof import("react")>("react");
+    return {
+        useCrossmint: () => stubs.crossmint,
+        createLoggerContext: () => createContext(null),
+    };
+});
 
 // A real ApiClient, so requests go through the shared fetch wrapper and only fetch is mocked.
 // It carries the jwt it was built with, so a request's bearer token shows which client sent it.
@@ -241,7 +245,6 @@ describe("<CrossmintAgentCardAuthorization />", () => {
         });
 
         test("still creates the order intent when the registration PUT fails, so encrypted-card gets its turn", async () => {
-            const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
             fetchMock
                 .mockResolvedValueOnce(json(404, { message: "not found" }))
                 .mockResolvedValueOnce(json(400, { message: "consumer email required" }))
@@ -254,11 +257,9 @@ describe("<CrossmintAgentCardAuthorization />", () => {
             expect(onAuthorized.mock.calls[0][0].rail).toEqual({ rail: "encrypted-card" });
             expect(onError).not.toHaveBeenCalled();
             expect(requests()).toHaveLength(3);
-            warn.mockRestore();
         });
 
         test("reports registration_failed when the PUT failed and the order intent has no usable rail", async () => {
-            const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
             fetchMock
                 .mockResolvedValueOnce(json(404, { message: "not found" }))
                 .mockResolvedValueOnce(json(400, { message: "card not eligible" }))
@@ -273,7 +274,6 @@ describe("<CrossmintAgentCardAuthorization />", () => {
                 message: expect.stringContaining("card not eligible"),
             });
             expect(onAuthorized).not.toHaveBeenCalled();
-            warn.mockRestore();
         });
     });
 
