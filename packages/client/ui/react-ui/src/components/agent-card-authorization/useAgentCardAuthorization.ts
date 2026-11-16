@@ -416,12 +416,18 @@ function useAuthorizeCard(
             const existingId = cache.current?.get(key);
             if (existingId != null) {
                 const existing = await api.getOrderIntent(existingId);
-                log("info", "orderIntent.reused", { orderIntentId: existing.orderIntentId });
+                log("info", "orderIntent.reused", {
+                    orderIntentId: existing.orderIntentId,
+                    paymentMethodId: paymentMethod.id,
+                });
                 return existing;
             }
             const orderIntent = await api.createOrderIntent({ paymentMethodId: paymentMethod.id, ...request });
             cache.current?.set(key, orderIntent.orderIntentId);
-            log("info", "orderIntent.created", { orderIntentId: orderIntent.orderIntentId });
+            log("info", "orderIntent.created", {
+                orderIntentId: orderIntent.orderIntentId,
+                paymentMethodId: paymentMethod.id,
+            });
             return orderIntent;
         },
         [api, cache, latestProps, log]
