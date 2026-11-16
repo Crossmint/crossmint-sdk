@@ -104,9 +104,16 @@ const PaymentMethodConnection = forwardRef<
     // new client.
     const [reloads, setReloads] = useState(0);
     const sawFirstLoad = useRef(false);
-    // Until the form is ready, a card form shows its skeleton and the iframe draws unseen behind it.
+    // Until the form is ready, a card form shows its skeleton and the iframe draws unseen behind it,
+    // out of the tab order.
     const [formReady, setFormReady] = useState(false);
     const showSkeleton = showsCardFormFirst(props) && !(formReady && height > 0);
+    useCommittedLayoutEffect(() => {
+        // Set directly: React before 19 drops a boolean `inert` prop.
+        if (iframe.current != null) {
+            iframe.current.inert = showSkeleton;
+        }
+    }, [showSkeleton]);
     const clientRef = useRef<{
         reloads: number;
         client: PaymentMethodManagementIFrameEmitter;
@@ -290,7 +297,13 @@ const PaymentMethodConnection = forwardRef<
                     height: `${height}px`,
                     backgroundColor: "transparent",
                     ...(showSkeleton
-                        ? { position: "absolute", top: 0, left: 0, opacity: "0", pointerEvents: "none" }
+                        ? {
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              opacity: "0",
+                              pointerEvents: "none",
+                          }
                         : {}),
                 }}
             />

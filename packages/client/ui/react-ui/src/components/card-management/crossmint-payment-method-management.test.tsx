@@ -227,6 +227,7 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         const iframe = screen.getByRole("crossmint-payment-method-management.iframe");
         expect(screen.getByTestId(SKELETON)).toBeTruthy();
         expect(iframe.style.opacity).toBe("0");
+        expect(iframe.inert).toBe(true);
 
         act(() => listener("payment-method:ready")?.({}));
         expect(screen.getByTestId(SKELETON)).toBeTruthy();
@@ -235,6 +236,7 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         expect(screen.queryByTestId(SKELETON)).toBeNull();
         expect(iframe.style.opacity).toBe("1");
         expect(iframe.style.position).toBe("");
+        expect(iframe.inert).toBe(false);
     });
 
     test("shows the skeleton again when the iframe reloads in place, until the new form is ready", () => {
