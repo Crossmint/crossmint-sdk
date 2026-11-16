@@ -1,7 +1,0 @@
----
-"@crossmint/wallets-sdk": minor
----
-
-A key that is only a quorum member acts as its quorum. With no `signer` option, `send`, `sendTransaction` (every chain), `signMessage` and `signTypedData` create the request as that key's quorum, and throw `QuorumSelectionAmbiguousError` when the key is a member of several quorums. `signMessage` and `signTypedData` take a `signer` option, like `send`, so `signer: "quorum:<id>"` requests an ERC-1271 signature as that quorum. A request made as a quorum, named or inferred, is created unsigned and returned as with `prepareOnly: true`: `transactionId` with `hash` and `explorerLink` undefined, or `signatureId` with `signature` undefined. Members sign it later with `approve`. Pass `prepareOnly: true` when a quorum may act, so the return type matches. Other keys, and Stellar `upgrade` / `migrate`, send their signer as before. A creating call on a wallet whose recovery methods are all quorums, with no key selected, throws `RecoveryMethodRequiredError` naming the quorums. `useSigner` and `useRecoveryMethod` with a quorum throw `InvalidSignerError`: pass a member's key instead. `QuorumSignerNotSupportedError` is now thrown only on Solana, which has no quorum approvals.
-
-Only recovery methods and delegated quorums installed on the request's chain count when a member key's role is inferred: an entry whose add still awaits approval, or one installed on another chain only, is neither chosen nor a reason for `QuorumSelectionAmbiguousError`.
