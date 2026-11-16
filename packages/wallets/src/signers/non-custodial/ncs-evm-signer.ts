@@ -1,8 +1,7 @@
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
-import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
+import { NonCustodialSigner } from "./ncs-signer";
 import { PersonalMessage } from "ox";
 import { isHex, toHex, type Hex } from "viem";
-import { walletsLogger } from "../../logger";
 
 export class EVMNonCustodialSigner extends NonCustodialSigner {
     constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
@@ -21,32 +20,13 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
 
     private async sign(raw: string): Promise<{ signature: string }> {
         await this.handleAuthRequired();
-        const jwt = this.getJwtOrThrow();
 
         const hexString = raw.replace("0x", "");
-
-        walletsLogger.info("sign: sending request", { keyType: "secp256k1" });
-        const startTime = Date.now();
-        const res = await this.config.clientTEEConnection?.sendAction({
-            event: "request:sign",
-            responseEvent: "response:sign",
-            data: {
-                authData: {
-                    jwt,
-                    apiKey: this.config.crossmint.apiKey,
-                },
-                data: {
-                    keyType: "secp256k1",
-                    bytes: hexString,
-                    encoding: "hex",
-                    authId: this.getAuthId(),
-                },
-            },
-            options: DEFAULT_EVENT_OPTIONS,
-        });
-        walletsLogger.info("sign: response received", {
-            status: res?.status,
-            durationMs: Date.now() - startTime,
+        const res = await this.requestSignature({
+            keyType: "secp256k1",
+            bytes: hexString,
+            encoding: "hex",
+            authId: this.getAuthId(),
         });
 
         if (res?.status === "error") {

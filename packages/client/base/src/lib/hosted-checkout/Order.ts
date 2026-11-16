@@ -9,6 +9,7 @@ declare const orderSchema: z.ZodObject<
             readonly EN_US: "en-US";
             readonly ES_ES: "es-ES";
             readonly FR_FR: "fr-FR";
+            readonly FR_CA: "fr-CA";
             readonly IT_IT: "it-IT";
             readonly KO_KR: "ko-KR";
             readonly PT_PT: "pt-PT";
@@ -4123,6 +4124,7 @@ declare const orderSchema: z.ZodObject<
             | "en-US"
             | "es-ES"
             | "fr-FR"
+            | "fr-CA"
             | "it-IT"
             | "ko-KR"
             | "pt-PT"
@@ -4772,6 +4774,7 @@ declare const orderSchema: z.ZodObject<
             | "en-US"
             | "es-ES"
             | "fr-FR"
+            | "fr-CA"
             | "it-IT"
             | "ko-KR"
             | "pt-PT"

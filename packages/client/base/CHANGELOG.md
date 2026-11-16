@@ -1,5 +1,22 @@
 # @crossmint/client-sdk-base
 
+## 5.2.1
+
+### Patch Changes
+
+- Updated dependencies [a089de2]
+  - @crossmint/common-sdk-base@0.13.4
+
+## 5.2.0
+
+### Minor Changes
+
+- 8141911: `CrossmintPaymentMethodManagement` takes a `locale` prop, like the checkout, offramp and identity verification components. `Locale` adds `fr-CA` (Canadian French), so every component that takes a `locale` accepts it.
+
+### Patch Changes
+
+- c63b063: `CrossmintCheckoutProvider` now accepts order updates only from the checkout window that the SDK opened, and ignores updates with a bad shape. The hosted checkout service's `createWindow` now returns the window it opens.
+
 ## 5.1.0
 
 ### Minor Changes

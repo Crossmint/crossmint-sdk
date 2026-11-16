@@ -7,13 +7,14 @@ export class StellarServerSigner implements SignerAdapter<"server"> {
     type = "server" as const;
     private _address: string;
     private _locator: ServerSignerLocator;
-    private secretKey: Uint8Array;
+    // `#` keeps the key out of console.log, util.inspect and JSON.stringify output.
+    readonly #secretKey: Uint8Array;
 
     constructor(config: ServerInternalSignerConfig) {
         const keypair = ed25519KeypairFromSeed(config.derivedKeyBytes);
         this._address = encodeStellarPublicKey(keypair.publicKey);
         this._locator = config.locator;
-        this.secretKey = keypair.secretKey;
+        this.#secretKey = keypair.secretKey;
         // Wipe the input derived key bytes now that the keypair has been constructed
         secureWipe(config.derivedKeyBytes);
     }
@@ -31,7 +32,7 @@ export class StellarServerSigner implements SignerAdapter<"server"> {
             throw new Error("StellarServerSigner.signMessage: expected a base64-encoded string");
         }
         const messageBytes = Buffer.from(message, "base64");
-        const signatureBytes = ed25519Sign(messageBytes, this.secretKey);
+        const signatureBytes = ed25519Sign(messageBytes, this.#secretKey);
         return { signature: Buffer.from(signatureBytes).toString("base64") };
     }
 

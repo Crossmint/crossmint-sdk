@@ -2,6 +2,10 @@ import { CrossmintErrors } from "@crossmint/common-sdk-base";
 import { describe, expect, test } from "vitest";
 
 import {
+    CollateralFundingTemporarilyUnavailableError,
+    CollateralFundsInTransitError,
+    CollateralWithdrawalIntegrityError,
+    CollateralWithdrawalUnavailableError,
     DuplicateRecoverySignerError,
     JWTDecryptionError,
     JWTExpiredError,
@@ -9,15 +13,24 @@ import {
     JWTInvalidError,
     NotAuthorizedError,
     NotSupportedOnApiVersionError,
+    QuorumRequestError,
+    QuorumSelectionAmbiguousError,
     RecoveryAdminSignerConflictError,
     RecoveryNotSupportedOnChainError,
     RecoverySignerConflictError,
     RecoverySignerLimitExceededError,
     RecoveryMethodRequiredError,
     SignerRequiredError,
+    TransactionExpiredError,
+    TransactionFailedError,
     throwIfCrossmintApiAuthError,
+    throwIfQuorumApiError,
     throwIfRecoverySignerApiError,
+    throwIfRequestExpired,
+    TransactionNotCreatedError,
+    transactionNotCreatedError,
 } from "./errors";
+import { createExpiredRequest, TRANSACTION_EXPIRED_API_MESSAGE } from "../wallets/__tests__/test-helpers";
 
 describe("throwIfCrossmintApiAuthError", () => {
     test("throws JWTExpiredError with the reported expiry when the code is ERROR_JWT_EXPIRED", () => {
@@ -128,5 +141,239 @@ describe("throwIfRecoverySignerApiError", () => {
         expect(() => throwIfRecoverySignerApiError({ error: true, message: "Wallet not found" })).not.toThrow();
         expect(() => throwIfRecoverySignerApiError({ error: true, code: "SOME_OTHER_ERROR" })).not.toThrow();
         expect(() => throwIfRecoverySignerApiError(null)).not.toThrow();
+    });
+});
+
+describe("throwIfQuorumApiError", () => {
+    // The quorum codes the wallets API defines (crossbit-main `constants/error.ts` and `quorum-errors.ts`).
+    const QUORUM_ERROR_CODES = [
+        "QUORUM_SIGNER_UNSUPPORTED",
+        "QUORUM_SIZE_INVALID",
+        "QUORUM_MEMBER_DUPLICATED",
+        "QUORUM_MEMBER_TYPE_UNSUPPORTED",
+        "QUORUM_MEMBER_TYPE_NOT_ALLOWED",
+        "NESTED_QUORUM_NOT_ALLOWED",
+        "QUORUM_TOO_FEW_MEMBERS",
+        "QUORUM_THRESHOLD_EXCEEDS_MEMBERS",
+        "SIGNER_IS_QUORUM_MEMBER",
+        "QUORUM_APPROVING_MEMBERS_COUNT_MISMATCH",
+        "QUORUM_APPROVING_MEMBER_INVALID",
+        "APPROVING_MEMBERS_NOT_APPLICABLE",
+        "SCOPED_QUORUM_CANNOT_SIGN",
+    ];
+
+    describe("when the code is a quorum error code", () => {
+        test.each(QUORUM_ERROR_CODES)(
+            "throws QuorumRequestError with reason %s, the API message and the body",
+            (code) => {
+                const body = { error: true, code, message: `rejected: ${code}` };
+
+                try {
+                    throwIfQuorumApiError(body);
+                    expect.fail("Expected throwIfQuorumApiError to throw");
+                } catch (error) {
+                    expect(error).toBeInstanceOf(QuorumRequestError);
+                    const quorumError = error as QuorumRequestError;
+                    expect(quorumError.reason).toBe(code);
+                    expect(quorumError.code).toBe(CrossmintErrors.SIGNER_INVALID);
+                    expect(quorumError.message).toBe(`rejected: ${code}`);
+                    expect(quorumError.details).toBe(JSON.stringify(body));
+                }
+            }
+        );
+
+        test("falls back to a message naming the code when the API sends none", () => {
+            expect(() => throwIfQuorumApiError({ code: "QUORUM_TOO_FEW_MEMBERS" })).toThrow(
+                "The wallets API rejected the quorum request: QUORUM_TOO_FEW_MEMBERS"
+            );
+        });
+    });
+
+    describe("when the code is TRANSACTION_EXPIRED", () => {
+        const body = { code: "TRANSACTION_EXPIRED", message: "The transaction expired before it could be submitted." };
+
+        test("throws TransactionExpiredError, a TransactionFailedError, with the API message and the body", () => {
+            try {
+                throwIfQuorumApiError(body, { transactionId: "tx-1" });
+                expect.fail("Expected throwIfQuorumApiError to throw");
+            } catch (error) {
+                expect(error).toBeInstanceOf(TransactionExpiredError);
+                expect(error).toBeInstanceOf(TransactionFailedError);
+                const expiredError = error as TransactionExpiredError;
+                expect(expiredError.code).toBe(CrossmintErrors.TRANSACTION_FAILED);
+                expect(expiredError.message).toBe(body.message);
+                expect(expiredError.details).toBe(JSON.stringify(body));
+            }
+        });
+
+        test("falls back to the API's expiry message when the API sends none", () => {
+            expect(() => throwIfQuorumApiError({ code: "TRANSACTION_EXPIRED" })).toThrow(
+                TRANSACTION_EXPIRED_API_MESSAGE
+            );
+        });
+
+        test.each([
+            { request: { transactionId: "tx-1" }, kind: "transaction" },
+            { request: { signatureId: "sig-1" }, kind: "signature" },
+            { request: {}, kind: "unknown" },
+        ])("carries the $kind request id the call site passed", ({ request }) => {
+            try {
+                throwIfQuorumApiError(body, request);
+                expect.fail("Expected throwIfQuorumApiError to throw");
+            } catch (error) {
+                const expiredError = error as TransactionExpiredError;
+                expect({
+                    transactionId: expiredError.transactionId,
+                    signatureId: expiredError.signatureId,
+                }).toEqual({ transactionId: undefined, signatureId: undefined, ...request });
+            }
+        });
+    });
+
+    describe("when the body has no code or an unrelated code", () => {
+        test("returns without throwing", () => {
+            expect(() => throwIfQuorumApiError({ error: true, message: "Wallet not found" })).not.toThrow();
+            expect(() => throwIfQuorumApiError({ error: true, code: "SIGNER_LIMIT_EXCEEDED" })).not.toThrow();
+            expect(() => throwIfQuorumApiError({ code: "QUORUM_MEMBER_NOT_DESIGNATED" })).not.toThrow();
+            expect(() => throwIfQuorumApiError(null)).not.toThrow();
+        });
+    });
+});
+
+describe("throwIfRequestExpired", () => {
+    describe("when the request failed because its approval window closed", () => {
+        test.each([
+            { kind: "transaction", request: { transactionId: "tx-1" } },
+            { kind: "signature", request: { signatureId: "sig-1" } },
+        ])("throws TransactionExpiredError with the $kind id and the response as details", ({ request }) => {
+            const response = createExpiredRequest("request-1");
+
+            try {
+                throwIfRequestExpired(response, request);
+                expect.fail("Expected throwIfRequestExpired to throw");
+            } catch (error) {
+                expect(error).toBeInstanceOf(TransactionExpiredError);
+                const expiredError = error as TransactionExpiredError;
+                expect(expiredError.message).toBe(TRANSACTION_EXPIRED_API_MESSAGE);
+                expect(expiredError.details).toBe(JSON.stringify(response));
+                expect({
+                    transactionId: expiredError.transactionId,
+                    signatureId: expiredError.signatureId,
+                }).toEqual({ transactionId: undefined, signatureId: undefined, ...request });
+            }
+        });
+    });
+
+    describe("when the stored record carries the code with a reworded message", () => {
+        test("throws TransactionExpiredError, matching the code", () => {
+            const response = createExpiredRequest("request-1");
+            response.error.revert.reason = "Expired. Create a new transaction.";
+
+            expect(() => throwIfRequestExpired(response, { transactionId: "tx-1" })).toThrow(TransactionExpiredError);
+        });
+    });
+
+    describe("when the stored record predates the code and carries the message only", () => {
+        test("throws TransactionExpiredError, matching the message", () => {
+            const response = createExpiredRequest("request-1");
+            response.error.revert = { type: "wallet_authorization", reason: TRANSACTION_EXPIRED_API_MESSAGE } as never;
+
+            expect(() => throwIfRequestExpired(response, { signatureId: "sig-1" })).toThrow(TransactionExpiredError);
+        });
+    });
+
+    describe("when the request failed for another reason", () => {
+        test.each([
+            {
+                kind: "another revert reason",
+                error: { reason: "execution_reverted", revert: { type: "contract_call", reason: "out of gas" } },
+            },
+            { kind: "an error without a revert", error: { reason: "build_failed", message: "build failed" } },
+            { kind: "a string error", error: "boom" },
+            { kind: "no error", error: undefined },
+        ])("returns without throwing for $kind", ({ error }) => {
+            expect(() => throwIfRequestExpired({ id: "tx-1", status: "failed", error }, {})).not.toThrow();
+        });
+    });
+
+    describe("when the request has not failed", () => {
+        test.each(["awaiting-approval", "pending", "success"])(
+            "returns without throwing for status %s, even with the expiry reason",
+            (status) => {
+                expect(() => throwIfRequestExpired({ ...createExpiredRequest("tx-1"), status }, {})).not.toThrow();
+            }
+        );
+
+        test("returns without throwing for an API error body or null", () => {
+            expect(() => throwIfRequestExpired({ error: true, message: "Not found" }, {})).not.toThrow();
+            expect(() => throwIfRequestExpired(null, {})).not.toThrow();
+        });
+    });
+});
+
+describe("QuorumSelectionAmbiguousError", () => {
+    test("names every matching quorum and keeps their locators", () => {
+        const quorumLocators = [
+            "quorum:3f9c2b8e-5d1a-4c4f-9e2b-7a6d5c4b3a21",
+            "quorum:7b1d4e6a-2c3f-4a5b-9d8e-1f2a3b4c5d6e",
+        ] as const;
+
+        const error = new QuorumSelectionAmbiguousError([...quorumLocators]);
+
+        expect(error.quorumLocators).toEqual(quorumLocators);
+        expect(error.code).toBe(CrossmintErrors.SIGNER_INVALID);
+        for (const locator of quorumLocators) {
+            expect(error.message).toContain(locator);
+        }
+    });
+});
+
+describe("transactionNotCreatedError", () => {
+    const collateralCases = [
+        { code: "COLLATERAL_FUNDS_IN_TRANSIT", errorClass: CollateralFundsInTransitError, retryable: true },
+        {
+            code: "COLLATERAL_FUNDING_TEMPORARILY_UNAVAILABLE",
+            errorClass: CollateralFundingTemporarilyUnavailableError,
+            retryable: true,
+        },
+        {
+            code: "COLLATERAL_WITHDRAWAL_UNAVAILABLE",
+            errorClass: CollateralWithdrawalUnavailableError,
+            retryable: false,
+        },
+        {
+            code: "COLLATERAL_WITHDRAWAL_INTEGRITY_ERROR",
+            errorClass: CollateralWithdrawalIntegrityError,
+            retryable: false,
+        },
+    ];
+
+    test.each(collateralCases)("returns $errorClass.name for the $code code", ({ code, errorClass, retryable }) => {
+        const body = { error: true, code, message: "from the API" };
+
+        const error = transactionNotCreatedError(body, "Failed to send token");
+
+        expect(error).toBeInstanceOf(errorClass);
+        expect(error).toBeInstanceOf(TransactionNotCreatedError);
+        expect(error.code).toBe(CrossmintErrors.NO_TRANSACTION);
+        expect(error.apiErrorCode).toBe(code);
+        expect(error.retryable).toBe(retryable);
+        expect(error.message).toBe(`Failed to send token: ${JSON.stringify(body)}`);
+        expect(error.details).toBe(JSON.stringify(body));
+    });
+
+    test("keeps an unknown API code as apiErrorCode on the base error", () => {
+        const error = transactionNotCreatedError({ error: true, code: "SOMETHING_ELSE" }, "Failed to send token");
+
+        expect(error.constructor).toBe(TransactionNotCreatedError);
+        expect(error.apiErrorCode).toBe("SOMETHING_ELSE");
+        expect(error.retryable).toBe(false);
+    });
+
+    test("returns the base error without apiErrorCode when the response has no code", () => {
+        const error = transactionNotCreatedError({ error: true, message: "nope" }, "Failed to send token");
+
+        expect(error.constructor).toBe(TransactionNotCreatedError);
+        expect(error.apiErrorCode).toBeUndefined();
     });
 });

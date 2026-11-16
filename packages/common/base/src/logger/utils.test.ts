@@ -64,6 +64,38 @@ describe("redactSensitiveFields", () => {
         expect(result.error.message).toBe("rejected [REDACTED]");
         expect(result.error.stack).toBe("at [REDACTED]");
     });
+
+    it.each([
+        ["camelCase secret", { serverSecret: MASTER_SECRET_HEX }, { serverSecret: "0123...cdef" }],
+        ["snake_case secret", { master_secret: MASTER_SECRET_HEX }, { master_secret: "0123...cdef" }],
+        ["private key variant", { privateKeyHex: `0x${MASTER_SECRET_HEX}` }, { privateKeyHex: "0x01...cdef" }],
+        [
+            "kebab-case upper-case seed",
+            { "WALLET-SEED": new Uint8Array([200, 201, 202]) },
+            { "WALLET-SEED": "[REDACTED]" },
+        ],
+        ["mnemonic", { mnemonic: "abandon ability able about above absent" }, { mnemonic: "aban...sent" }],
+        ["createServerSigner key bytes", { keyBytes: new Uint8Array([200, 201, 202]) }, { keyBytes: "[REDACTED]" }],
+        // No known secret shape in these values: only key normalization can redact them.
+        ["kebab-case API key header", { "x-api-key": "pk_live_51HqT9xY2zR8mN3" }, { "x-api-key": "pk_l...8mN3" }],
+        ["snake_case token", { refresh_token: "rt_8f3Kq2LmZx91VbN4" }, { refresh_token: "[REDACTED]" }],
+    ])("redacts a %s key", (_, input, expected) => {
+        expect(redactSensitiveFields(input)).toEqual(expected);
+    });
+
+    it("keeps public key bytes readable", () => {
+        expect(redactSensitiveFields({ publicKeyBytes: [4, 17, 99] })).toEqual({ publicKeyBytes: [4, 17, 99] });
+    });
+
+    const nestIn = (levels: number, inner: unknown): unknown =>
+        levels === 0 ? inner : { level: nestIn(levels - 1, inner) };
+
+    it.each([
+        ["keeps an object at the depth limit", 10, { note: "kept" }, nestIn(10, { note: "kept" })],
+        ["truncates an object past the depth limit", 11, { note: "dropped" }, nestIn(11, "[TRUNCATED]")],
+    ])("%s", (_, levels, inner, expected) => {
+        expect(redactSensitiveFields(nestIn(levels, inner))).toEqual(expected);
+    });
 });
 
 describe("redactSensitiveFields with personal data", () => {

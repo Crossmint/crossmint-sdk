@@ -99,8 +99,11 @@ export type TransferScope = {
 
 export type Scope = TransferScope;
 
+/** A quorum as the API takes it: each member's identity fields only. */
+export type QuorumSignerInput = Extract<AddRecoveryMethodsV2025DtoClass["recoveryMethods"], { type: "quorum" }>;
+
 export type RegisterSignerParams = {
-    signer: SignerLocator | RegisterSignerPasskeyParams | SignerConfigForChain<Chain>;
+    signer: SignerLocator | RegisterSignerPasskeyParams | SignerConfigForChain<Chain> | QuorumSignerInput;
     chain?: RegisterSignerChain;
     scopes?: Scope[];
     deployImmediately?: boolean;

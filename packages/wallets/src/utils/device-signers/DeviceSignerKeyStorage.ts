@@ -4,6 +4,19 @@
  */
 
 export type BiometricPolicy = "always" | "session" | "none";
+
+/**
+ * When a device signer key asks the user for a fingerprint, face or screen lock before it signs.
+ * - `"none"` (default): the key signs with no prompt.
+ * - `"always"`: every signature needs a verification.
+ * - `"session"`: one verification lets the key sign for `biometricExpirationTime` seconds.
+ *
+ * The policy is fixed when the key is created. Keys that already exist keep their policy.
+ */
+export type DeviceSignerBiometricOptions =
+    | { biometricPolicy?: Exclude<BiometricPolicy, "session">; biometricExpirationTime?: never }
+    | { biometricPolicy: "session"; biometricExpirationTime: number };
+
 export abstract class DeviceSignerKeyStorage {
     constructor(protected readonly apiKey: string) {}
 
