@@ -1,3 +1,7 @@
 # Generated docs artifacts
 api.json
 docs/
+
+# Gradle output from building the native module inside an app
+android/build/
+android/.gradle/

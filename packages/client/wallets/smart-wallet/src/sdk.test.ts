@@ -15,11 +15,13 @@ describe("SmartWalletSDK", () => {
     let sdk: SmartWalletSDK;
 
     beforeEach(() => {
+        if (process.env.PREVIEW_SK_KEY == null) {
+            throw new Error("PREVIEW_SK_KEY must be set to run this test suite.");
+        }
         // Reset mocks before each test
         vi.clearAllMocks();
         sdk = SmartWalletSDK.init({
-            clientApiKey:
-                "sk_staging_A4vDwAp4t5az6fVQMpQK6qapBnAqgpxrrD35TaFQnyKgxehNbd959uZeaHjNCadWDXrgLRAK1CxeasZjtYEq4TbFkKMBBvbQ9oinAxQf8LbHsSYW2DMzT8fBko3YGLq9t7ZiXZjmgkTioxGVUUjyLtWLeBKwNUDLgpshWjaoR7pKRnSE9SqhwjQbiK62VKiBTdA3KvHsyG9k8mLMcKrDyfXp",
+            clientApiKey: process.env.PREVIEW_SK_KEY,
         });
     });
 

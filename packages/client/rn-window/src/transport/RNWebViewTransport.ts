@@ -1,6 +1,7 @@
 import "../polyfills";
 import type { z } from "zod";
-import type { WebViewMessageEvent, WebView } from "react-native-webview";
+import type { WebViewMessageEvent } from "react-native-webview";
+import type { WebViewInstance } from "../rn-webview/WebViewInstance";
 import type { EventMap, SimpleMessageEvent, Transport } from "@crossmint/client-sdk-window";
 import { generateRandomString } from "@crossmint/client-sdk-window";
 import type { RefObject } from "react";
@@ -10,7 +11,7 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
     private isWebView: boolean;
     private globalListenerAttached = false;
 
-    constructor(private webviewRef?: RefObject<WebView | null>) {
+    constructor(private webviewRef?: RefObject<WebViewInstance | null>) {
         this.isWebView = typeof (window as any).ReactNativeWebView !== "undefined";
     }
 

@@ -12,6 +12,8 @@ npm run dev
 
 ## Deployment
 
+Set `APP_URL` to the app's public origin (for example `https://your-app.example.com`). The server uses it to build the refresh route; locally it falls back to `http://localhost:3001`.
+
 First, build your app for production:
 
 ```sh

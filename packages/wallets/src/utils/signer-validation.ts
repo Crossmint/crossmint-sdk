@@ -1,8 +1,18 @@
 import { isEmailValid } from "@crossmint/common-sdk-auth";
 import { WalletCreationError } from "./errors";
 
-const signerConfigMismatchErrorMessage = (fieldPath: string, newValue: unknown, existingValue: unknown) =>
-    `Wallet signer configuration mismatch at "${fieldPath}" - expected "${existingValue}" from existing wallet but found "${newValue}"`;
+// The message names only the field path. The compared values are never echoed: the caller's
+// config can hold secrets (e.g. a server signer master secret) and the existing config comes from
+// the API response, so either value could end up in application logs and telemetry.
+const signerConfigMismatchErrorMessage = (fieldPath: string) =>
+    `Wallet signer configuration mismatch at "${fieldPath}": the signer passed does not match the existing wallet's signer`;
+
+/**
+ * Fields that are never compared against the existing wallet's config.
+ * They carry secret material, so comparing them against API-sourced data would let a
+ * malicious or compromised response probe the caller's secret, and they must never appear in error output.
+ */
+const NEVER_COMPARED_SIGNER_FIELDS = new Set(["secret"]);
 
 /**
  * Normalizes an email address following the same logic as the backend.
@@ -75,13 +85,18 @@ export function compareSignerConfigs(
 
     // Only compare keys that exist in both objects
     for (const key of Object.keys(newSignerConfig)) {
-        if (!(key in existingSignerConfig)) {
+        if (NEVER_COMPARED_SIGNER_FIELDS.has(key) || !(key in existingSignerConfig)) {
             continue;
         }
 
         const fieldPath = path ? `${path}.${key}` : key;
         const newValue = newSignerConfig[key];
         const existingValue = existingSignerConfig[key];
+
+        // Runtime-only callbacks (e.g. passkey or external wallet signing hooks) have no API counterpart.
+        if (typeof newValue === "function" || typeof existingValue === "function") {
+            continue;
+        }
 
         if (
             typeof newValue === "object" &&
@@ -97,7 +112,7 @@ export function compareSignerConfigs(
         } else if (
             normalizeValueForComparison(newValue, fieldPath) !== normalizeValueForComparison(existingValue, fieldPath)
         ) {
-            throw new WalletCreationError(signerConfigMismatchErrorMessage(fieldPath, newValue, existingValue));
+            throw new WalletCreationError(signerConfigMismatchErrorMessage(fieldPath));
         }
     }
 }

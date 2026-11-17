@@ -4,7 +4,7 @@ import { ApiClient } from "@crossmint/common-sdk-base";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
 import { CrossmintAgentCardAuthorization } from "./CrossmintAgentCardAuthorization";
 import { RAIL_POLL_INTERVAL_MS, RAIL_POLL_TIMEOUT_MS } from "./useAgentCardAuthorization";
@@ -20,14 +20,17 @@ const stubs = vi.hoisted(() => ({
 // Like the real iframe wrapper, the stub keeps the props of its first render for the
 // callbacks (it subscribes once), so a stale closure in the hook would surface here. The
 // rendered jwt attribute follows the live prop, like the real iframe src would.
-vi.mock("../card-management", () => ({
-    CrossmintPaymentMethodManagement: (props: Record<string, unknown>) => {
+vi.mock("../card-management/CrossmintPaymentMethodManagement", () => ({
+    CrossmintPaymentMethodManagement: forwardRef((props: Record<string, unknown>, ref) => {
         const firstProps = useRef(props);
         useEffect(() => {
             stubs.pmm.props = firstProps.current as Record<string, (value: unknown) => void>;
         }, []);
+        useImperativeHandle(ref, () => ({
+            submit: () => Promise.resolve({ status: "unavailable", message: "stub" }),
+        }));
         return <div data-testid="pmm" data-jwt={String(props.jwt)} />;
-    },
+    }),
 }));
 
 vi.mock("../order-intent", () => ({
@@ -41,9 +44,13 @@ vi.mock("../order-intent", () => ({
     },
 }));
 
-vi.mock("@crossmint/client-sdk-react-base", () => ({
-    useCrossmint: () => stubs.crossmint,
-}));
+vi.mock("@crossmint/client-sdk-react-base", async () => {
+    const { createContext } = await vi.importActual<typeof import("react")>("react");
+    return {
+        useCrossmint: () => stubs.crossmint,
+        createLoggerContext: () => createContext(null),
+    };
+});
 
 // A real ApiClient, so requests go through the shared fetch wrapper and only fetch is mocked.
 // It carries the jwt it was built with, so a request's bearer token shows which client sent it.
@@ -238,7 +245,6 @@ describe("<CrossmintAgentCardAuthorization />", () => {
         });
 
         test("still creates the order intent when the registration PUT fails, so encrypted-card gets its turn", async () => {
-            const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
             fetchMock
                 .mockResolvedValueOnce(json(404, { message: "not found" }))
                 .mockResolvedValueOnce(json(400, { message: "consumer email required" }))
@@ -251,11 +257,9 @@ describe("<CrossmintAgentCardAuthorization />", () => {
             expect(onAuthorized.mock.calls[0][0].rail).toEqual({ rail: "encrypted-card" });
             expect(onError).not.toHaveBeenCalled();
             expect(requests()).toHaveLength(3);
-            warn.mockRestore();
         });
 
         test("reports registration_failed when the PUT failed and the order intent has no usable rail", async () => {
-            const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
             fetchMock
                 .mockResolvedValueOnce(json(404, { message: "not found" }))
                 .mockResolvedValueOnce(json(400, { message: "card not eligible" }))
@@ -270,7 +274,6 @@ describe("<CrossmintAgentCardAuthorization />", () => {
                 message: expect.stringContaining("card not eligible"),
             });
             expect(onAuthorized).not.toHaveBeenCalled();
-            warn.mockRestore();
         });
     });
 

@@ -1,0 +1,64 @@
+---
+name: Label Greptile Approved
+
+# Keeps the `ai-approved` label in sync with Greptile's verdict, so AI-approved
+# PRs can be filtered with `label:ai-approved`. Greptile approvals are turned on
+# in the Greptile dashboard, not in greptile.json.
+#
+# Every Greptile review event (approval, changes requested, dismissal) triggers
+# the same reconcile: read Greptile's latest verdict from the API and add or
+# remove the label to match. Reading the current state, instead of trusting the
+# event payload, plus the per-PR concurrency group, means events that arrive
+# out of order can't leave a stale label.
+on:
+    pull_request_review:
+        types:
+            - submitted
+            - dismissed
+
+permissions: {}
+
+concurrency:
+    group: label-greptile-approved-${{ github.event.pull_request.number }}
+    cancel-in-progress: false
+
+env:
+    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    PR_NUMBER: ${{ github.event.pull_request.number }}
+    REPO: ${{ github.repository }}
+
+jobs:
+    sync-label:
+        name: Sync ai-approved label
+        runs-on: ubuntu-latest
+        if: github.event.review.user.login == 'greptile-apps[bot]'
+        timeout-minutes: 5
+        permissions:
+            pull-requests: write
+        steps:
+            - name: Sync label with Greptile's latest verdict
+              run: |
+                  # COMMENTED reviews don't change a reviewer's verdict, so the
+                  # latest APPROVED / CHANGES_REQUESTED / DISMISSED review is it.
+                  verdict=$(gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/reviews" \
+                    --jq '.[] | select(.user.login == "greptile-apps[bot]" and .state != "COMMENTED") | .state' \
+                    | tail -n 1)
+                  echo "Greptile verdict: ${verdict:-none}"
+
+                  labeled=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json labels \
+                    --jq '[.labels[].name] | index("ai-approved") != null')
+
+                  if [ "$verdict" = "APPROVED" ]; then
+                      if [ "$labeled" = "false" ]; then
+                          # Labels in this repo live only in GitHub; create it
+                          # on first use so --add-label never fails.
+                          gh label create "ai-approved" \
+                            --color "8250df" \
+                            --description "Approved by Greptile on its latest review" \
+                            --repo "$REPO" \
+                            2>/dev/null || true
+                          gh pr edit "$PR_NUMBER" --add-label "ai-approved" --repo "$REPO"
+                      fi
+                  elif [ "$labeled" = "true" ]; then
+                      gh pr edit "$PR_NUMBER" --remove-label "ai-approved" --repo "$REPO"
+                  fi

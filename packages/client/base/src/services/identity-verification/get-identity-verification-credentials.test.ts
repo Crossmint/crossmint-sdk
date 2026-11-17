@@ -16,6 +16,12 @@ describe("getIdentityVerificationCredentials", () => {
         expect(getIdentityVerificationCredentials(order({ kyc: credentials }))).toEqual(credentials);
     });
 
+    test("returns the session credentials of an order on the Crossmint verification flow", () => {
+        const credentials = { verificationId: "ver-1", clientSecret: "secret-1", deviceSessionKey: "device-1" };
+
+        expect(getIdentityVerificationCredentials(order({ kyc: credentials }))).toEqual(credentials);
+    });
+
     // A crypto order's preparation shape, which is what the type actually models today.
     test("returns undefined when the preparation is not a verification one", () => {
         expect(getIdentityVerificationCredentials(order({ chain: "base", payerAddress: "0x1" }))).toBeUndefined();

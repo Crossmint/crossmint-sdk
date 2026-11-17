@@ -1,4 +1,5 @@
 import type { WebAuthnP256 } from "ox";
+import type { VersionedTransaction } from "@solana/web3.js";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type {
     exportSignerInboundEvents,
@@ -6,21 +7,38 @@ import type {
     signerInboundEvents,
     signerOutboundEvents,
 } from "@crossmint/client-signers";
-import type {
-    Crossmint,
-    EvmExternalWalletSignerConfig,
-    SolanaExternalWalletSignerConfig,
-    StellarExternalWalletSignerConfig,
-} from "@crossmint/common-sdk-base";
+import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
-import type { Callbacks, SignerStatus } from "@/wallets/types";
+import type { Callbacks, Signer, SignerStatus } from "@/wallets/types";
+import { hasQuorumLocatorPrefix, parseSignerLocator } from "../utils/signer-locator";
+import { InvalidSignerError } from "../utils/errors";
 
-export type {
-    ExternalWalletSignerConfig,
-    EvmExternalWalletSignerConfig,
-    SolanaExternalWalletSignerConfig,
-    StellarExternalWalletSignerConfig,
-} from "@crossmint/common-sdk-base";
+export type ExternalWalletSignerConfig = {
+    type: "external-wallet";
+    address: string;
+    onSign:
+        | ((transaction: VersionedTransaction) => Promise<VersionedTransaction>)
+        | ((payload: string) => Promise<string>);
+};
+
+export type SolanaExternalWalletSignerConfig = {
+    type: "external-wallet";
+    address: string;
+    onSign: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
+    onSignBytes?: (payload: string) => Promise<string>;
+};
+
+export type EvmExternalWalletSignerConfig = {
+    type: "external-wallet";
+    address: string;
+    onSign: (payload: string) => Promise<string>;
+};
+
+export type StellarExternalWalletSignerConfig = {
+    type: "external-wallet";
+    address: string;
+    onSign: (payload: string) => Promise<string>;
+};
 
 export type ExternalWalletRegistrationConfig = {
     type: "external-wallet";
@@ -134,7 +152,71 @@ export function isApiSourcedServerSignerConfig(config: { type: string }): config
     return config.type === "server" && !("secret" in config);
 }
 
-export type RecoverySignerConfigForChain<C extends Chain> = SignerConfigForChain<C> | ApiSourcedServerSignerConfig;
+export type QuorumLocator = `quorum:${string}`;
+
+// Crossmint assigns quorum ids as version-4 UUIDs (the API's own locator pattern).
+const QUORUM_LOCATOR_PATTERN = /^quorum:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+export function isQuorumLocator(locator: string): locator is QuorumLocator {
+    return QUORUM_LOCATOR_PATTERN.test(locator);
+}
+
+export function requireQuorumLocator(locator: string): QuorumLocator {
+    if (!isQuorumLocator(locator)) {
+        throw new Error(`Malformed quorum locator: ${locator}`);
+    }
+    return locator;
+}
+
+// api-key and device signers are never quorum members (007 §7, "Config").
+const QUORUM_MEMBER_TYPES = ["email", "phone", "external-wallet", "server", "passkey"] as const;
+
+export type QuorumMemberType = (typeof QUORUM_MEMBER_TYPES)[number];
+
+export type QuorumMemberLocator = Exclude<SignerLocator, QuorumLocator | DeviceSignerLocator | ApiKeySignerLocator>;
+
+export function isQuorumMemberLocator(locator: string): locator is QuorumMemberLocator {
+    const { type, value } = parseSignerLocator(locator);
+    return value !== "" && QUORUM_MEMBER_TYPES.some((memberType) => memberType === type);
+}
+
+export function requireQuorumMemberLocator(locator: string): QuorumMemberLocator {
+    if (!isQuorumMemberLocator(locator)) {
+        throw new Error(`Malformed quorum member locator: ${locator}`);
+    }
+    return locator;
+}
+
+type WithoutStatus<T> = T extends unknown ? Omit<T, "status" | "scopes"> : never;
+
+/** A quorum member as the API returns it: the member's own signer fields, without a status. */
+export type QuorumMember = WithoutStatus<Extract<Signer, { type: QuorumMemberType }>>;
+
+/** A quorum as the wallets API returns it: Crossmint assigns `locator` when the quorum is added. */
+export type QuorumSigner = {
+    type: "quorum";
+    locator: QuorumLocator;
+    threshold: number;
+    members: QuorumMember[];
+};
+
+export function isQuorumSigner(entry: { type: string }): entry is QuorumSigner {
+    return entry.type === "quorum";
+}
+
+/** Throws `InvalidSignerError` for a quorum given as a key: a quorum signs only through its members' keys. */
+export function throwIfQuorumSigner(entry: { type: string }): void {
+    if (isQuorumSigner(entry)) {
+        throw new InvalidSignerError(
+            "A quorum signs through its members, so it cannot be used as a key: pass a member's key instead."
+        );
+    }
+}
+
+export type RecoverySignerConfigForChain<C extends Chain> =
+    | SignerConfigForChain<C>
+    | ApiSourcedServerSignerConfig
+    | QuorumSigner;
 
 export type BaseSignerConfig<C extends Chain> =
     | ExternalWalletSignerConfigForChain<C>
@@ -146,6 +228,8 @@ export type PasskeySignerConfig = {
     name?: string;
     id?: string;
     locator?: string;
+    /** The credential's public key, as `createPasskeySigner` returns it. Omit it, with `id`, to create a new passkey. */
+    publicKey?: { x: string; y: string };
     onCreatePasskey?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
     /** `message` is the hex WebAuthn challenge; `credentialId` is the passkey's credential id when it is known. */
     onSignWithPasskey?: (message: string, credentialId?: string) => Promise<PasskeySignResult>;
@@ -257,6 +341,41 @@ export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
       ? EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig
       : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C> | DeviceSignerConfig;
 
+/** A passkey member, given by its registered credential: the SDK creates no passkey for a member. */
+export type PasskeyQuorumMemberConfig = {
+    type: "passkey";
+    id: string;
+    name: string;
+    publicKey: { x: string; y: string };
+};
+
+// A member's signer config, or only its identity when another device holds its key; the API gets identity fields only.
+// api-key and device are never members; Solana also takes no passkey members.
+export type QuorumMemberConfig<C extends Chain> =
+    | (EmailSignerConfig & { email: string })
+    | (PhoneSignerConfig & { phone: string })
+    | ExternalWalletSignerConfigForChain<C>
+    | ExternalWalletRegistrationConfig
+    | ServerSignerConfig
+    | ApiSourcedServerSignerConfig
+    | (C extends SolanaChain ? never : PasskeyQuorumMemberConfig);
+
+/** A quorum to create or add: `threshold` of its `members` must sign. */
+export type QuorumSignerConfig<C extends Chain> = {
+    type: "quorum";
+    threshold: number;
+    members: Array<QuorumMemberConfig<C>>;
+};
+
+/** A quorum named by its locator, to remove it. A `QuorumSigner` from the wallet's lists is one too. */
+export type QuorumRef = { locator: QuorumLocator };
+
+/** True for `{ locator: "quorum:…" }`, whether or not its id is well formed; callers check the id. */
+export function isQuorumRef(target: QuorumRef | { type: string }): target is QuorumRef {
+    const { locator } = target as Partial<QuorumRef>;
+    return locator != null && hasQuorumLocatorPrefix(locator);
+}
+
 ////////////////////////////////////////////////////////////
 // Signer locator types
 ////////////////////////////////////////////////////////////
@@ -275,7 +394,8 @@ export type SignerLocator =
     | DeviceSignerLocator
     | ExternalWalletSignerLocator
     | ApiKeySignerLocator
-    | ServerSignerLocator;
+    | ServerSignerLocator
+    | QuorumLocator;
 
 ////////////////////////////////////////////////////////////
 // Signer base types

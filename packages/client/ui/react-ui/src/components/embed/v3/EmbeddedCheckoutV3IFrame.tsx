@@ -8,6 +8,7 @@ import {
 } from "@crossmint/client-sdk-base";
 
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
+import { useTrustCheckoutWindow } from "@/hooks/useTrustCheckoutWindow";
 import { PayerConnectionHandler } from "./crypto/PayerConnectionHandler";
 import type { PayerSupportedBlockchains } from "@crossmint/common-sdk-base";
 
@@ -42,6 +43,15 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
     const embeddedCheckoutService = crossmintEmbeddedCheckoutV3Service({ apiClient });
 
     const ref = useRef<HTMLIFrameElement>(null);
+    const trustCheckoutWindow = useTrustCheckoutWindow();
+
+    useEffect(() => {
+        const checkoutWindow = ref.current?.contentWindow;
+        if (checkoutWindow == null || trustCheckoutWindow == null) {
+            return;
+        }
+        return trustCheckoutWindow(checkoutWindow);
+    }, [trustCheckoutWindow]);
 
     useEffect(() => {
         const iframe = ref.current;

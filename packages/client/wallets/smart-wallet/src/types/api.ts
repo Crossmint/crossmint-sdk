@@ -134,7 +134,6 @@ export type CreateSignatureParams =
           params: {
               chain: SmartWalletChain;
               signer: Signer;
-              isSmartWalletSignature: boolean;
               typedData: {
                   domain: TypedDataDomain;
                   message: Record<string, unknown>;
@@ -160,6 +159,7 @@ interface SignatureResponseBase {
         }[];
     };
     createdAt: string;
+    outputSignature?: Hex;
 }
 
 export interface ApproveSignatureParams {
@@ -180,7 +180,6 @@ export interface SignatureResponseTypedData extends SignatureResponseBase {
     params: {
         chain: SmartWalletChain;
         signer: Signer;
-        isSmartWalletSignature: boolean;
         typedData: {
             domain: TypedDataDomain;
             message: Record<string, unknown>;

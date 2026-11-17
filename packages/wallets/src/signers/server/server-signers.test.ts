@@ -1,3 +1,4 @@
+import { inspect } from "node:util";
 import { describe, it, expect, vi } from "vitest";
 import base58 from "bs58";
 import { MessageV0, PublicKey } from "@solana/web3.js";
@@ -144,6 +145,32 @@ describe("StellarServerSigner", () => {
         const msgResult = await signer.signMessage(message);
         const txResult = await signer.signTransaction(message);
         expect(txResult.signature).toBe(msgResult.signature);
+    });
+});
+
+describe("server signer printed by the integrator", () => {
+    // Every key byte is 200: "200" cannot occur in a base58 or base32 address, so any hit is key material.
+    const keyMaterialConfig = (): ServerInternalSignerConfig => ({
+        type: "server",
+        derivedKeyBytes: new Uint8Array(32).fill(200),
+        locator: "server:printed-signer",
+        address: "unused-by-the-signer",
+    });
+
+    it.each([
+        ["Solana", () => new SolanaServerSigner(keyMaterialConfig()), "BELn9TCk4uWEihwdgoUx8xUfd5ujL9pKrwtJCesiQAev"],
+        [
+            "Stellar",
+            () => new StellarServerSigner(keyMaterialConfig()),
+            "GCL77SEDZAF644RX56K5TONXAPKK2Y7GBIQ6MBMGO2BLOW4LH5BQHSML",
+        ],
+    ])("%s signer shows its address and no key bytes in JSON.stringify or util.inspect", (_, build, address) => {
+        const signer = build();
+
+        const printed = `${JSON.stringify(signer)}\n${inspect(signer, { depth: Number.POSITIVE_INFINITY })}`;
+
+        expect(printed).toContain(address);
+        expect(printed).not.toContain("200");
     });
 });
 

@@ -1,5 +1,240 @@
 # @crossmint/wallets-sdk
 
+## 1.24.0
+
+### Minor Changes
+
+- 2132d18: A key that is only a quorum member acts as its quorum. With no `signer` option, `send`, `sendTransaction` (every chain), `signMessage` and `signTypedData` create the request as that key's quorum, and throw `QuorumSelectionAmbiguousError` when the key is a member of several quorums. `signMessage` and `signTypedData` take a `signer` option, like `send`, so `signer: "quorum:<id>"` requests an ERC-1271 signature as that quorum. A request made as a quorum, named or inferred, is created unsigned and returned as with `prepareOnly: true`: `transactionId` with `hash` and `explorerLink` undefined, or `signatureId` with `signature` undefined. Members sign it later with `approve`. Pass `prepareOnly: true` when a quorum may act, so the return type matches. Other keys, and Stellar `upgrade` / `migrate`, send their signer as before. A creating call on a wallet whose recovery methods are all quorums, with no key selected, throws `RecoveryMethodRequiredError` naming the quorums. `useSigner` and `useRecoveryMethod` with a quorum throw `InvalidSignerError`: pass a member's key instead. `QuorumSignerNotSupportedError` is now thrown only on Solana, which has no quorum approvals.
+
+  Only recovery methods and delegated quorums installed on the request's chain count when a member key's role is inferred: an entry whose add still awaits approval, or one installed on another chain only, is neither chosen nor a reason for `QuorumSelectionAmbiguousError`.
+
+- 8f12147: An expired transaction or signature request now throws `TransactionExpiredError`, with `transactionId` or `signatureId`, when `approve` reads the request and while the SDK waits for it. Its `code` is `wallet:transaction-failed` for both; before, these threw with `wallet:no-transaction` or `wallet:no-signature`. This applies to every wallet, not only quorum wallets: the API also expires an EVM transaction that waits for approval longer than its paymaster allows. The error thrown while a transaction still awaits approval now carries `transactionId`.
+- e83b497: Quorum members can approve on EVM and Stellar wallets. When a transaction or signature waits on a quorum, `approve` signs each pending member this client holds (the active signer, the key selected with `useRecoveryMethod`, and `additionalSigners`) over that member's own message. On Stellar, a member signs once for each auth entry the quorum must approve, and all approvals go in one request. `useSigner` accepts a key that is only a quorum member.
+
+  While other quorum members must still sign, `approve` returns the transaction with `hash` and `explorerLink` undefined, or the signature with `signature` undefined; check `hash == null` (or `signature == null`). Before, it threw `TransactionAwaitingApprovalError` for transactions and `SignatureNotAvailableError` for signatures. A wait for a signer that is not a quorum member still throws `TransactionAwaitingApprovalError`. Stellar `migrate()` returns the same shape, and `upgrade()` returns the phase-1 transaction without a hash and skips the migration; call `migrate()` once phase 1 lands. `addSigner` that resumes a registration quorum members must still approve returns the signer with its `transactionId` or `signatureId` and its current status, as with `prepareOnly: true`.
+
+  A transaction approval that the API answers with HTTP 422 because its approvals are already complete (another member signed first) now continues to the transaction's outcome instead of throwing. A signature approval the API rejects with another 422 now throws `SignatureFailedError` instead of being re-read as complete.
+
+  Two `approve` calls for the same request at the same time run one after the other, each with its own keys and options, so a member's key signs once and a passkey or device prompt opens once. `approve` throws `InvalidSignerError` when a quorum still waits for approvals and none of the keys this client holds is one of its members; a repeated call after a held member signed still returns the transaction without a hash.
+
+- 2a2be6a: Quorums can be created and managed. `createWallet` takes a quorum `{ type: "quorum", threshold, members }` in `recoveryMethods` (or `recovery`) and in `signers`; `addSigner` and `addRecoveryMethod` take one too. Members are given by their signer config or by their identity alone (an external wallet's address, a server signer's address, a passkey's id, name and public key), and only their identity fields are sent: `onSign` and server secrets stay on this client, and the wallet holds none of the members' keys afterwards. A recovery quorum always goes under `recoveryMethods`. `addRecoveryMethod` now returns the new method's `locator`. `removeSigner` and `removeRecoveryMethod` take a quorum by `{ locator }`, or by its threshold and members, which one read of the wallet's quorums resolves to its locator. `getWallet` and `createWallet` match a quorum in the passed config by its threshold and member set, in any order.
+- 807df98: Device recovery goes through a recovery quorum. With a member of a recovery quorum selected through `useRecoveryMethod`, `recover()` (and the automatic recovery before `send`, `approve` and the other calls) registers the new device signer with the member's quorum as approver. The registration is created unsigned, as with `prepareOnly`, and `recover()` returns it as `{ transactionId }` or `{ signatureId }` for the members to sign with `approve`. Until it lands, the device signer stays in `needs-recovery`, a later `recover()` returns the same request without registering or signing anything, the device key is kept, and the old device signer stays. The `recover()` that sees the registration land activates the device and starts the old device signer's removal through the quorum, returning that request the same way (automatic recovery logs it). At the signer limit, a quorum-approved recovery throws `SignerLimitExceededError` without removing a device. When the device signer's registration cannot be read and a quorum would approve, recovery stops with `WalletNotAvailableError` (try again later) instead of registering again; flat wallets go on as before. `recover()` now returns `RecoverResult` (it returned nothing before). A wallet whose recovery methods are all quorums now throws `RecoveryMethodRequiredError` until a member is selected, instead of `QuorumSignerNotSupportedError`.
+
+  A creating call (`send`, `sendTransaction`, `signMessage`, `signTypedData`, Stellar `upgrade` and `migrate`) on a device whose registration the quorum's members have not approved yet throws `DeviceSignerAwaitingApprovalError`, which carries the request they approve, before anything is created. Before, the call went on with the pending device signer and surfaced the API's rejection.
+
+- e618b86: Wallet API calls now throw `QuorumRequestError` for the API's quorum error codes, and `TransactionExpiredError` when an approval window has closed. An expired signature approval now throws `TransactionExpiredError` with `signatureId`. Its `code` is `wallet:transaction-failed`; before, the SDK threw with `wallet:signing-failed`.
+- 657836f: `send` and `sendTransaction` with a quorum as the signer (`signer: "quorum:…"`) on EVM and Stellar wallets now return the created transaction unsigned, as with `prepareOnly: true`: `transactionId` is set, and `hash` and `explorerLink` are undefined. Before, the call created the transaction and then threw: `TransactionAwaitingApprovalError` with an api-key signer, `QuorumSignerNotSupportedError` with any other signer. Pass `prepareOnly: true` so the return type matches. The API does not accept a quorum signer on Solana yet.
+
+  `send` now treats any truthy `prepareOnly` like `true`, as `sendTransaction` already did. Untyped callers that passed a non-boolean value get the created transaction back unsigned instead of a signed, completed one.
+
+- 7ffe513: Wallets whose recovery methods or signers include a quorum (m-of-n) signer now load and read back: `recoveryMethods` and `signers()` return the quorum with its `quorum:<uuid>` locator and member locators, and the quorum types are exported. On Solana, signing as a quorum throws `QuorumSignerNotSupportedError`.
+
+  Type changes: `Signer` (returned by `signers()` and re-exported by the React packages) and `RecoverySignerConfigForChain` (in `recoveryMethods`) now include `QuorumSigner`: `type: "quorum"`, with `locator`, `threshold` and `members`. A `switch` that handles every signer type needs a `quorum` case, and code that reads `address` must narrow on `type` first. The API response types now use the quorum shapes the API sends (`members`, `member`).
+
+  `recovery` keeps its type and returns the first recovery method that signs on its own. It throws `RecoveryMethodRequiredError` when every recovery method is a quorum; read `recoveryMethods` instead.
+
+- 324a663: Export the quorum error classes `QuorumRequestError` (the API's quorum error code in `reason`), `QuorumSelectionAmbiguousError` and `TransactionExpiredError`, and the `QuorumMemberLocator` type. `QuorumSelectionAmbiguousError` is not thrown yet.
+
+  Signer locators now match the way the API matches them: the EVM address in an `external-wallet:0x…` or `server:0x…` locator compares by checksum, so a checksummed and a lowercase address name the same signer. This applies when `approve` picks the signing key and when a signer change picks the authorizing recovery method, which before threw `InvalidSignerError` or `RecoveryMethodRequiredError` on a case-only difference.
+
+- ce91fdd: A recovery quorum can approve signer changes. `addSigner`, `removeSigner`, `addRecoveryMethod` and `removeRecoveryMethod` take a `signer` option, sent as the `approver`: a recovery quorum's locator, or one of the wallet's recovery methods. `useRecoveryMethod` accepts a key that is only a member of a recovery quorum; signer changes are then approved by that quorum. A change a quorum approves is created unsigned and returned as with `prepareOnly: true`, with its `transactionId` (or `signatureId`). The wallet's signers and recovery methods change only when it lands, and, as with `prepareOnly`, this client's `wallet.recoveryMethods` is not updated. Members sign it with `approve`, which signs the selected member's pending approvals; with no active key, the key selected with `useRecoveryMethod`, a recovery method or a quorum member, signs, and `approve` skips automatic device recovery for a member. `removeSigner`, `addRecoveryMethod` and `removeRecoveryMethod` then return `status` undefined; for `addSigner`, pass `prepareOnly: true` when a quorum may approve, so the return type matches. A wallet whose recovery methods are all quorums throws `RecoveryMethodRequiredError` until a member is selected or `signer` is passed. Device recovery resolves the recovery method that approves the new device signer before it creates the device key, so a wallet with several recovery methods and none selected throws `RecoveryMethodRequiredError` without leaving a key behind.
+
+### Patch Changes
+
+- Updated dependencies [b0c2af7]
+  - @crossmint/common-sdk-base@0.13.5
+  - @crossmint/common-sdk-auth@1.1.39
+
+## 1.23.0
+
+### Minor Changes
+
+- 9e650de: Let apps turn on the device signer biometric policy on web. `IframeDeviceSignerKeyStorage` takes a second argument, `{ biometricPolicy, biometricExpirationTime }`, and every device key it creates (at wallet creation and at device recovery) gets that policy. `setBiometricOptions` changes the policy for keys created later. `CrossmintWalletProvider` in `@crossmint/client-sdk-react-ui` takes the same options in a new `deviceSigner` prop, for example `deviceSigner={{ biometricPolicy: "always" }}`. Before each fingerprint, face or screen lock check, the React provider shows the passkey prompt so that the browser gets a user click. The policy is fixed when a key is created; existing keys keep their policy. `BiometricPolicy` and `DeviceSignerBiometricOptions` are now exported.
+
+### Patch Changes
+
+- 4aff9cf: `wallet.send()` now throws typed subclasses of `TransactionNotCreatedError` for the card-collateral error codes returned by the wallets API — `CollateralFundsInTransitError` and `CollateralFundingTemporarilyUnavailableError` (`retryable: true`), `CollateralWithdrawalUnavailableError` and `CollateralWithdrawalIntegrityError` — and every `TransactionNotCreatedError` exposes the API's `code` as `apiErrorCode`. Existing `instanceof TransactionNotCreatedError` checks and `error.code` are unchanged.
+- 4b49e71: Queue `request:sign` calls per email/phone signer so a transaction that needs several approvals from the same signer (e.g. a Stellar card-funded transfer) no longer submits the first signature for every approval.
+- a089de2: Keep signing keys and session credentials out of application logs. `wallet.signer` no longer exposes key material or the session JWT and API key to `console.log`, `util.inspect` or `JSON.stringify`: Solana and Stellar server signers and email and phone signers now hold them in private class fields. The SDK logger now also redacts compound key names (such as `serverSecret`, `privateKeyHex`, `seed`, `mnemonic` and `keyBytes`), replaces values nested deeper than its redaction limit with `[TRUNCATED]`, and redacts log calls made before the logger is initialized.
+- Updated dependencies [a089de2]
+  - @crossmint/common-sdk-base@0.13.4
+  - @crossmint/common-sdk-auth@1.1.38
+
+## 1.22.4
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.37
+
+## 1.22.3
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.1.36
+
+## 1.22.2
+
+### Patch Changes
+
+- 04ec76f: `wallet.addSigner({ type: "passkey" })` and `wallet.addRecoveryMethod({ type: "passkey" })` now create the passkey
+  when the config has no credential id, using the config's `onCreatePasskey`, else the wallet's `passkeyProvider`,
+  else the browser WebAuthn API, and register its id and public key. Before, the SDK looked up a signer named
+  `passkey` and sent the bare config, which the API rejected. A config with a credential id is registered as before,
+  and the request body now carries only the passkey fields the API takes.
+
+  Creating a passkey with no `onCreatePasskey`,
+  no `passkeyProvider` and no WebAuthn (for example in Node) now throws `InvalidSignerError` saying so, in wallet
+  creation too.
+
+- 36903ca: `getWallet` resolves faster when the device signer's key is on this device: signer initialization reads the signer's status from the wallet response instead of fetching the wallet and each signer again, and the device key storage (an iframe on web) starts loading alongside the wallet request. `DeviceSignerKeyStorage` gains an optional `preload()` hook (no-op by default).
+
+  `wallet.signers()` makes one request instead of one per signer: it reads each signer's status from the wallet response.
+
+- Updated dependencies [e6ad150]
+- Updated dependencies [a2181ff]
+  - @crossmint/common-sdk-auth@1.1.35
+
+## 1.22.1
+
+### Patch Changes
+
+- 45514f6: Readmes now default to Crossmint Auth in staging, and their staging examples fund wallets with `stagingFund` and send USDXM. The bring-your-own-auth links point at the current docs page.
+- Updated dependencies [0c053ed]
+  - @crossmint/common-sdk-auth@1.1.34
+
+## 1.22.0
+
+### Minor Changes
+
+- 63b6933: The SDK now removes stale device signers. A device signer becomes stale when the device loses its key and registers a new signer.
+
+  - The SDK saves the locator of each device signer that it registers.
+  - After the device registers a new signer, the SDK removes the signer with the saved locator.
+  - If the wallet is at its signer limit, the SDK removes the least recently active device signer. Then the SDK registers the new signer.
+  - The SDK does not remove a device signer only because the signer name matches the device name.
+  - If the SDK cannot make room at the signer limit, it keeps the device key. The next attempt registers the same key.
+
+  `addSigner` now throws `SignerLimitExceededError` when the wallet is at its signer limit. `SignerLimitExceededError` extends `InvalidSignerError`, so existing error handling continues to work.
+
+  `DeviceSignerKeyStorage` has two new optional methods: `saveSignerLocator` and `getSavedSignerLocator`.
+
+### Patch Changes
+
+- e981bab: `wallet.send` now serializes the full API error response into `TransactionNotCreatedError` instead of only the `message` field, so failed transfers surface the structured `error` object (`reason`, `revert.reason`, `revert.explorerLink`, `revert.simulationLink`, Solana `logs`).
+- Updated dependencies [225e9e9]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/common-sdk-auth@1.1.33
+
+## 1.21.2
+
+### Patch Changes
+
+- Updated dependencies [d3b62df]
+  - @crossmint/common-sdk-auth@1.1.32
+  - @crossmint/common-sdk-base@0.13.2
+
+## 1.21.1
+
+### Patch Changes
+
+- 77b8398: Remove the deprecated Sei chains (`sei-pacific-1` and `sei-atlantic-2-testnet`) from the chain types, the smart wallet chain lists, the wallets OpenAPI spec and the hosted checkout order types. The SEI token (`CryptoCurrency.SEI`) stays.
+- d170b2d: Stop leaking server signer secrets through wallet signer-config mismatch errors. `compareSignerConfigs` no longer compares or echoes `secret` fields (or runtime callbacks), and its error message names only the mismatching field. A server recovery signer is matched by the address its secret derives to: on an existing wallet, a secret that derives to none of the wallet's server recovery signers is now rejected instead of passing a type-only match. The SDK logger now also scrubs known secret shapes (server signer master secrets, JWTs, Crossmint API keys) from error messages, stack traces and log messages before they reach the log sinks.
+- 6471943: `wallet.balances()` no longer returns `inTransit` on the wallet account in `accounts`. Card accounts and the token total still have it.
+- 3de9265: Type the `creditLimit` field on card accounts in `wallet.balances()` results. Each card in `accounts` now reports `creditLimit`: the collateral the card provider has credited to the card, which caps what it can spend.
+- Updated dependencies [77b8398]
+- Updated dependencies [d170b2d]
+  - @crossmint/common-sdk-base@0.13.1
+  - @crossmint/common-sdk-auth@1.1.31
+
+## 1.21.0
+
+### Minor Changes
+
+- 507f354: Support recovery methods on EVM. `createWallet` sends `recoveryMethods` on EVM chains and accepts more than one. `addRecoveryMethod` and `removeRecoveryMethod` work on EVM wallets and send the wallet's chain, which the API requires on EVM. A single recovery method passed as `recovery` still goes under `adminSigner`.
+
+## 1.20.7
+
+### Patch Changes
+
+- 2ffaa93: Export TransactionNotCreatedError
+- c138095: The `isSmartWalletSignature` docs on `WalletsApiClient.createSignature` typed data params now state that the API accepts only `true` or an omitted value, and rejects `false`.
+- Updated dependencies [754047d]
+  - @crossmint/client-signers-cryptography@0.0.6
+  - @crossmint/common-sdk-auth@1.1.30
+
+## 1.20.6
+
+### Patch Changes
+
+- 46666e3: Preserve the optional `inTransit` field in `wallet.balances()` results. For wallets with a card, it holds funds moving between the wallet and the card's collateral that the card provider has not reflected yet; `available + inTransit` is the total the user holds while funds move.
+  - @crossmint/common-sdk-auth@1.1.29
+
+## 1.20.5
+
+### Patch Changes
+
+- 7401d02: README: passkey signers work on EVM, Solana and Stellar, in the browser and React Native. The React Native README documents the `passkeys` prop on `CrossmintWalletProvider`.
+- 25e5591: Reject a passkey assertion that lacks the user-verification flag on the browser WebAuthn path too, not only when a custom `onSignWithPasskey` is supplied. `WebAuthnP256.sign` requests user verification but does not check that the authenticator honoured it; a UV-less assertion used to be forwarded and fail later as a bundler AA24 "Invalid signature".
+  - @crossmint/common-sdk-auth@1.1.28
+
+## 1.20.4
+
+### Patch Changes
+
+- 0ee57ff: Sign with `@noble/curves` (ed25519) instead of `tweetnacl` in the Solana and Stellar server signers and Solana additional-signer signing. Signatures are byte-for-byte identical. `@noble/curves` is already part of every wallet install through viem and Solana, so this removes `tweetnacl` (about 57 KB minified) from wallet app bundles.
+- 3b7b27b: Stop installing viem and @solana/web3.js with `@crossmint/common-sdk-base`. viem was unused, and @solana/web3.js was only needed for the `VersionedTransaction` type in the external wallet signer configs. This removes the vulnerable Solana dependency tree (stream-json, uuid) from packages that only need the shared base, such as the server and auth SDKs.
+
+  The external wallet signer config types (`ExternalWalletSignerConfig`, `SolanaExternalWalletSignerConfig`, `EvmExternalWalletSignerConfig`, `StellarExternalWalletSignerConfig`) now live in `@crossmint/wallets-sdk`, which already exported them. Import them from `@crossmint/wallets-sdk` instead of `@crossmint/common-sdk-base`.
+
+- Updated dependencies [0ee57ff]
+- Updated dependencies [3b7b27b]
+  - @crossmint/common-sdk-base@0.13.0
+  - @crossmint/common-sdk-auth@1.1.27
+
+## 1.20.3
+
+### Patch Changes
+
+- Updated dependencies [6dc366a]
+  - @crossmint/common-sdk-auth@1.1.26
+
+## 1.20.2
+
+### Patch Changes
+
+- 773ce20: Update the React checkout wallet connectors and chain dependencies to reduce vulnerable transitive dependencies in consumer installations. Upgrade Dynamic to the version 4 LTS security update, Sui within version 1, and viem within version 2 without changing the SDK's public API.
+- Updated dependencies [773ce20]
+  - @crossmint/common-sdk-base@0.12.5
+  - @crossmint/common-sdk-auth@1.1.25
+
+## 1.20.1
+
+### Patch Changes
+
+- 924a0b6: Reject a `device` signer passed as a recovery method before calling the API, and apply the same recovery-list rules on `getWallet` that `createWallet` already enforces (non-empty list, one method on EVM). Recovery configuration is now validated before `onWalletCreationStart` and before any signer or passkey is created.
+- 523fa26: Remove the Abstract chain (`abstract`, `abstract-testnet`) from the SDK.
+
+  The Abstract network shuts down on December 15, 2026, and Crossmint no longer supports it.
+
+  The chain names are removed from `EVMBlockchain`, `EVMBlockchainTestnet` and from the
+  `BLOCKCHAIN_TO_COPY_NAME` and `BLOCKCHAIN_TO_CHAIN_ID` maps in `@crossmint/common-sdk-base`.
+  `@crossmint/wallets-sdk` no longer lists them as smart-wallet chains, so `Chain`,
+  `EVMSmartWalletChain` and `validateChainForEnvironment` reject them.
+
+  Migration: use a supported chain, and move assets off Abstract before December 15, 2026.
+  Code that passes one of these names no longer compiles. At runtime, wallet-chain validation
+  throws an `InvalidChainError`, and common display-name and chain-ID lookups return `undefined`.
+
+- Updated dependencies [523fa26]
+  - @crossmint/common-sdk-base@0.12.4
+  - @crossmint/common-sdk-auth@1.1.24
+
+## 1.20.0
+
+### Minor Changes
+
+- 2aaeabe: React Native supports passkey signers on every chain. Install `react-native-passkey` (an optional peer dependency) and pass `passkeys={{ rpId, passkey: Passkey }}` to `CrossmintWalletProvider`: passkeys are then created and used through the platform passkey APIs. The wallets SDK takes a `passkeyProvider` wallet option for environments without the browser WebAuthn API, and passes the credential id to `onSignWithPasskey`.
+
 ## 1.19.0
 
 ### Minor Changes

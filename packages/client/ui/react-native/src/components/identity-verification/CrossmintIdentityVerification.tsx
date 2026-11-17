@@ -5,9 +5,8 @@ import {
     identityVerificationOutgoingEvents,
 } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
-import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
+import { RNWebView, WebViewParent, type WebViewInstance } from "@crossmint/client-sdk-rn-window";
 import { useEffect, useRef, useState } from "react";
-import type { WebView } from "react-native-webview";
 
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 
@@ -19,7 +18,7 @@ type IdentityVerificationWebViewParent = WebViewParent<
 export function CrossmintIdentityVerification(props: CrossmintIdentityVerificationProps) {
     const [client, setClient] = useState<IdentityVerificationWebViewParent | null>(null);
     const [height, setHeight] = useState(0);
-    const webViewRef = useRef<WebView>(null);
+    const webViewRef = useRef<WebViewInstance>(null);
 
     // Listeners subscribe once, so callbacks are read off a ref: a late event calls
     // the current render's props rather than the ones captured at subscribe time.

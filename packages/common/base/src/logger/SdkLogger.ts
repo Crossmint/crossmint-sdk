@@ -1,6 +1,12 @@
 import type { ISdkLogger } from "./interfaces";
-import type { ConsoleLogLevel, LogContext, LogEntry, LogLevel, LogSink } from "./types";
-import { generateExecutionId, mergeContext, redactSensitiveFields, serializeLogArgs } from "./utils";
+import type { ConsoleLogLevel, FlushOptions, LogContext, LogEntry, LogLevel, LogSink } from "./types";
+import {
+    generateExecutionId,
+    mergeContext,
+    redactSensitiveFields,
+    redactSensitiveText,
+    serializeLogArgs,
+} from "./utils";
 import { ConsoleSink, detectPlatform, type Platform } from "./index";
 import { sinkManager } from "./sink-manager";
 import type { APIKeyEnvironmentPrefix } from "../apiKey/types";
@@ -311,8 +317,8 @@ export class SdkLogger implements ISdkLogger {
      * This ensures logs are sent before app/browser close
      * Should be called when the application is shutting down
      */
-    async flush(): Promise<void> {
-        await sinkManager.flush();
+    async flush(options?: FlushOptions): Promise<void> {
+        await sinkManager.flush(options);
     }
 
     /**
@@ -342,19 +348,19 @@ export class SdkLogger implements ISdkLogger {
             // Use sendBeacon for reliable delivery during page unload
             // Note: sendBeacon is synchronous and works during page unload
             // We'll still try to flush, but sendBeacon is more reliable
-            void this.flush();
+            void this.flush({ keepalive: true });
         };
 
         // Flush when page becomes hidden (user switches tabs, minimizes window, etc.)
         const handleVisibilityChange = () => {
             if (document.visibilityState === "hidden") {
-                void this.flush();
+                void this.flush({ keepalive: true });
             }
         };
 
         // Use pagehide as a fallback (more reliable than beforeunload in some browsers)
         const handlePageHide = () => {
-            void this.flush();
+            void this.flush({ keepalive: true });
         };
 
         window.addEventListener("beforeunload", handleBeforeUnload);
@@ -395,13 +401,6 @@ export class SdkLogger implements ISdkLogger {
      * Internal log method that handles serialization and sink writing
      */
     private log(level: LogLevel, message: unknown, ...rest: unknown[]): void {
-        if (!this.initialized) {
-            // Fallback to console if not initialized
-            const fallbackMethod = level === "error" ? console.error : level === "warn" ? console.warn : console.log;
-            fallbackMethod("[SDK Logger not initialized]", message, ...rest);
-            return;
-        }
-
         // Serialize arguments into message and context
         const { message: serializedMessage, context: argsContext } = serializeLogArgs([message, ...rest]);
 
@@ -418,10 +417,18 @@ export class SdkLogger implements ISdkLogger {
         // Create log entry
         const entry: LogEntry = {
             level,
-            message: serializedMessage,
+            message: redactSensitiveText(serializedMessage, true),
             context: redactedContext,
             timestamp: Date.now(),
         };
+
+        if (!this.initialized) {
+            // No sinks yet: print the redacted entry, never the raw arguments.
+            const fallbackMethod = level === "error" ? console.error : level === "warn" ? console.warn : console.log;
+            const context = Object.keys(entry.context).length > 0 ? [entry.context] : [];
+            fallbackMethod("[SDK Logger not initialized]", entry.message, ...context);
+            return;
+        }
 
         // Write to all shared sinks
         const sinks = sinkManager.getSinks();

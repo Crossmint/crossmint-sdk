@@ -36,7 +36,43 @@ export interface CrossmintCvcRecollectionProps {
      * `EmbeddedCheckoutV3AppearanceVariables`.
      */
     appearance?: PaymentMethodManagementAppearance;
+    /**
+     * Render no Confirm button inside the component (default `false`). Pair it with a
+     * `ref` and call `ref.current.submit()` from your own button.
+     */
+    hideSubmitButton?: boolean;
     /** Called once Crossmint has stored the new CVC. Receives no CVC and no token payload. */
     onComplete?: () => void;
     onError?: (error: CvcRecollectionError) => void;
+}
+
+/**
+ * What `ref.submit()` resolves to. It never rejects.
+ * - `complete`: the new CVC was stored; `onComplete` also fired.
+ * - `invalid`: the CVC is empty or incomplete; the component shows the field error.
+ * - `failed`: the update failed with a message the user can read; they can try again.
+ * - `refused`: the flow is dead, with the same `reason`/`message` `onError` reported; the
+ *   user cannot finish it.
+ * - `unavailable`: the component is not ready (not loaded, still loading the form, or it
+ *   did not answer in time). After a timeout the update may still have completed:
+ *   `onComplete` fires if it did, and submitting again returns `complete`.
+ * - `superseded`: the component changed or unmounted while submitting. Discard the result;
+ *   this does not cancel an update already started on the server.
+ */
+export type CvcRecollectionSubmitResult =
+    | { status: "complete" }
+    | { status: "invalid"; message: string }
+    | { status: "failed"; message: string }
+    | { status: "refused"; reason: CvcRecollectionError["reason"]; message: string }
+    | { status: "unavailable"; message: string }
+    | { status: "superseded"; message: string };
+
+export interface CrossmintCvcRecollectionRef {
+    /**
+     * Runs the same confirm the component's own button would. A call while one is in flight
+     * returns the same promise. Calling it again after `complete` returns `complete` again;
+     * nothing is updated twice. A change of card, configuration, or iframe connection
+     * supersedes any pending submit.
+     */
+    submit(): Promise<CvcRecollectionSubmitResult>;
 }

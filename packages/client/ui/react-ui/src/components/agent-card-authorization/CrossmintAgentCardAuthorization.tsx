@@ -1,6 +1,10 @@
-import type { CrossmintAgentCardAuthorizationProps } from "@crossmint/client-sdk-base";
+import type {
+    CrossmintAgentCardAuthorizationProps,
+    CrossmintPaymentMethodManagementRef,
+} from "@crossmint/client-sdk-base";
 
-import { CrossmintPaymentMethodManagement } from "../card-management";
+import { useRef, useState } from "react";
+import { CrossmintPaymentMethodManagement } from "../card-management/CrossmintPaymentMethodManagement";
 import { CrossmintCvcRecollection, OrderIntentVerification } from "../order-intent";
 import { useAgentCardAuthorization } from "./useAgentCardAuthorization";
 
@@ -47,13 +51,82 @@ export function CrossmintAgentCardAuthorization(props: CrossmintAgentCardAuthori
         );
     }
 
+    return <CardSelectionStep props={props} jwt={jwt} onPaymentMethodSelected={onPaymentMethodSelected} />;
+}
+
+// The payment-method iframe renders no button, so this step owns the submit: the button calls
+// `ref.submit()`, which also emits `payment-method:selected` and drives `onPaymentMethodSelected`.
+function CardSelectionStep({
+    props,
+    jwt,
+    onPaymentMethodSelected,
+}: {
+    props: CrossmintAgentCardAuthorizationProps;
+    jwt: string;
+    onPaymentMethodSelected: (paymentMethod: unknown) => void;
+}) {
+    const pmm = useRef<CrossmintPaymentMethodManagementRef>(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+
+    async function submit() {
+        setSubmitting(true);
+        setSubmitError(null);
+        try {
+            const result = await pmm.current?.submit();
+            if (
+                result != null &&
+                result.status !== "selected" &&
+                result.status !== "saved" &&
+                result.status !== "superseded"
+            ) {
+                setSubmitError(result.message);
+            }
+        } finally {
+            setSubmitting(false);
+        }
+    }
+
+    const primaryButton = props.appearance?.paymentMethodManagement?.rules?.PrimaryButton;
+    const background = submitting
+        ? primaryButton?.disabled?.colors?.background ?? "#e7e9ed"
+        : primaryButton?.colors?.background ?? "#05B959";
+    const color = submitting ? "#67797f" : primaryButton?.colors?.text ?? "#ffffff";
+
     return (
-        <CrossmintPaymentMethodManagement
-            jwt={jwt}
-            allowedModes={props.allowedModes ?? ["existing", "new"]}
-            allowedPaymentMethodTypes={["card"]}
-            appearance={props.appearance?.paymentMethodManagement}
-            onPaymentMethodSelected={onPaymentMethodSelected}
-        />
+        <div>
+            <CrossmintPaymentMethodManagement
+                ref={pmm}
+                jwt={jwt}
+                allowedModes={props.allowedModes ?? ["existing", "new"]}
+                allowedPaymentMethodTypes={["card"]}
+                appearance={props.appearance?.paymentMethodManagement}
+                onPaymentMethodSelected={onPaymentMethodSelected}
+            />
+            <button
+                type="button"
+                disabled={submitting}
+                onClick={() => void submit()}
+                style={{
+                    width: "100%",
+                    height: 50,
+                    marginTop: 16,
+                    border: "none",
+                    cursor: submitting ? "default" : "pointer",
+                    borderRadius: primaryButton?.borderRadius ?? "12px",
+                    backgroundColor: background,
+                    color,
+                    fontSize: 14,
+                    fontWeight: 600,
+                }}
+            >
+                {submitting ? "Saving…" : "Continue"}
+            </button>
+            {submitError != null && (
+                <p role="alert" style={{ marginTop: 8, fontSize: 14, color: "#DC2626" }}>
+                    {submitError}
+                </p>
+            )}
+        </div>
     );
 }

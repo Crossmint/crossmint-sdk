@@ -103,6 +103,7 @@ describe("formatBalanceResponse", () => {
                     rawAmount: "12505000000",
                     available: { amount: "1210.5", rawAmount: "12105000000" },
                     locked: { amount: "40", rawAmount: "400000000" },
+                    inTransit: { amount: "10", rawAmount: "100000000" },
                     accounts: [
                         {
                             type: "wallet",
@@ -118,13 +119,15 @@ describe("formatBalanceResponse", () => {
                             rawAmount: "10000000000",
                             available: { amount: "960", rawAmount: "9600000000" },
                             locked: { amount: "40", rawAmount: "400000000" },
+                            inTransit: { amount: "10", rawAmount: "100000000" },
+                            creditLimit: { amount: "990", rawAmount: "9900000000" },
                         },
                     ],
                 },
             },
         } satisfies ResponseToken;
 
-        it("preserves available, locked, and account balances alongside the total", () => {
+        it("preserves available, locked, inTransit, and account balances, including the card credit limit, alongside the total", () => {
             const balances = formatBalanceResponse([usdc], "stellar", "xlm");
 
             expect(balances.usdc).toStrictEqual({
@@ -136,11 +139,18 @@ describe("formatBalanceResponse", () => {
                 contractId: usdc.chains.stellar.contractId,
                 available: usdc.chains.stellar.available,
                 locked: usdc.chains.stellar.locked,
+                inTransit: usdc.chains.stellar.inTransit,
                 accounts: usdc.chains.stellar.accounts,
             });
             const card = balances.usdc.accounts?.find((account) => account.type === "card");
-            expect(card?.available.amount).toBe("960");
-            expect(card?.locked.rawAmount).toBe("400000000");
+            expect(card).toMatchObject({
+                available: { amount: "960" },
+                locked: { rawAmount: "400000000" },
+                inTransit: { amount: "10" },
+                creditLimit: { amount: "990", rawAmount: "9900000000" },
+            });
+            const walletAccount = balances.usdc.accounts?.find((account) => account.type === "wallet");
+            expect(walletAccount).not.toHaveProperty("inTransit");
         });
 
         it("keeps MGUSD without a card as a plain balance alongside enriched USDC", () => {
@@ -172,6 +182,7 @@ describe("formatBalanceResponse", () => {
 
             expect(balances.tokens[0].available).toEqual(usdc.chains.stellar.available);
             expect(balances.tokens[0].locked).toEqual(usdc.chains.stellar.locked);
+            expect(balances.tokens[0].inTransit).toEqual(usdc.chains.stellar.inTransit);
             expect(balances.tokens[0].accounts).toEqual(usdc.chains.stellar.accounts);
         });
 
@@ -196,6 +207,7 @@ describe("formatBalanceResponse", () => {
             expect(balances.usdc.amount).toBe("1255.5");
             expect(balances.usdc).not.toHaveProperty("available");
             expect(balances.usdc).not.toHaveProperty("locked");
+            expect(balances.usdc).not.toHaveProperty("inTransit");
             expect(balances.usdc).not.toHaveProperty("accounts");
         });
     });

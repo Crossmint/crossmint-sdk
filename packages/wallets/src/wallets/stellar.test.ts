@@ -8,6 +8,9 @@ import {
     createMockWallet,
     createMockApiClient,
     createMockSigner,
+    createQuorumApiEntry,
+    createQuorumPendingApproval,
+    settle,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
 
@@ -454,6 +457,39 @@ describe("StellarWallet - upgrade() / migrate()", () => {
         expect((mockApiClient.createTransaction.mock.calls[1][1].params as any).signer).toBeUndefined();
         expect(result.transactionId).toBe("migrate-tx-1");
         expect(result.hash).toBe("hash-migrate");
+    });
+
+    describe("when a quorum must still approve", () => {
+        const quorumOnlyWait = (id: string, quorum = createQuorumApiEntry()) => ({
+            id,
+            status: "awaiting-approval",
+            chainType: "stellar",
+            approvals: { pending: [createQuorumPendingApproval({ quorum })], submitted: [] },
+        });
+
+        it("upgrade() returns the phase-1 transaction without a hash and creates no migrate transaction", async () => {
+            const quorum = createQuorumApiEntry();
+            mockApiClient.createTransaction.mockResolvedValueOnce(makeTxResponse("upgrade-tx-q", "upgrade-wallet"));
+            mockGetTransactionById({ "upgrade-tx-q": quorumOnlyWait("upgrade-tx-q", quorum) });
+
+            const outcome = await settle(stellarWallet.upgrade({ signer: quorum.locator }));
+
+            expect(outcome).toStrictEqual({
+                value: { hash: undefined, explorerLink: undefined, transactionId: "upgrade-tx-q" },
+            });
+            expect(mockApiClient.createTransaction).toHaveBeenCalledTimes(1);
+        });
+
+        it("migrate() returns the migrate transaction without a hash", async () => {
+            mockApiClient.createTransaction.mockResolvedValueOnce(makeTxResponse("migrate-tx-q", "migrate-wallet"));
+            mockGetTransactionById({ "migrate-tx-q": quorumOnlyWait("migrate-tx-q") });
+
+            const outcome = await settle(stellarWallet.migrate());
+
+            expect(outcome).toStrictEqual({
+                value: { hash: undefined, explorerLink: undefined, transactionId: "migrate-tx-q" },
+            });
+        });
     });
 
     it("upgrade({ prepareOnly: true }) returns only the phase-1 prepared transaction", async () => {

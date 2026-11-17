@@ -1,11 +1,22 @@
-import { expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { EVMChain } from "../../chains/chains";
 import type { DeviceSignerKeyStorage } from "../../utils/device-signers/DeviceSignerKeyStorage";
 import type { ServerSignerResolver } from "../server/resolver";
 import type { ApiSourcedServerSignerConfig, PasskeyProvider, ServerSignerConfig, SignerConfigForChain } from "../types";
+import { InvalidSignerError } from "../../utils/errors";
 import { getSignerDescriptor } from "./index";
 import type { SignerDescriptorContext } from "./types";
+
+const { createCredential } = vi.hoisted(() => ({ createCredential: vi.fn() }));
+vi.mock("ox", async (importOriginal) => {
+    const ox = await importOriginal<typeof import("ox")>();
+    return { ...ox, WebAuthnP256: { ...ox.WebAuthnP256, createCredential } };
+});
+afterEach(() => {
+    createCredential.mockReset();
+    vi.unstubAllGlobals();
+});
 
 const CHAIN: EVMChain = "base-sepolia";
 const WALLET_ADDRESS = "0xWalletAddress";
@@ -220,9 +231,81 @@ it.each<[name: string, config: Config, hasRecoveryResolution: boolean, expected:
     expect(getSignerDescriptor("server").canAutoAssemble(config as never, ctx)).toBe(expected);
 });
 
-it("addSignerPayload: passkey returns the full config", () => {
-    const config = cfg({ type: "passkey", id: "cred-1", publicKey });
-    expect(getSignerDescriptor("passkey").addSignerPayload(config as never, makeCtx())).toBe(config);
+it.each<[name: string, config: Config]>([
+    ["with an id", cfg({ type: "passkey", id: "cred-1", name: "my-key", publicKey, onSignWithPasskey: vi.fn() })],
+    ["with a passkey:{id} locator", cfg({ type: "passkey", locator: "passkey:cred-1", name: "my-key", publicKey })],
+])("addSignerPayload: passkey %s sends only the API's passkey fields", (_name, config) => {
+    expect(getSignerDescriptor("passkey").addSignerPayload(config as never, makeCtx())).toEqual({
+        type: "passkey",
+        id: "cred-1",
+        name: "my-key",
+        publicKey,
+    });
+});
+
+describe("prepareRegistration: passkey", () => {
+    const CREATED_CREDENTIAL = { id: "new-cred", publicKey: { x: 11n, y: 22n } };
+    const REGISTERED_SIGNER = { type: "passkey", id: "new-cred", name: "my-key", publicKey: { x: "11", y: "22" } };
+    const prepare = (config: object, ctx = makeCtx()) =>
+        getSignerDescriptor("passkey").prepareRegistration?.(cfg(config) as never, ctx);
+
+    it.each<[name: string, config: object]>([
+        ["an id", { type: "passkey", id: "cred-1", publicKey }],
+        ["a passkey:{id} locator", { type: "passkey", locator: "passkey:cred-1" }],
+    ])("keeps a config with %s and creates nothing", async (_name, config) => {
+        const onCreatePasskey = vi.fn();
+        const passkeyProvider: PasskeyProvider = { createPasskey: vi.fn(), signWithPasskey: vi.fn() };
+        const withCallback = { ...config, onCreatePasskey };
+
+        expect(await prepare(withCallback, makeCtx({ passkeyProvider }))).toBe(withCallback);
+        expect(onCreatePasskey).not.toHaveBeenCalled();
+        expect(passkeyProvider.createPasskey).not.toHaveBeenCalled();
+        expect(createCredential).not.toHaveBeenCalled();
+    });
+
+    it("creates the passkey with the config's onCreatePasskey over the passkeyProvider, keeping its callbacks", async () => {
+        const onCreatePasskey = vi.fn().mockResolvedValue(CREATED_CREDENTIAL);
+        const onSignWithPasskey = vi.fn();
+        const passkeyProvider: PasskeyProvider = { createPasskey: vi.fn(), signWithPasskey: vi.fn() };
+
+        const result = await prepare(
+            { type: "passkey", name: "my-key", onCreatePasskey, onSignWithPasskey },
+            makeCtx({ passkeyProvider })
+        );
+
+        expect(onCreatePasskey).toHaveBeenCalledWith("my-key");
+        expect(passkeyProvider.createPasskey).not.toHaveBeenCalled();
+        expect(result).toEqual({ ...REGISTERED_SIGNER, onCreatePasskey, onSignWithPasskey });
+    });
+
+    it("creates the passkey with the passkeyProvider when the config has no onCreatePasskey", async () => {
+        const passkeyProvider: PasskeyProvider = {
+            createPasskey: vi.fn().mockResolvedValue(CREATED_CREDENTIAL),
+            signWithPasskey: vi.fn(),
+        };
+
+        expect(await prepare({ type: "passkey", name: "my-key" }, makeCtx({ passkeyProvider }))).toEqual(
+            REGISTERED_SIGNER
+        );
+        expect(passkeyProvider.createPasskey).toHaveBeenCalledWith("my-key");
+    });
+
+    it("creates the passkey with the browser WebAuthn API otherwise, as decimal-string coordinates", async () => {
+        vi.stubGlobal("window", { navigator: { credentials: { create: vi.fn() } } });
+        createCredential.mockResolvedValue(CREATED_CREDENTIAL);
+
+        expect(await prepare({ type: "passkey", name: "my-key" })).toEqual(REGISTERED_SIGNER);
+        expect(createCredential).toHaveBeenCalledWith({ name: "my-key" });
+    });
+
+    it("throws a clear error without WebAuthn, onCreatePasskey or a passkeyProvider (e.g. in Node)", async () => {
+        await expect(prepare({ type: "passkey", name: "my-key" })).rejects.toThrow(
+            new InvalidSignerError(
+                'Creating a passkey needs WebAuthn, which this environment does not have. Pass a created passkey ({ type: "passkey", id, name, publicKey }) or an onCreatePasskey callback.'
+            )
+        );
+        expect(createCredential).not.toHaveBeenCalled();
+    });
 });
 
 it("addSignerPayload: device with publicKey returns type/publicKey/name", () => {

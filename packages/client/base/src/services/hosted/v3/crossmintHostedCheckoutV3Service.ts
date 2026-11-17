@@ -57,7 +57,7 @@ export function crossmintHostedCheckoutV3Service({
         window.location.href = url;
     }
 
-    function createWindow() {
+    function createWindow(): Window | undefined {
         const displayType = hostedCheckoutProps.appearance?.display || "popup";
         const url = getUrl(hostedCheckoutProps);
 
@@ -81,6 +81,8 @@ export function crossmintHostedCheckoutV3Service({
         if (hostedCheckoutProps.appearance?.overlay?.enabled !== false) {
             overlayService.create(windowClient);
         }
+
+        return windowClient.window;
     }
 
     return {

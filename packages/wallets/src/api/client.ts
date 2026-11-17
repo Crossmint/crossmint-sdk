@@ -24,6 +24,7 @@ import type {
     ApproveSignatureParams,
     ApproveSignatureResponse,
     GetSignatureResponse,
+    GetSignaturesResponse,
     GetTransactionsResponse,
     GetBalanceResponse,
     RegisterSignerParams,
@@ -43,6 +44,9 @@ import type {
     FundWalletParams,
 } from "./types";
 import type { Chain } from "../chains/chains";
+
+// The wallets API's 422 when a request already has every approval it needs (crossbit-main `approval-processor.ts`).
+const APPROVALS_ALREADY_COMPLETE_MESSAGE = "Already has the required number of approvals";
 
 class ApiClient extends CrossmintApiClient {
     private apiPrefix = "api/2025-06-09/wallets";
@@ -122,7 +126,12 @@ class ApiClient extends CrossmintApiClient {
             body: JSON.stringify(params),
             headers: this.headers,
         });
-        return response.json();
+        const body = await response.json();
+        // Another approver completed the transaction first: return its current state instead of the error.
+        if (response.status === 422 && body?.message === APPROVALS_ALREADY_COMPLETE_MESSAGE) {
+            return this.getTransaction(walletLocator, transactionId);
+        }
+        return body;
     }
 
     async getTransaction(walletLocator: WalletLocator, transactionId: string): Promise<GetTransactionResponse> {
@@ -152,12 +161,12 @@ class ApiClient extends CrossmintApiClient {
             body: JSON.stringify(params),
             headers: this.headers,
         });
-        // HTTP 422 means the approval was already completed (idempotent).
-        // Fetch and return the current signature state instead of the error body.
-        if (response.status === 422) {
+        const body = await response.json();
+        // Another approver completed the signature first: return its current state instead of the error.
+        if (response.status === 422 && body?.message === APPROVALS_ALREADY_COMPLETE_MESSAGE) {
             return this.getSignature(walletLocator, signatureId);
         }
-        return response.json();
+        return body;
     }
 
     async getSignature(walletLocator: WalletLocator, signatureId: string): Promise<GetSignatureResponse> {
@@ -167,10 +176,25 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async getTransactions(walletLocator: WalletLocator): Promise<GetTransactionsResponse> {
-        const response = await this.get(`${this.apiPrefix}/${walletLocator}/transactions`, {
+    async getTransactions(
+        walletLocator: WalletLocator,
+        params?: { page: number; perPage: number }
+    ): Promise<GetTransactionsResponse> {
+        const query = params != null ? `?page=${params.page}&perPage=${params.perPage}` : "";
+        const response = await this.get(`${this.apiPrefix}/${walletLocator}/transactions${query}`, {
             headers: this.headers,
         });
+        return response.json();
+    }
+
+    async getSignatures(
+        walletLocator: WalletLocator,
+        params: { page: number; perPage: number }
+    ): Promise<GetSignaturesResponse> {
+        const response = await this.get(
+            `${this.apiPrefix}/${walletLocator}/signatures?page=${params.page}&perPage=${params.perPage}`,
+            { headers: this.headers }
+        );
         return response.json();
     }
 
