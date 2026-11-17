@@ -21,6 +21,7 @@ const localeMap = {
     "en-US": enUS,
     "es-ES": esES,
     "fr-FR": frFR,
+    "fr-CA": frFR,
     "it-IT": itIT,
     "ja-JP": jaJp,
     "ko-KR": koKR,

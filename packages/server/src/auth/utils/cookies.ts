@@ -2,6 +2,7 @@ import {
     SESSION_PREFIX,
     REFRESH_TOKEN_PREFIX,
     CrossmintAuthenticationError,
+    getScopedCookieName,
     type AuthMaterialBasic,
     type AuthMaterial,
     type CookieData,
@@ -20,19 +21,61 @@ import {
 
 type GetCookiesOptions = { throwError?: boolean };
 
-export function getAuthCookies(request: GenericRequest, options?: GetCookiesOptions): AuthMaterialBasic | null {
+/**
+ * Names of the cookies the session is stored under for a project: `crossmint-jwt-<projectId>` and
+ * `crossmint-refresh-token-<projectId>`, the same names the client SDK uses. Use them where there is no
+ * request object to pass to `getSession`, such as a Next.js Server Component reading `cookies()`.
+ * The project ID is `validateAPIKey(apiKey).projectId`.
+ */
+export function getAuthCookieNames(projectId: string): { jwt: string; refreshToken: string } {
+    return {
+        jwt: getScopedCookieName(SESSION_PREFIX, projectId),
+        refreshToken: getScopedCookieName(REFRESH_TOKEN_PREFIX, projectId),
+    };
+}
+
+/**
+ * Read the session from the request cookies. If either project-scoped cookie (`crossmint-jwt-<projectId>`,
+ * as the client SDK writes it) is present, both come from the scoped names; otherwise both come from the legacy
+ * bare names. The two are never mixed, so a legacy JWT is never paired with a scoped refresh token.
+ */
+export function getAuthCookies(
+    request: GenericRequest,
+    projectId: string,
+    options?: GetCookiesOptions
+): AuthMaterialBasic | null {
     const cookieHeader = getCookieHeader(request, options);
     if (cookieHeader == null) {
         return null;
     }
-    const { [SESSION_PREFIX]: jwt, [REFRESH_TOKEN_PREFIX]: refreshToken } = parseCookieHeader(cookieHeader);
-    return { jwt, refreshToken };
+    const cookies = parseCookieHeader(cookieHeader);
+    const names = getAuthCookieNames(projectId);
+    const jwt = cookies[names.jwt] || undefined;
+    const refreshToken = cookies[names.refreshToken] || undefined;
+    if (jwt != null || refreshToken != null) {
+        return { jwt, refreshToken } as AuthMaterialBasic;
+    }
+    return {
+        jwt: cookies[SESSION_PREFIX] || undefined,
+        refreshToken: cookies[REFRESH_TOKEN_PREFIX] || undefined,
+    } as AuthMaterialBasic;
 }
 
-export function setAuthCookies(response: GenericResponse, authMaterial: AuthMaterial, options?: CookieOptions) {
+/**
+ * Write the session to the response cookies under the project-scoped names. Empty auth material (logout)
+ * also expires the legacy bare-named cookies, so an old session cannot be read back through the fallback.
+ * A refresh leaves them alone: they may belong to another project on the same domain.
+ */
+export function setAuthCookies(
+    response: GenericResponse,
+    authMaterial: AuthMaterial,
+    projectId: string,
+    options?: CookieOptions
+) {
+    const names = getAuthCookieNames(projectId);
     const cookies = [
         createCookieString({
-            name: SESSION_PREFIX,
+            name: names.jwt,
             value: authMaterial.jwt,
             options: {
                 ...options,
@@ -41,13 +84,18 @@ export function setAuthCookies(response: GenericResponse, authMaterial: AuthMate
             },
         }),
         createCookieString({
-            name: REFRESH_TOKEN_PREFIX,
+            name: names.refreshToken,
             value: authMaterial.refreshToken.secret,
             options: {
                 ...options,
                 expiresAt: authMaterial.refreshToken.expiresAt,
             },
         }),
+        ...(authMaterial.jwt === ""
+            ? [SESSION_PREFIX, REFRESH_TOKEN_PREFIX].map((legacyName) =>
+                  createCookieString({ name: legacyName, value: "", options })
+              )
+            : []),
     ];
 
     const responseAdapter = isNodeResponse(response)

@@ -1,4 +1,4 @@
-import type { LogSink } from "./types";
+import type { FlushOptions, LogSink } from "./types";
 /**
  * Global sink manager that holds shared sinks for all logger instances
  * Sinks are platform-specific and shared across all packages on the same platform
@@ -63,11 +63,11 @@ export class SinkManager {
      * Flush all sinks that support flushing
      * This ensures pending logs are sent before app/browser close
      */
-    async flush(): Promise<void> {
+    async flush(options?: FlushOptions): Promise<void> {
         const flushPromises: Promise<void>[] = [];
         for (const sink of this.sinks) {
             if (typeof sink.flush === "function") {
-                const flushResult = sink.flush();
+                const flushResult = sink.flush(options);
                 if (flushResult instanceof Promise) {
                     flushPromises.push(flushResult);
                 }

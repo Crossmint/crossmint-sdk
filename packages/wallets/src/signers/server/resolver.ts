@@ -37,6 +37,15 @@ export class ServerSignerResolver {
         this.#knownOnChainAddresses = params.knownOnChainAddresses;
     }
 
+    /** Takes the recovery keys another resolver holds, for a wallet copied with `from()`: no secret is copied. Each
+     * resolver owns its key bytes, so one wiping its key on a later resolution leaves the other's intact. */
+    adoptRecoveryResolutions(other: ServerSignerResolver): void {
+        this.#resolvedRecoveryServerSigners = other.#resolvedRecoveryServerSigners.map((resolved) => ({
+            ...resolved,
+            derivedKeyBytes: new Uint8Array(resolved.derivedKeyBytes),
+        }));
+    }
+
     deriveCandidates(config: ServerSignerConfig): { primary: DerivedServerSigner; legacy: DerivedServerSigner | null } {
         return deriveServerSignerCandidatesHelper(config, this.#chain, this.#projectId, this.#environment);
     }
@@ -97,14 +106,24 @@ export class ServerSignerResolver {
     resolveForUseSigner(
         config: ServerSignerConfig,
         registeredLocators: string[],
-        isRecovery: () => boolean
-    ): { kind: "delegated" } | { kind: "recovery"; address: string } | { kind: "unregistered"; message: string } {
+        isRecovery: () => boolean,
+        memberLocators: string[] = []
+    ):
+        | { kind: "delegated" }
+        | { kind: "recovery"; address: string }
+        | { kind: "member"; locator: string }
+        | { kind: "unregistered"; message: string } {
         const { primary, legacy } = this.deriveCandidates(config);
         if (this.#selectRegistered(primary, legacy, registeredLocators) != null) {
             return { kind: "delegated" };
         }
         if (isRecovery()) {
             return { kind: "recovery", address: this.#selectRecovery(primary, legacy).derivedAddress };
+        }
+        // A key that is only a quorum member signs like a delegated signer, so it is cached the same way.
+        const member = this.#selectRegistered(primary, legacy, memberLocators);
+        if (member != null) {
+            return { kind: "member", locator: `server:${member.derivedAddress}` };
         }
         const tried =
             legacy != null

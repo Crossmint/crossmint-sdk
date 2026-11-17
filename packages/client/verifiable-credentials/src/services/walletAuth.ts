@@ -24,7 +24,6 @@ export class WalletAuthService {
         const url = `${baseUrl}/api/v1-alpha1/credentials/auth/wallet`;
 
         const options = { method: "POST", headers: headers, body: JSON.stringify({ address: userAddress }) };
-        console.log(url, options);
 
         const response = await fetch(url, options);
         const challenge = (await response.json()).nonce as string;
@@ -75,7 +74,6 @@ export class WalletAuthService {
                 signature: signature,
             }),
         };
-        console.log(url, options);
 
         const response = await fetch(url, options);
         const decryptedData = (await response.json()) as any;

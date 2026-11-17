@@ -16,7 +16,10 @@ import type {
     DeviceSignerLocator,
     PasskeySignerConfig,
     PasskeyProvider,
+    QuorumSigner,
+    QuorumSignerConfig,
     ServerSignerConfig,
+    SignerLocator,
 } from "../signers/types";
 import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSignerKeyStorage";
 
@@ -28,29 +31,38 @@ export type PrepareOnly<T extends boolean = boolean> = {
 
 export type SendTokenTransactionType = "onramp" | "regulated-transfer" | "direct";
 
+/** The signer a call acts as: its locator, or a server signer config the SDK derives the locator from. */
+export type SignerOption = string | ServerSignerConfig;
+
+export function isSignerLocatorOption(signer: SignerOption): signer is string {
+    return typeof signer === "string";
+}
+
 export type TransactionInputOptions = PrepareOnly & {
-    signer?: string | ServerSignerConfig;
+    signer?: SignerOption;
 };
 
 export type SendTokenTransactionOptions = TransactionInputOptions & {
     transactionType?: SendTokenTransactionType;
 };
 
-export type SignatureInputOptions = PrepareOnly;
+export type SignatureInputOptions = PrepareOnly & { signer?: SignerOption };
 
 export type AddSignerOptions = PrepareOnly & {
     scopes?: Scope[];
     deployImmediately?: boolean;
+    /** The approver: a recovery method or recovery quorum (`quorum:<id>`); defaults as described on `addSigner`. */
+    signer?: SignerOption;
 };
 
-export type RemoveSignerOptions = PrepareOnly;
+export type RemoveSignerOptions = PrepareOnly & { signer?: SignerOption };
 
 export type UpgradeOptions = Partial<PrepareOnly> & {
-    signer?: string | ServerSignerConfig;
+    signer?: SignerOption;
 };
 
 export type MigrateOptions = Partial<PrepareOnly> & {
-    signer?: string | ServerSignerConfig;
+    signer?: SignerOption;
 };
 
 export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
@@ -59,13 +71,17 @@ export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar
 
 export type RemoveSignerReturnType = { transactionId: string; status?: "success" };
 
-export type AddRecoveryMethodOptions = PrepareOnly;
+export type AddRecoveryMethodOptions = PrepareOnly & { signer?: SignerOption };
 
-export type RemoveRecoveryMethodOptions = PrepareOnly;
+export type RemoveRecoveryMethodOptions = PrepareOnly & { signer?: SignerOption };
 
-export type AddRecoveryMethodReturnType = { transactionId: string; status?: "success" };
+/** `locator` is the new recovery method's, as the API names it (a quorum's is generated when it is added). */
+export type AddRecoveryMethodReturnType = { transactionId: string; status?: "success"; locator: SignerLocator };
 
 export type RemoveRecoveryMethodReturnType = { transactionId: string; status?: "success" };
+
+/** The request `recover()` leaves for quorum members to approve with `approve`, or undefined when none is left. */
+export type RecoverResult = { transactionId: string } | { signatureId: string } | undefined;
 
 export type SignMessageInput = {
     message: string;
@@ -200,7 +216,8 @@ export type Signer =
           locator: string;
           status: SignerStatus;
           scopes?: Scope[];
-      };
+      }
+    | (QuorumSigner & { status: SignerStatus; scopes?: Scope[] });
 
 // Approvals
 export type PendingApproval = NonNullable<
@@ -249,9 +266,11 @@ export type WalletArgsFor<C extends Chain> = {
  * A signer that can be used as a recovery signer. Device signers cannot be recovery signers, and on Solana a passkey
  * can only be a delegated signer.
  */
-export type RecoverySignerConfigFor<C extends Chain> = C extends SolanaChain
-    ? Exclude<SignerConfigForChain<C>, DeviceSignerConfig | PasskeySignerConfig>
-    : Exclude<SignerConfigForChain<C>, DeviceSignerConfig>;
+export type RecoverySignerConfigFor<C extends Chain> =
+    | (C extends SolanaChain
+          ? Exclude<SignerConfigForChain<C>, DeviceSignerConfig | PasskeySignerConfig>
+          : Exclude<SignerConfigForChain<C>, DeviceSignerConfig>)
+    | QuorumSignerConfig<C>;
 
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
     /**
@@ -260,12 +279,12 @@ export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
      */
     recovery?: RecoverySignerConfigFor<C> | Array<RecoverySignerConfigFor<C>>;
     /**
-     * Recovery methods, each able to authorize on its own. Only Solana and Stellar accept more than one.
+     * Recovery methods, each able to authorize on its own.
      * Required unless the deprecated `recovery` is passed.
      */
     recoveryMethods?: Array<RecoverySignerConfigFor<C>>;
     /** Signers to register on the wallet during creation. */
-    signers?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig>;
+    signers?: Array<SignerConfigForChain<C> | ExternalWalletRegistrationConfig | QuorumSignerConfig<C>>;
     alias?: string;
 };
 

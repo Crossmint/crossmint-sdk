@@ -8,10 +8,22 @@ export type { CrossmintEvent, CrossmintEventMap } from "@crossmint/client-sdk-ba
 export { getIdentityVerificationCredentials } from "@crossmint/client-sdk-base";
 export type {
     CrossmintIdentityVerificationProps,
+    IdentityVerificationAppearance,
     IdentityVerificationCredentials,
     IdentityVerificationStatus,
     IdentityVerificationError,
 } from "@crossmint/client-sdk-base";
+
+export { OfframpSignatureRejectedError } from "@crossmint/client-sdk-base";
+export type {
+    CrossmintEmbeddedOfframpProps,
+    EmbeddedOfframpCredentials,
+    EmbeddedOfframpPayer,
+    OfframpStatus,
+    OfframpErrorReason,
+} from "@crossmint/client-sdk-base";
+
+export { createCrossmintWalletSigner } from "@crossmint/client-sdk-react-base";
 
 export type { SDKExternalUser, OAuthProvider } from "@crossmint/common-sdk-auth";
 

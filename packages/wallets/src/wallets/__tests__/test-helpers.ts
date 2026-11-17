@@ -1,9 +1,21 @@
 import { vi, type MockedFunction } from "vitest";
-import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import { APIKeyEnvironmentPrefix, ApiClientError } from "@crossmint/common-sdk-base";
+import { Base64 } from "ox";
 import { Wallet } from "../wallet";
 import type { ApiClient } from "../../api";
 import type { Chain } from "../../chains/chains";
-import type { RecoverySignerConfigForChain, SignerConfigForChain, SignerLocator } from "../../signers/types";
+import { deriveServerSignerDetails } from "../../signers/server";
+import type {
+    QuorumLocator,
+    QuorumMember,
+    QuorumSigner,
+    QuorumSignerConfig,
+    RecoverySignerConfigForChain,
+    SignerAdapter,
+    SignerConfigForChain,
+    SignerLocator,
+} from "../../signers/types";
+import type { PendingApproval, WalletOptions } from "../types";
 
 export type MockedApiClient = {
     isServerSide: boolean;
@@ -70,8 +82,58 @@ export const createMockWallet = async <C extends Chain>(
     mockApiClient: MockedApiClient,
     signerType: "api-key" | "external-wallet" = "api-key",
     recoverySigners?: Array<RecoverySignerConfigForChain<C>>
+): Promise<Wallet<C>> => walletWithSigner(chain, mockApiClient, createMockSigner(signerType, chain), recoverySigners);
+
+// Runs the call to the end, fake timers included, so a sleep on the approval path cannot hang the test.
+export async function settle<T>(call: Promise<T>): Promise<{ value?: T; error?: unknown }> {
+    const outcome = call.then(
+        (value) => ({ value }),
+        (error: unknown) => ({ error })
+    );
+    await vi.runAllTimersAsync();
+    return outcome;
+}
+
+// What a signing test signer returns for `payload`, so a test can tell which message each approval signed.
+export const signatureOver = (payload: string) => `0xsig:${payload}`;
+
+// A wallet whose active signer is a registered external wallet that signs with `signatureOver`.
+export const createSigningWallet = async <C extends Chain>(
+    chain: C,
+    mockApiClient: MockedApiClient,
+    recoverySigners?: Array<RecoverySignerConfigForChain<C>>
 ): Promise<Wallet<C>> => {
-    const signer = createMockSigner(signerType, chain);
+    const signer = {
+        ...createMockSigner("external-wallet", chain),
+        onSign: vi.fn(async (payload: string) => signatureOver(payload)),
+    } as SignerConfigForChain<C>;
+    return walletWithSigner(chain, mockApiClient, signer, recoverySigners);
+};
+
+// The active signer of `createSigningWallet` and `createMockWallet(…, "external-wallet")`, as a quorum member.
+export const activeSignerMember = (chain: Chain): QuorumMember => {
+    const locator = getSignerLocator("external-wallet", chain);
+    return { type: "external-wallet", address: locator.split(":")[1], locator } as QuorumMember;
+};
+
+// A signer this client holds beyond the active one (`approve`'s `additionalSigners`), signing with `signatureOver`.
+export const createHeldSigner = (locator: string): SignerAdapter => {
+    const sign = vi.fn(async (payload: string) => ({ signature: signatureOver(payload) }));
+    return {
+        type: locator.split(":")[0],
+        locator: () => locator as SignerLocator,
+        signMessage: sign,
+        signTransaction: sign,
+    } as unknown as SignerAdapter;
+};
+
+const walletWithSigner = async <C extends Chain>(
+    chain: C,
+    mockApiClient: MockedApiClient,
+    signer: SignerConfigForChain<C>,
+    recoverySigners?: Array<RecoverySignerConfigForChain<C>>
+): Promise<Wallet<C>> => {
+    const signerType = signer.type === "api-key" ? "api-key" : "external-wallet";
     const wallet = new Wallet(
         {
             chain,
@@ -91,6 +153,21 @@ export const createMockWallet = async <C extends Chain>(
         ])
     );
     await wallet.useSigner(signer);
+    return wallet;
+};
+
+// A wallet with no active signer: its recovery methods are never activated on their own (no api-key recovery).
+export const createMockWalletWithoutSigner = async <C extends Chain>(
+    chain: C,
+    mockApiClient: MockedApiClient,
+    recoverySigners: Array<RecoverySignerConfigForChain<C>>,
+    options?: WalletOptions
+): Promise<Wallet<C>> => {
+    const wallet = new Wallet(
+        { chain, address: getChainAddress(chain), recovery: recoverySigners, options },
+        mockApiClient as unknown as ApiClient
+    );
+    await wallet.waitForInit();
     return wallet;
 };
 
@@ -114,6 +191,188 @@ export const createMockApiClient = (overrides: Partial<MockedApiClient> = {}): M
     ...overrides,
 });
 
+const randomEvmAddress = () => `0x${crypto.randomUUID().replace(/-/g, "")}${crypto.randomUUID().slice(0, 8)}`;
+
+// A quorum entry as the wallets API returns it. Members are random so no test depends on them.
+export const createQuorumApiEntry = ({ threshold = 2, memberCount = 3 } = {}) => {
+    const members = Array.from({ length: memberCount }, () => {
+        const email = `member-${crypto.randomUUID()}@example.com`;
+        return { type: "email" as const, email, address: randomEvmAddress(), locator: `email:${email}` };
+    });
+    return {
+        type: "quorum" as const,
+        locator: `quorum:${crypto.randomUUID()}` as const,
+        threshold,
+        members,
+    } satisfies QuorumSigner;
+};
+
+// A quorum entry whose first members are `members`; the rest are random email members.
+export const createQuorumApiEntryWith = (members: QuorumMember[], { threshold = 2, memberCount = 3 } = {}) => {
+    const quorum = createQuorumApiEntry({ threshold, memberCount });
+    return { ...quorum, members: [...members, ...quorum.members.slice(members.length)] } satisfies QuorumSigner;
+};
+
+// A quorum entry of `approvals.pending` as the wallets API returns it. Each member gets its own random message.
+export const createQuorumPendingApproval = ({
+    quorum,
+    pending = quorum.members,
+    submitted = [],
+    remaining = quorum.threshold - submitted.length,
+    createMessage = randomHexMessage,
+}: {
+    quorum: QuorumSigner;
+    pending?: QuorumMember[];
+    submitted?: QuorumMember[];
+    remaining?: number;
+    createMessage?: () => string;
+}) =>
+    ({
+        signer: { type: "quorum", locator: quorum.locator },
+        quorumApprovals: {
+            threshold: quorum.threshold,
+            remaining,
+            pending: pending.map((member) => ({ member, message: createMessage() })),
+            submitted: submitted.map((member) => ({
+                member,
+                message: createMessage(),
+                signature: randomHexMessage(),
+                submittedAt: new Date().toISOString(),
+            })),
+        },
+    }) satisfies PendingApproval;
+
+const randomHexMessage = () => `0x${crypto.randomUUID().replace(/-/g, "")}`;
+
+// What a call returns for a request made as a quorum, or while only quorum members can still approve it.
+export const UNSIGNED_TRANSACTION = { hash: undefined, explorerLink: undefined, transactionId: "txn-1" };
+export const UNSIGNED_SIGNATURE = { signature: undefined, signatureId: "sig-1" };
+
+// A transaction or signature request as the wallets API returns it while `pending` approvals are outstanding.
+// What the real ApiClient.getSigner throws for a signer the wallet does not have: it throws on every non-OK status.
+export const signerNotFound = () =>
+    new ApiClientError(
+        "API request failed: 404 Not Found",
+        404,
+        "Not Found",
+        '{"error":true,"message":"Signer not found"}'
+    );
+
+export const createAwaitingRequest = (id: string, pending: object[], chainType = "evm") => ({
+    id,
+    status: "awaiting-approval",
+    chainType,
+    approvals: { pending, submitted: [] },
+});
+
+// A Stellar member message: the base64 of a 32-byte auth entry preimage hash, as the wallets API sends it.
+export const randomStellarMessage = () => Base64.fromBytes(crypto.getRandomValues(new Uint8Array(32)));
+
+// The wallets API's expiry message (crossbit-main `constants/error.ts`, `TRANSACTION_EXPIRED_MESSAGE`).
+export const TRANSACTION_EXPIRED_API_MESSAGE =
+    "The transaction expired before it could be submitted. Create a new transaction.";
+
+// A transaction or signature request as the wallets API stores it once its approval window closed.
+export const createExpiredRequest = (id: string) => ({
+    id,
+    status: "failed" as const,
+    error: {
+        reason: "execution_reverted",
+        message: "Execution reverted, see 'revert' for details",
+        revert: {
+            type: "wallet_authorization",
+            reason: TRANSACTION_EXPIRED_API_MESSAGE,
+            reasonData: { code: "TRANSACTION_EXPIRED" },
+        },
+    },
+});
+
 export const createMockSolanaSerializedTransaction = (): string => {
     return "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgEDBQrKxEIIPWsDwcGCzLQ7FGIHQ38p0dZq6bG2v2wUAUqMx3jV1jZ0";
 };
+
+// EIP-712 typed data for EVM `signTypedData` calls.
+export const EVM_TYPED_DATA = {
+    domain: {
+        name: "App",
+        version: "1",
+        chainId: 84532,
+        verifyingContract: "0x1111111111111111111111111111111111111111",
+    },
+    types: { Mail: [{ name: "contents", type: "string" }] },
+    primaryType: "Mail",
+    message: { contents: "hello" },
+    chain: "base-sepolia",
+} as const;
+
+export const QUORUM_TEST_PROJECT_ID = "test-project";
+export const QUORUM_SERVER_MEMBER_SECRET = "c".repeat(64);
+const QUORUM_EXTERNAL_MEMBER: Record<string, string> = {
+    "base-sepolia": "0xAbCdEf0123456789aBcDeF0123456789AbCdEf01",
+    solana: "ExternalMember11111111111111111111111111111",
+    stellar: "GEXTERNALMEMBER",
+};
+const QUORUM_PASSKEY_MEMBER = {
+    type: "passkey",
+    id: "cred-dave",
+    name: "Dave",
+    publicKey: { x: "11", y: "22" },
+} as const;
+
+export const serverMemberAddress = (chain: Chain) =>
+    deriveServerSignerDetails(
+        { type: "server", secret: QUORUM_SERVER_MEMBER_SECRET },
+        chain,
+        QUORUM_TEST_PROJECT_ID,
+        APIKeyEnvironmentPrefix.STAGING
+    ).derivedAddress;
+
+// One quorum on a chain: the config a caller passes, the identity fields the API must receive, and the entry the API
+// returns. Its members cover every type the chain takes (Solana: no passkey).
+export function createQuorumFixture(chain: Chain, threshold = 2) {
+    const passkey = chain === "solana" ? [] : [QUORUM_PASSKEY_MEMBER];
+    const externalAddress = QUORUM_EXTERNAL_MEMBER[chain];
+    const config = {
+        type: "quorum",
+        threshold,
+        members: [
+            { type: "email", email: "alice@example.com" },
+            { type: "external-wallet", address: externalAddress, onSign: vi.fn() },
+            { type: "server", secret: QUORUM_SERVER_MEMBER_SECRET },
+            ...passkey,
+        ],
+    } as unknown as QuorumSignerConfig<Chain>;
+    const input = {
+        type: "quorum",
+        threshold,
+        members: [
+            { type: "email", email: "alice@example.com" },
+            { type: "external-wallet", address: externalAddress },
+            { type: "server", address: serverMemberAddress(chain) },
+            ...passkey,
+        ],
+    };
+    const entry = {
+        type: "quorum",
+        locator: `quorum:${crypto.randomUUID()}` as QuorumLocator,
+        threshold,
+        members: [
+            { type: "email", email: "alice@example.com", locator: "email:alice@example.com" },
+            { type: "external-wallet", address: externalAddress, locator: `external-wallet:${externalAddress}` },
+            { type: "server", address: serverMemberAddress(chain), locator: `server:${serverMemberAddress(chain)}` },
+            ...passkey.map((member) => ({ ...member, locator: `passkey:${member.id}` })),
+        ] as QuorumMember[],
+    } satisfies QuorumSigner;
+    return { config, input, entry };
+}
+
+// The same quorum config with its members listed in reverse and EVM addresses lowercased (only EVM ignores case).
+export function withMembersReordered(config: QuorumSignerConfig<Chain>): QuorumSignerConfig<Chain> {
+    const members = [...config.members].reverse().map((member) => {
+        if (member.type !== "external-wallet" || !member.address.startsWith("0x")) {
+            return member;
+        }
+        return { ...member, address: member.address.toLowerCase() };
+    });
+    return { ...config, members } as QuorumSignerConfig<Chain>;
+}

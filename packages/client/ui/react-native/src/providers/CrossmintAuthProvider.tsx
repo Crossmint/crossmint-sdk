@@ -3,6 +3,7 @@ import * as WebBrowser from "expo-web-browser";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
+import { createPkcePair, type StorageProvider } from "@crossmint/client-sdk-auth";
 import { type AuthStatus, CrossmintAuthBaseProvider, useCrossmintAuthBase } from "@crossmint/client-sdk-react-base";
 import { useCrossmintAuth, useCrossmint } from "../hooks";
 import { SecureStorage } from "../utils/SecureStorage";
@@ -13,6 +14,13 @@ const initialOAuthUrlMap: OAuthUrlMap = {
     google: null,
     twitter: null,
 };
+
+type PrefetchedOAuthLogin = {
+    urlByProvider: OAuthUrlMap;
+    codeVerifier?: string;
+};
+
+const OAUTH_CODE_VERIFIER_KEY = "crossmint-oauth-code-verifier";
 
 const defaultContextValue: RNAuthContext = {
     crossmintAuth: undefined,
@@ -42,12 +50,18 @@ function CrossmintAuthSync({ children }: { children: ReactNode }) {
 function CrossmintAuthProviderContent({
     children,
     appSchema,
+    storageProvider,
+    usesCustomRefreshRoute,
 }: {
     children: ReactNode;
     appSchema?: string | string[];
+    storageProvider: StorageProvider;
+    usesCustomRefreshRoute: boolean;
 }) {
     const baseAuth = useCrossmintAuthBase();
-    const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
+    const [prefetchedOAuthLogin, setPrefetchedOAuthLogin] = useState<PrefetchedOAuthLogin>({
+        urlByProvider: initialOAuthUrlMap,
+    });
     const [inProgress, setInProgress] = useState(false);
 
     const singleAppSchema = Array.isArray(appSchema) ? appSchema[0] : appSchema;
@@ -57,23 +71,44 @@ function CrossmintAuthProviderContent({
         !!Constants.expoVersion;
     const resolvedAppSchema = isRunningInExpoGo ? "exp://127.0.0.1:8081" : singleAppSchema;
 
+    const createPkcePairUnlessCustomRefreshRoute = useCallback(
+        () => (usesCustomRefreshRoute ? undefined : createPkcePair()),
+        [usesCustomRefreshRoute]
+    );
+
     const preFetchAndSetOauthUrl = useCallback(async () => {
         try {
             const oauthProviders = Object.keys(initialOAuthUrlMap);
+            const pkcePair = createPkcePairUnlessCustomRefreshRoute();
 
             const oauthPromiseList = oauthProviders.map(async (provider) => {
                 const url = await baseAuth.crossmintAuth?.getOAuthUrl(provider as OAuthProvider, {
                     appSchema: resolvedAppSchema,
+                    codeChallenge: pkcePair?.challenge,
                 });
                 return { [provider]: url };
             });
 
-            const oauthUrlMap = Object.assign({}, ...(await Promise.all(oauthPromiseList)));
-            setOauthUrlMap(oauthUrlMap);
+            const urlByProvider = Object.assign({}, ...(await Promise.all(oauthPromiseList)));
+            setPrefetchedOAuthLogin({ urlByProvider, codeVerifier: pkcePair?.verifier });
         } catch (error) {
             console.error(error);
         }
-    }, [baseAuth.crossmintAuth, resolvedAppSchema]);
+    }, [baseAuth.crossmintAuth, resolvedAppSchema, createPkcePairUnlessCustomRefreshRoute]);
+
+    const getOAuthLogin = async (provider: OAuthProvider) => {
+        const prefetchedUrl = prefetchedOAuthLogin.urlByProvider[provider];
+        if (prefetchedUrl != null) {
+            return { oauthUrl: prefetchedUrl, codeVerifier: prefetchedOAuthLogin.codeVerifier };
+        }
+
+        const pkcePair = createPkcePairUnlessCustomRefreshRoute();
+        const oauthUrl = await baseAuth.crossmintAuth?.getOAuthUrl(provider, {
+            appSchema: resolvedAppSchema,
+            codeChallenge: pkcePair?.challenge,
+        });
+        return { oauthUrl, codeVerifier: pkcePair?.verifier };
+    };
 
     useEffect(() => {
         if (baseAuth.user == null) {
@@ -97,9 +132,12 @@ function CrossmintAuthProviderContent({
     const loginWithOAuth = async (provider: OAuthProvider) => {
         try {
             setInProgress(true);
-            const oauthUrl =
-                oauthUrlMap[provider] ??
-                (await baseAuth.crossmintAuth?.getOAuthUrl(provider, { appSchema: resolvedAppSchema }));
+            const { oauthUrl, codeVerifier } = await getOAuthLogin(provider);
+            if (codeVerifier != null) {
+                await storageProvider.set(OAUTH_CODE_VERIFIER_KEY, codeVerifier);
+            } else {
+                await storageProvider.remove(OAUTH_CODE_VERIFIER_KEY);
+            }
 
             await WebBrowser.warmUpAsync();
             const baseUrl = new URL(oauthUrl);
@@ -133,7 +171,14 @@ function CrossmintAuthProviderContent({
             if (oneTimeSecret != null) {
                 try {
                     setInProgress(true);
-                    const authMaterial = await baseAuth.crossmintAuth?.handleRefreshAuthMaterial(oneTimeSecret);
+                    const codeVerifier = await storageProvider.get(OAUTH_CODE_VERIFIER_KEY);
+                    const authMaterial = await baseAuth.crossmintAuth?.handleRefreshAuthMaterial(
+                        oneTimeSecret,
+                        codeVerifier
+                    );
+                    if (authMaterial != null) {
+                        await storageProvider.remove(OAUTH_CODE_VERIFIER_KEY);
+                    }
                     return authMaterial;
                 } catch (error) {
                     throw error;
@@ -143,7 +188,7 @@ function CrossmintAuthProviderContent({
             }
             return null;
         },
-        [baseAuth.crossmintAuth]
+        [baseAuth.crossmintAuth, storageProvider]
     );
 
     return (
@@ -181,7 +226,13 @@ export function CrossmintAuthProvider({ children, ...props }: RNCrossmintAuthPro
             logoutRoute={props.logoutRoute}
             storageProvider={customStorageProvider}
         >
-            <CrossmintAuthProviderContent appSchema={appSchema}>{children}</CrossmintAuthProviderContent>
+            <CrossmintAuthProviderContent
+                appSchema={appSchema}
+                storageProvider={customStorageProvider}
+                usesCustomRefreshRoute={props.refreshRoute != null}
+            >
+                {children}
+            </CrossmintAuthProviderContent>
         </CrossmintAuthBaseProvider>
     );
 }

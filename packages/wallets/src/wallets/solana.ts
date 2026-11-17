@@ -1,5 +1,5 @@
 import bs58 from "bs58";
-import nacl from "tweetnacl";
+import { ed25519Sign } from "../utils/ed25519";
 import { isValidSolanaAddress, WithLoggerContext } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain } from "../chains/chains";
 import type {
@@ -10,7 +10,7 @@ import type {
     TransactionInputOptions,
 } from "./types";
 import { Wallet } from "./wallet";
-import { TransactionNotCreatedError } from "../utils/errors";
+import { throwIfQuorumApiError, TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
 import type { CreateTransactionSuccessResponse } from "@/api";
 import { walletsLogger } from "../logger";
@@ -29,9 +29,12 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 apiDelegatedServerSignerAddresses: Wallet.getApiDelegatedServerSignerAddresses(wallet),
                 signer: wallet.signer,
                 signers: Wallet.getInitialSigners(wallet),
+                quorumMemberLocator: Wallet.getQuorumMemberLocator(wallet),
+                recoveryMember: Wallet.getRecoveryMember(wallet),
             },
             Wallet.getApiClient(wallet)
         );
+        Wallet.copyServerRecoveryKeys(wallet, this);
     }
 
     static from(wallet: Wallet<Chain>) {
@@ -60,9 +63,10 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         walletsLogger.info("solanaWallet.sendTransaction.start");
 
         await this.preAuthIfNeeded();
-        const createdTransaction = await this.createTransaction(params);
+        const signerParams = await this.resolveSignerParams(params.options);
+        const createdTransaction = await this.createTransaction(params, signerParams);
 
-        if (params.options?.prepareOnly) {
+        if (this.isPrepareOnly(params.options, signerParams.signer)) {
             walletsLogger.info("solanaWallet.sendTransaction.prepared", {
                 transactionId: createdTransaction.id,
             });
@@ -84,7 +88,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                         return Promise.resolve(transaction);
                     },
                     onSignBytes: (payload) =>
-                        Promise.resolve(bs58.encode(nacl.sign.detached(bs58.decode(payload), signer.secretKey))),
+                        Promise.resolve(bs58.encode(ed25519Sign(bs58.decode(payload), signer.secretKey))),
                 })
         );
 
@@ -100,16 +104,10 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         return result;
     }
 
-    private async createTransaction(params: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {
-        let signer: string;
-        if (params.options?.signer == null) {
-            signer = this.signerManager.require().locator();
-        } else if (typeof params.options.signer === "string") {
-            signer = params.options.signer;
-        } else {
-            signer = this.resolveServerSignerApiLocator(params.options.signer);
-        }
-
+    private async createTransaction(
+        params: SolanaTransactionInput,
+        signerParams: { signer: string }
+    ): Promise<CreateTransactionSuccessResponse> {
         let serializedTransaction: string;
 
         if ("serializedTransaction" in params) {
@@ -121,11 +119,12 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 transaction: serializedTransaction,
-                signer,
+                ...signerParams,
             },
         });
 
         if ("error" in transactionCreationResponse) {
+            throwIfQuorumApiError(transactionCreationResponse);
             throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
         }
 
