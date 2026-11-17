@@ -114,7 +114,8 @@ const PaymentMethodConnection = forwardRef<
     const [loads, setLoads] = useState(0);
     const [revealUnready, setRevealUnready] = useState(false);
     const [openedOn, setOpenedOn] = useState<FirstScreen | null>(null);
-    const [remembered] = useState(() => recallFirstScreen(props));
+    // Read after mount: the server has no storage, and hydration must match its render.
+    const [remembered, setRemembered] = useState<RememberedScreen | null>(null);
     const guess = firstScreen(props);
     const skeleton = guess === "saved" ? remembered?.screen ?? guess : guess;
     const reservedHeight = remembered?.screen === skeleton ? remembered.height : undefined;
@@ -151,6 +152,9 @@ const PaymentMethodConnection = forwardRef<
     useCommittedLayoutEffect(() => {
         latestProps.current = props;
     });
+    useCommittedLayoutEffect(() => {
+        setRemembered(recallFirstScreen(latestProps.current));
+    }, []);
     useEffect(() => {
         if (!formReady || height <= 0 || skeleton == null) {
             return;
@@ -353,6 +357,7 @@ const PaymentMethodConnection = forwardRef<
 // With saved methods allowed, the iframe opens on the choice between them and a new one (bare form when
 // nothing is saved yet); otherwise on the first type's form, of which only the card's has a skeleton.
 type FirstScreen = "saved" | "card";
+type RememberedScreen = { screen: FirstScreen; height: number };
 
 function firstScreen({
     allowedModes,
