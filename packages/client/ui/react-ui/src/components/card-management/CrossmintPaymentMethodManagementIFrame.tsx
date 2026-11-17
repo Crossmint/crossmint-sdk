@@ -164,7 +164,7 @@ const PaymentMethodConnection = forwardRef<
         const timer = setTimeout(() => {
             setSettled(true);
             const screen = openedOn ?? skeleton;
-            if (skeleton != null && screen !== "other") {
+            if (skeleton != null && screen != null && screen !== "other") {
                 rememberFirstScreen(latestProps.current, { screen, height });
             }
         }, FIRST_SCREEN_SETTLE_MS);
