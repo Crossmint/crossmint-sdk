@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
-import { Keypair, type VersionedTransaction } from "@solana/web3.js";
+import { Keypair, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import type { ApiClient } from "../api";
 import type { Chain } from "../chains/chains";
 import type { QuorumMember, RecoverySignerConfigForChain, SignerConfigForChain } from "../signers/types";
+import { VERSION_1_MESSAGE } from "../signers/solana-version-1.fixture";
 import { DeviceSignerAwaitingApprovalError, QuorumApprovingMembersRequiredError } from "../utils/errors";
 import { createDeviceSigner } from "@/utils/device-signers";
 import { EVMWallet } from "./evm";
@@ -14,12 +15,14 @@ import { Wallet } from "./wallet";
 import {
     QUORUM_SERVER_MEMBER_SECRET,
     QUORUM_TEST_PROJECT_ID,
+    createAwaitingRequest,
     createMockApiClient,
     createMockSolanaSerializedTransaction,
     createMockWallet,
     createQuorumApiEntryWith,
     createQuorumPendingApproval,
     serverMemberAddress,
+    settle,
     signerNotFound,
     type MockedApiClient,
 } from "./__tests__/test-helpers";
@@ -55,6 +58,9 @@ const serverMember = () => {
     const address = serverMemberAddress("solana");
     return { type: "server", address, locator: `server:${address}` } as QuorumMember;
 };
+
+const verifies = (message: Uint8Array, signature: string, publicKey: string) =>
+    nacl.sign.detached.verify(message, bs58.decode(signature), new PublicKey(publicKey).toBytes());
 
 // The calls that create a request a quorum signer or approver acts in. `sent` reads the approvingMembers it sent.
 type QuorumCall = {
@@ -467,6 +473,115 @@ describe("a Solana key that is only a quorum member", () => {
         await sendTransactionOn(wallet, { approvingMembers: [bob.member.locator] });
 
         expect(createdParams(api).signer).toBe(treasury.locator);
+    });
+});
+
+// A v0 transaction whose signers are a relay fee payer and `members`, as the API builds a quorum transaction.
+function solanaTransactionSignedBy(members: PublicKey[]) {
+    const feePayer = Keypair.generate().publicKey;
+    const message = new TransactionMessage({
+        payerKey: feePayer,
+        recentBlockhash: bs58.encode(crypto.getRandomValues(new Uint8Array(32))),
+        instructions: members.map((member) =>
+            SystemProgram.transfer({ fromPubkey: member, toPubkey: feePayer, lamports: 1 })
+        ),
+    }).compileToV0Message();
+    return new VersionedTransaction(message);
+}
+
+// The transaction as the API returns it while `pending` members must approve, each over the transaction message.
+function awaitingSolanaTransaction(
+    transaction: VersionedTransaction,
+    pending: QuorumMember[],
+    quorum: ReturnType<typeof createQuorumApiEntryWith>,
+    message = bs58.encode(transaction.message.serialize())
+) {
+    return {
+        ...createAwaitingRequest(
+            "txn-1",
+            [createQuorumPendingApproval({ quorum, pending, createMessage: () => message })],
+            "solana"
+        ),
+        onChain: { transaction: bs58.encode(transaction.serialize()) },
+    };
+}
+
+describe("approve() as a Solana quorum member with an Ed25519 key", () => {
+    let api: MockedApiClient;
+    const alice = ed25519Member();
+    const server = serverMember();
+    const quorum = createQuorumApiEntryWith([alice.member, server], { threshold: 2, memberCount: 3 });
+    const sentApproval = () => api.approveTransaction.mock.calls[0][2].approvals;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.useFakeTimers();
+        api = createMockApiClient({ projectId: QUORUM_TEST_PROJECT_ID } as Partial<MockedApiClient>);
+        api.approveTransaction.mockResolvedValue({ id: "txn-1", status: "pending" } as never);
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+        vi.restoreAllMocks();
+    });
+
+    async function walletHolding(key: SignerConfigForChain<"solana">) {
+        const wallet = await createMockWallet("solana", api, "api-key", [
+            { type: "api-key" },
+            quorum,
+        ] as unknown as RecoverySignerConfigForChain<"solana">[]);
+        await wallet.useRecoveryMethod(key as never);
+        return wallet;
+    }
+
+    it("signs the transaction message as an external-wallet member, a signature valid for its key", async () => {
+        const wallet = await walletHolding(alice.config);
+        const transaction = solanaTransactionSignedBy([alice.keypair.publicKey]);
+        api.getTransaction.mockResolvedValueOnce(
+            awaitingSolanaTransaction(transaction, [alice.member], quorum) as never
+        );
+        api.getTransaction.mockResolvedValue({ id: "txn-1", status: "success", onChain: { txId: "sig" } } as never);
+
+        await settle(wallet.approve({ transactionId: "txn-1" }));
+
+        const [approval] = sentApproval();
+        expect(approval.signer).toBe(alice.member.locator);
+        expect(verifies(transaction.message.serialize(), approval.signature, alice.member.address as string)).toBe(
+            true
+        );
+    });
+
+    it("signs a version 1 message's bytes as an external-wallet member, a signature valid for its key", async () => {
+        const wallet = await walletHolding(alice.config);
+        const transaction = solanaTransactionSignedBy([alice.keypair.publicKey]);
+        api.getTransaction.mockResolvedValueOnce(
+            awaitingSolanaTransaction(transaction, [alice.member], quorum, VERSION_1_MESSAGE) as never
+        );
+        api.getTransaction.mockResolvedValue({ id: "txn-1", status: "success", onChain: { txId: "sig" } } as never);
+
+        await settle(wallet.approve({ transactionId: "txn-1" }));
+
+        const [approval] = sentApproval();
+        expect(verifies(bs58.decode(VERSION_1_MESSAGE), approval.signature, alice.member.address as string)).toBe(true);
+    });
+
+    it("signs the message bytes as a server member, a signature valid for its derived key", async () => {
+        const wallet = await walletHolding({ type: "server", secret: QUORUM_SERVER_MEMBER_SECRET } as never);
+        const message = bs58.encode(crypto.getRandomValues(new Uint8Array(96)));
+        api.getTransaction.mockResolvedValueOnce(
+            createAwaitingRequest(
+                "txn-1",
+                [createQuorumPendingApproval({ quorum, pending: [server], createMessage: () => message })],
+                "solana"
+            ) as never
+        );
+        api.getTransaction.mockResolvedValue({ id: "txn-1", status: "success", onChain: { txId: "sig" } } as never);
+
+        await settle(wallet.approve({ transactionId: "txn-1" }));
+
+        const [approval] = sentApproval();
+        expect(approval.signer).toBe(server.locator);
+        expect(verifies(bs58.decode(message), approval.signature, server.address as string)).toBe(true);
     });
 });
 
