@@ -4,6 +4,7 @@ import { P256 } from "ox";
 export class MockDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     private readonly keys = new Map<string, `0x${string}`>(); // base64PubKey → private key hex
     private readonly addressMap = new Map<string, string>(); // walletAddress → base64PubKey
+    private readonly approvingMembers = new Map<string, string[]>(); // walletAddress → member locators
 
     constructor(apiKey: string) {
         super(apiKey);
@@ -58,6 +59,18 @@ export class MockDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         const base64 = this.addressMap.get(address);
         if (base64) this.keys.delete(base64);
         this.addressMap.delete(address);
+    }
+
+    async saveApprovingMembers(address: string, memberLocators: string[] | null): Promise<void> {
+        if (memberLocators == null) {
+            this.approvingMembers.delete(address);
+        } else {
+            this.approvingMembers.set(address, memberLocators);
+        }
+    }
+
+    async getSavedApprovingMembers(address: string): Promise<string[] | null> {
+        return this.approvingMembers.get(address) ?? null;
     }
 
     getDeviceName(): string {
