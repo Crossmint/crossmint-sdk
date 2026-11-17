@@ -11,6 +11,8 @@ const DEFAULT_BORDER_RADIUS = "12px";
 const DEFAULT_BORDER = "#D1D5DB";
 const DEFAULT_BACKGROUND = "#ffffff";
 const DEFAULT_TEXT = "#000000";
+const DEFAULT_SAVED_BORDER = "#D1D5DB";
+const DEFAULT_ACCENT = "#04AA6D";
 const FIELD_GAP = 12;
 const FEEDBACK_HEIGHT = 24;
 
@@ -75,6 +77,56 @@ export function CardFormSkeleton({ appearance }: { appearance?: PaymentMethodMan
                 <Field style={field} />
             </div>
             <Field style={field} />
+        </div>
+    );
+}
+
+// The iframe's saved-methods choice: in a 1px box with 11px corners, 16px apart, the "Use existing" radio,
+// the selected method's 74px row, the "or" separator and the "Add new" radio, then the feedback row.
+// Keep in sync with `SavedOrNewSections` in the iframe.
+export function SavedMethodsSkeleton({ appearance }: { appearance?: PaymentMethodManagementAppearance }) {
+    const colors = appearance?.variables?.colors;
+    const border = `1px solid ${colors?.borderPrimary ?? DEFAULT_SAVED_BORDER}`;
+    const tint: CSSProperties = { color: colors?.textPrimary ?? DEFAULT_TEXT };
+    const radio = (
+        <div style={{ display: "flex", alignItems: "center", columnGap: 8, height: 24 }}>
+            <div
+                style={{
+                    boxSizing: "border-box",
+                    width: 20,
+                    height: 20,
+                    borderRadius: "50%",
+                    border: `1px solid ${colors?.accent ?? DEFAULT_ACCENT}`,
+                }}
+            />
+            <Field style={{ ...tint, width: 96, height: 14, borderRadius: 7 }} />
+        </div>
+    );
+    const line = <div style={{ flex: 1, height: 1, backgroundColor: colors?.borderPrimary ?? DEFAULT_SAVED_BORDER }} />;
+    return (
+        <div
+            aria-hidden="true"
+            data-testid="crossmint-payment-method-management.skeleton"
+            style={{ paddingBottom: FEEDBACK_HEIGHT }}
+        >
+            <div
+                style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    rowGap: 16,
+                    padding: "16px 14px",
+                    border,
+                    borderRadius: 11,
+                }}
+            >
+                {radio}
+                <Field style={{ ...tint, height: 74, border, borderRadius: 8 }} />
+                <div style={{ display: "flex", alignItems: "center", columnGap: 36, height: 20 }}>
+                    {line}
+                    {line}
+                </div>
+                {radio}
+            </div>
         </div>
     );
 }

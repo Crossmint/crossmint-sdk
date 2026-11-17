@@ -10,7 +10,7 @@ import {
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { generateRandomString } from "@crossmint/client-sdk-window";
 import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { CardFormSkeleton } from "./CardFormSkeleton";
+import { CardFormSkeleton, SavedMethodsSkeleton } from "./CardFormSkeleton";
 
 const useCommittedLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 // A save is two Basis Theory tokenizations, the create call and the card art lookup.
@@ -104,10 +104,11 @@ const PaymentMethodConnection = forwardRef<
     // new client.
     const [reloads, setReloads] = useState(0);
     const sawFirstLoad = useRef(false);
-    // Until the form is ready, a card form shows its skeleton and the iframe draws unseen behind it,
+    // Until the form is ready, the skeleton of its first screen shows and the iframe draws unseen behind it,
     // out of the tab order.
     const [formReady, setFormReady] = useState(false);
-    const showSkeleton = showsCardFormFirst(props) && !(formReady && height > 0);
+    const skeleton = firstScreen(props);
+    const showSkeleton = skeleton != null && !(formReady && height > 0);
     useCommittedLayoutEffect(() => {
         // Set directly: React before 19 drops a boolean `inert` prop.
         if (iframe.current != null) {
@@ -268,7 +269,8 @@ const PaymentMethodConnection = forwardRef<
 
     return (
         <div style={{ position: "relative", width: "100%" }} aria-busy={showSkeleton || undefined}>
-            {showSkeleton ? <CardFormSkeleton appearance={props.appearance} /> : null}
+            {showSkeleton && skeleton === "card" ? <CardFormSkeleton appearance={props.appearance} /> : null}
+            {showSkeleton && skeleton === "saved" ? <SavedMethodsSkeleton appearance={props.appearance} /> : null}
             <iframe
                 ref={iframe}
                 src={url}
@@ -311,7 +313,17 @@ const PaymentMethodConnection = forwardRef<
     );
 });
 
-// With saved methods allowed, the iframe may open on the saved list instead; other types have their own forms.
-function showsCardFormFirst({ allowedModes, allowedPaymentMethodTypes }: CrossmintPaymentMethodManagementProps) {
-    return !allowedModes?.includes("existing") && (allowedPaymentMethodTypes?.[0] ?? "card") === "card";
+// With saved methods allowed, the iframe opens on the choice between them and a new one (bare form when
+// nothing is saved yet); otherwise on the first type's form, of which only the card's has a skeleton.
+function firstScreen({
+    allowedModes,
+    allowedPaymentMethodTypes,
+}: CrossmintPaymentMethodManagementProps): "saved" | "card" | null {
+    if (allowedModes?.includes("existing")) {
+        return "saved";
+    }
+    if ((allowedPaymentMethodTypes?.[0] ?? "card") === "card") {
+        return "card";
+    }
+    return null;
 }
