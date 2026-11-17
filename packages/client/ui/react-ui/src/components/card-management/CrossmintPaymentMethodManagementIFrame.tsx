@@ -16,6 +16,7 @@ const useCommittedLayoutEffect = typeof window === "undefined" ? useEffect : use
 // A loaded document that has not reported ready by then is shown as it is, so a broken form
 // is not hidden behind the skeleton for good.
 const REVEAL_UNREADY_AFTER_MS = 8_000;
+const OPENED_HEIGHT_SETTLE_MS = 500;
 const FIRST_SCREEN_KEY = "crossmint.payment-method-management.first-screen:";
 // A save is two Basis Theory tokenizations, the create call and the card art lookup.
 const SUBMIT_TIMEOUT_MS = 60_000;
@@ -156,11 +157,15 @@ const PaymentMethodConnection = forwardRef<
         setRemembered(recallFirstScreen(latestProps.current));
     }, []);
     useEffect(() => {
-        if (!formReady || height <= 0 || skeleton == null) {
+        if (!formReady || height <= 0 || skeleton == null || openedHeight.current != null) {
             return;
         }
-        openedHeight.current ??= height;
-        rememberFirstScreen(latestProps.current, { screen: openedOn ?? skeleton, height: openedHeight.current });
+        // The iframe can report a spinner's height just before its first screen draws: keep the one that holds.
+        const timer = setTimeout(() => {
+            openedHeight.current = height;
+            rememberFirstScreen(latestProps.current, { screen: openedOn ?? skeleton, height });
+        }, OPENED_HEIGHT_SETTLE_MS);
+        return () => clearTimeout(timer);
     }, [formReady, height, openedOn, skeleton]);
 
     useCommittedLayoutEffect(() => {

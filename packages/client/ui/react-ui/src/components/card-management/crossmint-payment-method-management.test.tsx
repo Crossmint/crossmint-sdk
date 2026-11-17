@@ -317,20 +317,31 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         }
     });
 
-    test("opens on the screen and height the same configuration last opened on in this session", () => {
-        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
-        const first = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" allowedModes={["new", "existing"]} />);
-        act(() => {
-            listener("payment-method:ready")?.({});
-            listener("payment-method:change")?.({ mode: "new", empty: true, complete: false });
-            listener("ui:height.changed")?.({ height: 222 });
-        });
-        first.unmount();
+    test("opens on the screen and settled height the same configuration last opened on in this session", () => {
+        vi.useFakeTimers();
+        try {
+            const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+            const first = render(
+                <CrossmintPaymentMethodManagement jwt="buyer-jwt" allowedModes={["new", "existing"]} />
+            );
+            act(() => {
+                listener("ui:height.changed")?.({ height: 96 });
+                listener("payment-method:ready")?.({});
+                listener("payment-method:change")?.({ mode: "new", empty: true, complete: false });
+            });
+            act(() => vi.advanceTimersByTime(30));
+            act(() => listener("ui:height.changed")?.({ height: 222 }));
+            act(() => vi.advanceTimersByTime(500));
+            act(() => listener("ui:height.changed")?.({ height: 400 }));
+            first.unmount();
 
-        render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" allowedModes={["new", "existing"]} />);
+            render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" allowedModes={["new", "existing"]} />);
 
-        expect(screen.queryByTestId(SAVED_SKELETON)).toBeNull();
-        expect((screen.getByTestId(SKELETON).parentElement as HTMLElement).style.minHeight).toBe("222px");
+            expect(screen.queryByTestId(SAVED_SKELETON)).toBeNull();
+            expect((screen.getByTestId(SKELETON).parentElement as HTMLElement).style.minHeight).toBe("222px");
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     test("calls onReady and onChange with the iframe's form state, and only for the live iframe", () => {
