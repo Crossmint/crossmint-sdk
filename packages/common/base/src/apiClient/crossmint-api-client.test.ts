@@ -4,13 +4,15 @@ import type { Crossmint } from "@/types/Crossmint";
 
 import { CrossmintApiClient } from "./CrossmintApiClient";
 
+const apiKey = vi.hoisted(() => ({ environment: "staging" }));
+
 vi.mock("@/apiKey/validateAPIKey", () => ({
     validateAPIKey: () => ({
         isValid: true,
         projectId: "project-id",
         usageOrigin: "client",
-        environment: "staging",
-        prefix: "ck_staging",
+        environment: apiKey.environment,
+        prefix: `ck_${apiKey.environment}`,
     }),
 }));
 
@@ -36,6 +38,7 @@ async function urlRequestedBy(client: CrossmintApiClient): Promise<string> {
 describe("CrossmintApiClient", () => {
     afterEach(() => {
         vi.restoreAllMocks();
+        apiKey.environment = "staging";
     });
 
     describe("request headers", () => {
@@ -79,8 +82,14 @@ describe("CrossmintApiClient", () => {
     });
 
     describe("base URL", () => {
-        test("is derived from the API key's environment", async () => {
-            expect(await urlRequestedBy(clientFor({}))).toBe("https://staging.crossmint.com/wallets/me");
+        test.each([
+            ["development", "http://localhost:3000/wallets/me"],
+            ["staging", "https://staging.crossmint.com/wallets/me"],
+            ["production", "https://www.crossmint.com/wallets/me"],
+        ])("is derived from the API key's environment (%s)", async (environment, expected) => {
+            apiKey.environment = environment;
+
+            expect(await urlRequestedBy(clientFor({}))).toBe(expected);
         });
 
         test("prefers overrideBaseUrl over the environment, with its trailing slash normalised", async () => {
