@@ -3498,6 +3498,8 @@ describe("Wallet - recover()", () => {
         deleteKey: vi.fn().mockResolvedValue(undefined),
         signMessage: vi.fn().mockResolvedValue({ r: "0x1", s: "0x2" }),
         getDeviceName: vi.fn().mockReturnValue("Test Device"),
+        saveApprovingMembers: vi.fn().mockResolvedValue(undefined),
+        getSavedApprovingMembers: vi.fn().mockResolvedValue(null),
         apiKey: "test-api-key",
     });
 
@@ -3718,6 +3720,8 @@ describe("Wallet - recover()", () => {
                 ],
             };
             const newSigner = { type: "external-wallet", address: "NewSigner444" };
+            // Solana takes the members that approve a quorum's change when it is created (EDD 008).
+            const approvingMembers = recoveryQuorum.members.map((member) => member.locator) as never;
 
             async function walletWithSelectedMember(mockStorage: ReturnType<typeof createMockDeviceKeyStorage>) {
                 const wallet = new Wallet(
@@ -3766,7 +3770,7 @@ describe("Wallet - recover()", () => {
                 mockApiClient.getSigner.mockResolvedValue({ error: { message: "not found" } } as any);
                 mockApiClient.registerSigner.mockResolvedValue(registrationAwaitingQuorum as any);
 
-                await expect(wallet.recover()).resolves.toEqual({ transactionId: "tx-1" });
+                await expect(wallet.recover({ approvingMembers })).resolves.toEqual({ transactionId: "tx-1" });
 
                 expect(mockApiClient.registerSigner.mock.calls[0][1].approver).toBe(recoveryQuorum.locator);
                 expect(mockApiClient.removeSigner).not.toHaveBeenCalled();
@@ -3793,7 +3797,7 @@ describe("Wallet - recover()", () => {
                     () => new Promise((resolve) => (finishKey = resolve)) as never
                 );
 
-                const recovering = wallet.recover();
+                const recovering = wallet.recover({ approvingMembers });
                 await vi.waitFor(() => expect(createDeviceSigner).toHaveBeenCalled());
                 await wallet.useRecoveryMethod({ ...alice, onSign: vi.fn() } as any);
                 finishKey({ type: "device", publicKey: { x: "0x01", y: "0x02" }, locator: "device:mockNewKey" });
@@ -3829,7 +3833,7 @@ describe("Wallet - recover()", () => {
                     () => new Promise((resolve) => (finishRegistration = resolve)) as never
                 );
 
-                const recovering = wallet.recover();
+                const recovering = wallet.recover({ approvingMembers });
                 await vi.waitFor(() => expect(mockApiClient.registerSigner).toHaveBeenCalled());
                 await wallet.useRecoveryMethod({ ...alice, onSign: vi.fn() } as any);
                 finishRegistration({
@@ -3850,14 +3854,14 @@ describe("Wallet - recover()", () => {
                 const mockStorage = createMockDeviceKeyStorage();
                 const wallet = await walletWithSelectedMember(mockStorage);
                 mockApiClient.getSigner.mockResolvedValue({ error: { message: "not found" } } as any);
-                await wallet.recover().catch(() => undefined);
+                await wallet.recover({ approvingMembers }).catch(() => undefined);
                 mockApiClient.registerSigner.mockResolvedValue({
                     ...newSigner,
                     locator: `external-wallet:${newSigner.address}`,
                     transaction: { id: "tx-2", status: "awaiting-approval" },
                 } as any);
 
-                await wallet.addSigner(newSigner as any, { prepareOnly: true });
+                await wallet.addSigner(newSigner as any, { prepareOnly: true, approvingMembers });
 
                 expect(mockApiClient.registerSigner.mock.calls.at(-1)?.[1].approver).toBe(recoveryQuorum.locator);
             });

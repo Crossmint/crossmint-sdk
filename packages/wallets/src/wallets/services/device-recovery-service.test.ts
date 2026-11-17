@@ -97,6 +97,7 @@ type SetupOverrides = {
     approveSignature?: ReturnType<typeof vi.fn>;
     approveTransaction?: ReturnType<typeof vi.fn>;
     deviceSignerActivity?: ReturnType<typeof vi.fn>;
+    approvingMembersRequired?: boolean;
 };
 
 function setup(overrides: SetupOverrides = {}) {
@@ -124,6 +125,8 @@ function setup(overrides: SetupOverrides = {}) {
         approveSignature,
         approveTransaction,
         deviceSignerActivity,
+        requireApprovingMembers: vi.fn(),
+        approvingMembersRequired: overrides.approvingMembersRequired ?? false,
     } as unknown as DeviceRecoveryServiceParams<Chain>);
     return {
         service,
@@ -316,6 +319,46 @@ describe("DeviceRecoveryService", () => {
             const { service } = setup({ storage, signers, removeSigner });
             await expect(service.recover()).resolves.toBeUndefined();
             expect(removeSigner).toHaveBeenCalledWith("device:oldkey");
+        });
+
+        describe("when the chain needs approving members and a single signer approved the new device", () => {
+            const landedNewDevice = () =>
+                setup({
+                    approvingMembersRequired: true,
+                    storage: makeStorage({
+                        getSavedSignerLocator: vi.fn().mockResolvedValue("device:oldkey"),
+                        saveApprovingMembers: vi.fn().mockResolvedValue(undefined),
+                        getSavedApprovingMembers: vi.fn().mockResolvedValue(["external-wallet:Saved1"]),
+                    }),
+                    signers: vi.fn().mockResolvedValue([
+                        { type: "device", locator: "device:oldkey" },
+                        { type: "device", locator: "device:newkey" },
+                    ]),
+                    removeSigner: vi.fn().mockResolvedValue({ status: "success" }),
+                    signerManager: { activeSigner: makeSigner("device", "device:newkey", "success") },
+                });
+
+            it("removes the old device without the members it is given, and saves none", async () => {
+                const { service, storage, removeSigner } = landedNewDevice();
+
+                await service.recover(["external-wallet:Alice1", "email:bob@example.com"]);
+
+                expect(removeSigner).toHaveBeenCalledWith("device:oldkey");
+                expect(storage?.saveApprovingMembers).not.toHaveBeenCalledWith(WALLET_ADDRESS, [
+                    "external-wallet:Alice1",
+                    "email:bob@example.com",
+                ]);
+                expect(storage?.saveSignerLocator).toHaveBeenCalledWith(WALLET_ADDRESS, "device:newkey");
+            });
+
+            it("does not attach members saved earlier, and clears them once the removal is created", async () => {
+                const { service, storage, removeSigner } = landedNewDevice();
+
+                await service.recover();
+
+                expect(removeSigner).toHaveBeenCalledWith("device:oldkey");
+                expect(storage?.saveApprovingMembers).toHaveBeenCalledWith(WALLET_ADDRESS, null);
+            });
         });
 
         it("removes the saved signer after a pending replacement is approved", async () => {

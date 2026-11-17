@@ -122,6 +122,23 @@ export function registrationQuorum(apiSigner: APISigner, chain: Chain): QuorumLo
     return quorumEntry == null ? null : requireQuorumLocator(quorumEntry.signer.locator);
 }
 
+/** The members the registration's quorum entry designated (pending or signed), or null when no quorum approves it. */
+export function registrationDesignatedMembers(apiSigner: APISigner, chain: Chain): string[] | null {
+    const quorumEntry = registrationApprovals(apiSigner, chain).find((entry) => entry.signer.type === "quorum") as
+        | {
+              quorumApprovals?: {
+                  pending?: Array<{ member: { locator: string } }>;
+                  submitted?: Array<{ member: { locator: string } }>;
+              };
+          }
+        | undefined;
+    if (quorumEntry?.quorumApprovals == null) {
+        return null;
+    }
+    const { pending = [], submitted = [] } = quorumEntry.quorumApprovals;
+    return [...pending, ...submitted].map(({ member }) => member.locator);
+}
+
 function registrationApprovals(
     apiSigner: APISigner,
     chain: Chain

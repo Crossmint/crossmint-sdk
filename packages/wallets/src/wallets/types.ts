@@ -16,6 +16,8 @@ import type {
     DeviceSignerLocator,
     PasskeySignerConfig,
     PasskeyProvider,
+    QuorumMemberConfig,
+    QuorumMemberLocator,
     QuorumSigner,
     QuorumSignerConfig,
     ServerSignerConfig,
@@ -38,9 +40,19 @@ export function isSignerLocatorOption(signer: SignerOption): signer is string {
     return typeof signer === "string";
 }
 
-export type TransactionInputOptions = PrepareOnly & {
-    signer?: SignerOption;
-};
+/** A member that approves a quorum's request: its locator, or its signer config. */
+export type ApprovingMember = QuorumMemberLocator | QuorumMemberConfig<Chain>;
+
+/**
+ * `approvingMembers`: when the signer or approver is a quorum, the members that approve the request, exactly its
+ * threshold of them. Required on Solana; on EVM and Stellar the API validates them. The SDK never picks members.
+ */
+export type ApprovingMembersOption = { approvingMembers?: ApprovingMember[] };
+
+export type TransactionInputOptions = PrepareOnly &
+    ApprovingMembersOption & {
+        signer?: SignerOption;
+    };
 
 export type SendTokenTransactionOptions = TransactionInputOptions & {
     transactionType?: SendTokenTransactionType;
@@ -48,14 +60,15 @@ export type SendTokenTransactionOptions = TransactionInputOptions & {
 
 export type SignatureInputOptions = PrepareOnly & { signer?: SignerOption };
 
-export type AddSignerOptions = PrepareOnly & {
-    scopes?: Scope[];
-    deployImmediately?: boolean;
-    /** The approver: a recovery method or recovery quorum (`quorum:<id>`); defaults as described on `addSigner`. */
-    signer?: SignerOption;
-};
+export type AddSignerOptions = PrepareOnly &
+    ApprovingMembersOption & {
+        scopes?: Scope[];
+        deployImmediately?: boolean;
+        /** The approver: a recovery method or recovery quorum (`quorum:<id>`); defaults as described on `addSigner`. */
+        signer?: SignerOption;
+    };
 
-export type RemoveSignerOptions = PrepareOnly & { signer?: SignerOption };
+export type RemoveSignerOptions = PrepareOnly & ApprovingMembersOption & { signer?: SignerOption };
 
 export type UpgradeOptions = Partial<PrepareOnly> & {
     signer?: SignerOption;
@@ -71,14 +84,17 @@ export type AddSignerReturnType<C extends Chain> = C extends "solana" | "stellar
 
 export type RemoveSignerReturnType = { transactionId: string; status?: "success" };
 
-export type AddRecoveryMethodOptions = PrepareOnly & { signer?: SignerOption };
+export type AddRecoveryMethodOptions = PrepareOnly & ApprovingMembersOption & { signer?: SignerOption };
 
-export type RemoveRecoveryMethodOptions = PrepareOnly & { signer?: SignerOption };
+export type RemoveRecoveryMethodOptions = PrepareOnly & ApprovingMembersOption & { signer?: SignerOption };
 
 /** `locator` is the new recovery method's, as the API names it (a quorum's is generated when it is added). */
 export type AddRecoveryMethodReturnType = { transactionId: string; status?: "success"; locator: SignerLocator };
 
 export type RemoveRecoveryMethodReturnType = { transactionId: string; status?: "success" };
+
+/** `approvingMembers`: when a recovery quorum approves the device signer and the old one's removal, its approving members. */
+export type RecoverOptions = ApprovingMembersOption;
 
 /** The request `recover()` leaves for quorum members to approve with `approve`, or undefined when none is left. */
 export type RecoverResult = { transactionId: string } | { signatureId: string } | undefined;

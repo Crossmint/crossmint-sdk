@@ -47,6 +47,16 @@ describe("chain-adapter", () => {
         });
     });
 
+    describe("requiresApprovingMembers", () => {
+        it.each([
+            ["base-sepolia", false],
+            ["solana", true],
+            ["stellar", false],
+        ] as const)("%s -> %s", (chain, required) => {
+            expect(getChainAdapter(chain).requiresApprovingMembers).toBe(required);
+        });
+    });
+
     describe("addSignerChain", () => {
         it("evm returns the concrete chain", () => {
             expect(getChainAdapter("base-sepolia").addSignerChain("base-sepolia")).toBe("base-sepolia");

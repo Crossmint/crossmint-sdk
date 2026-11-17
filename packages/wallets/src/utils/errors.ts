@@ -149,6 +149,20 @@ export class QuorumSelectionAmbiguousError extends CrossmintSDKError {
     }
 }
 
+/** On Solana a quorum's request names the members that approve it: pass `approvingMembers`, exactly its threshold. */
+export class QuorumApprovingMembersRequiredError extends CrossmintSDKError {
+    readonly quorumLocator: QuorumLocator;
+
+    constructor(quorumLocator: QuorumLocator, details?: string) {
+        super(
+            `Requests of quorum ${quorumLocator} on this chain need approvingMembers: the members that will approve it, as many as its threshold`,
+            WalletErrorCode.SIGNER_INVALID,
+            details
+        );
+        this.quorumLocator = quorumLocator;
+    }
+}
+
 // The quorum error codes the wallets API defines; `QuorumRequestError.reason` is one of them.
 const QUORUM_REQUEST_ERROR_REASONS = [
     "QUORUM_SIGNER_UNSUPPORTED",
@@ -664,6 +678,7 @@ export type WalletError =
     | DeviceSignerAwaitingApprovalError
     | SignerLimitExceededError
     | QuorumSelectionAmbiguousError
+    | QuorumApprovingMembersRequiredError
     | QuorumRequestError
     | InvalidRecoveryConfigError
     | RecoverySignerLimitExceededError

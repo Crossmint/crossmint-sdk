@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from "vitest";
 import type { Chain } from "../chains/chains";
-import type { RecoverResult, WalletCreateArgs } from "../wallets/types";
+import type { ApprovingMember, RecoverResult, TransactionInputOptions, WalletCreateArgs } from "../wallets/types";
 import type { Wallet } from "../wallets/wallet";
 import type { QuorumLocator, QuorumMemberConfig, QuorumSignerConfig } from "./types";
 
@@ -90,5 +90,37 @@ describe("recover()", () => {
         expectTypeOf<Awaited<ReturnType<typeof evmWallet.recover>>>().toEqualTypeOf<RecoverResult>();
         expectTypeOf<NonNullable<RecoverResult>>().toMatchTypeOf<Parameters<typeof evmWallet.approve>[0]>();
         expectTypeOf<NonNullable<RecoverResult>>().toMatchTypeOf<Parameters<typeof stellarWallet.approve>[0]>();
+    });
+});
+
+describe("approvingMembers", () => {
+    type Members = ApprovingMember[];
+
+    it("takes member locators and member configs", () => {
+        expectTypeOf<
+            ["external-wallet:Alice", "email:bob@example.com", "server:Srv", "phone:+1555"]
+        >().toMatchTypeOf<Members>();
+        expectTypeOf<[{ type: "server"; secret: string }, { type: "email"; email: string }]>().toMatchTypeOf<Members>();
+        expectTypeOf<[{ type: "external-wallet"; address: string }]>().toMatchTypeOf<Members>();
+    });
+
+    it("takes no locator that cannot be a member", () => {
+        expectTypeOf<["quorum:abc"]>().not.toMatchTypeOf<Members>();
+        expectTypeOf<["api-key"]>().not.toMatchTypeOf<Members>();
+        expectTypeOf<["device:abc"]>().not.toMatchTypeOf<Members>();
+        expectTypeOf<["Alice"]>().not.toMatchTypeOf<Members>();
+    });
+
+    it("is an option of every call that creates a request a quorum acts in", () => {
+        type Option<F extends (...args: never[]) => unknown> = NonNullable<
+            Extract<Parameters<F>[number], { approvingMembers?: unknown }>
+        >["approvingMembers"];
+        expectTypeOf<Option<typeof solanaWallet.send>>().toEqualTypeOf<Members | undefined>();
+        expectTypeOf<Option<typeof solanaWallet.addSigner>>().toEqualTypeOf<Members | undefined>();
+        expectTypeOf<Option<typeof solanaWallet.removeSigner>>().toEqualTypeOf<Members | undefined>();
+        expectTypeOf<Option<typeof solanaWallet.addRecoveryMethod>>().toEqualTypeOf<Members | undefined>();
+        expectTypeOf<Option<typeof solanaWallet.removeRecoveryMethod>>().toEqualTypeOf<Members | undefined>();
+        expectTypeOf<Option<typeof solanaWallet.recover>>().toEqualTypeOf<Members | undefined>();
+        expectTypeOf<NonNullable<TransactionInputOptions["approvingMembers"]>>().toEqualTypeOf<Members>();
     });
 });
