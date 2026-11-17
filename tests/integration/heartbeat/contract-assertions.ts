@@ -1,11 +1,14 @@
 import { expect } from "vitest";
 
-export function expectErrorShape(response: unknown) {
+export function expectErrorShape(response: unknown, code?: string) {
     expect(typeof response).toBe("object");
     expect(response).not.toBeNull();
     const body = response as Record<string, unknown>;
     expect(body.error).toBe(true);
     expect(typeof body.message).toBe("string");
+    if (code != null) {
+        expect(body.code, `expected error code ${code}, got: ${JSON.stringify(body)}`).toBe(code);
+    }
 }
 
 export function expectContract<T>(response: unknown, requiredFields: Record<string, string>): T {

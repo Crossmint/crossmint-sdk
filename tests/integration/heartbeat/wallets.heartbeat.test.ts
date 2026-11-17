@@ -90,6 +90,18 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         expectErrorShape(await apiClient.getWallet(TEST_ADDRESSES.EVM_NON_EXISTENT as Locator));
     });
 
+    it("createWallet with both adminSigner and recoveryMethods returns RECOVERY_ADMIN_SIGNER_CONFLICT", async () => {
+        const admin = externalWalletSigner();
+        const rejected = await apiClient.createWallet({
+            chainType: "evm",
+            type: "smart",
+            owner: `userId:heartbeat-conflict-${Date.now()}`,
+            config: { adminSigner: admin.signer, recoveryMethods: [admin.signer] },
+        } as Parameters<typeof apiClient.createWallet>[0]);
+
+        expectErrorShape(rejected, "RECOVERY_ADMIN_SIGNER_CONFLICT");
+    });
+
     it("createTransaction", async () => {
         await createdTransaction();
     });

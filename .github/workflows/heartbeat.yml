@@ -17,12 +17,17 @@ jobs:
         name: wallets API contract (preview)
         runs-on: ubuntu-latest
         timeout-minutes: 30
+        permissions:
+            contents: read
+            id-token: write
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
+              with:
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
             - name: Build all
               env:
@@ -44,10 +49,10 @@ jobs:
               run: pnpm test:heartbeat
 
             - name: Notify Slack on failure
-              if: failure() && steps.retry.outcome == 'failure'
+              if: failure()
               run: |
                   curl --fail-with-body -sS -X POST -H 'Content-type: application/json' \
-                      --data "{\"text\": \":rotating_light: SDK heartbeat failed twice in a row — the wallets API contract may have changed. <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\"}" \
+                      --data "{\"text\": \":rotating_light: SDK heartbeat failed — the wallets API contract may have changed, or the job broke before reaching it. <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\"}" \
                       "$SLACK_WEBHOOK"
               env:
                   SLACK_WEBHOOK: ${{ secrets.SLACK_QA_ALERTS_WEBHOOK }}
