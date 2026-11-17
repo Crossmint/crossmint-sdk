@@ -12,3 +12,7 @@ updates:
                   - "*"
       cooldown:
           default-days: 7
+      ignore:
+          # v2+ requires @changesets/cli v3; the repo is on cli v2
+          - dependency-name: changesets/action
+            update-types: ["version-update:semver-major"]
