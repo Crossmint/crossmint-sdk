@@ -360,7 +360,7 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         }
     });
 
-    test("does not remember a bank form as the card form", () => {
+    test("a bank form opening on \"new\" is not remembered as the card form", () => {
         vi.useFakeTimers();
         try {
             const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
