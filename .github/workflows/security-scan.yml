@@ -30,7 +30,10 @@ jobs:
         outputs:
             workflows: ${{ steps.filter.outputs.workflows }}
         steps:
-            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # zizmor: ignore[artipacked] v6.1.0 (paths-filter needs git credentials to diff the base commit on push events)
+            # paths-filter needs git credentials to diff the base commit on push events
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: true # zizmor: ignore[artipacked]
 
             - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
               id: filter
