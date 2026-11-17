@@ -14,6 +14,7 @@ import { throwIfQuorumApiError, TransactionNotCreatedError } from "../utils/erro
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
 import type { CreateTransactionSuccessResponse } from "@/api";
 import { walletsLogger } from "../logger";
+import { validUntilOf } from "./services/operation-poller";
 
 export class SolanaWallet extends Wallet<SolanaChain> {
     constructor(wallet: Wallet<SolanaChain>) {
@@ -74,6 +75,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: createdTransaction.id,
+                ...validUntilOf(createdTransaction),
             } as Transaction<T extends PrepareOnly<true> ? true : false>;
         }
 

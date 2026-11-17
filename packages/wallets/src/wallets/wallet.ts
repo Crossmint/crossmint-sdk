@@ -67,6 +67,7 @@ import {
     throwIfQuorumApiError,
     throwIfRequestExpired,
     signerOperationRejectedError,
+    throwIfTransactionCancelled,
     transactionNotCreatedError,
     transactionNotCreatedErrorFromApiClientError,
     RecoveryMethodRequiredError,
@@ -128,6 +129,7 @@ import {
     type PollingOptions,
     waitForSignatureCompletion,
     waitForTransactionCompletion,
+    validUntilOf,
 } from "./services/operation-poller";
 
 type WalletContructorType<C extends Chain> = {
@@ -760,6 +762,7 @@ export class Wallet<C extends Chain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: transactionCreationResponse.id,
+                ...validUntilOf(transactionCreationResponse as { validUntil?: string }),
             } as Transaction<T extends PrepareOnly<true> ? true : false>;
         }
 
@@ -2107,6 +2110,7 @@ export class Wallet<C extends Chain> {
             throwIfRequestExpired(transaction, { transactionId });
             throw new TransactionNotAvailableError(JSON.stringify(transaction));
         }
+        throwIfTransactionCancelled(transaction, transactionId);
 
         await this.#options?.callbacks?.onTransactionStart?.();
 

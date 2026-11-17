@@ -31,6 +31,7 @@ export {
     ApprovalSigningTimeoutError,
     SignerOperationRejectedError,
     WalletCreationError,
+    TransactionCancelledError,
     UnsupportedBrowserError,
     NotAuthorizedError,
     TransactionNotCreatedError,

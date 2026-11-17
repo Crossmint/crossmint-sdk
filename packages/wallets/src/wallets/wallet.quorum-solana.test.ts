@@ -6,7 +6,11 @@ import type { ApiClient } from "../api";
 import type { Chain } from "../chains/chains";
 import type { QuorumMember, RecoverySignerConfigForChain, SignerConfigForChain } from "../signers/types";
 import { VERSION_1_MESSAGE } from "../signers/solana-version-1.fixture";
-import { DeviceSignerAwaitingApprovalError, QuorumApprovingMembersRequiredError } from "../utils/errors";
+import {
+    DeviceSignerAwaitingApprovalError,
+    QuorumApprovingMembersRequiredError,
+    TransactionCancelledError,
+} from "../utils/errors";
 import { createDeviceSigner } from "@/utils/device-signers";
 import { EVMWallet } from "./evm";
 import { SolanaWallet } from "./solana";
@@ -461,6 +465,7 @@ describe("a Solana key that is only a quorum member", () => {
                     hash: undefined,
                     explorerLink: undefined,
                     transactionId: "txn-1",
+                    validUntil: VALID_UNTIL,
                 });
                 expect(api.approveTransaction).not.toHaveBeenCalled();
             });
@@ -473,6 +478,99 @@ describe("a Solana key that is only a quorum member", () => {
         await sendTransactionOn(wallet, { approvingMembers: [bob.member.locator] });
 
         expect(createdParams(api).signer).toBe(treasury.locator);
+    });
+});
+
+describe("validUntil on a created Solana request", () => {
+    let api: MockedApiClient;
+    let wallet: Wallet<Chain>;
+
+    beforeEach(async () => {
+        vi.clearAllMocks();
+        api = createMockApiClient();
+        wallet = await createMockWallet("solana", api, "api-key");
+    });
+
+    describe.each(QUORUM_CALLS.filter(({ name }) => name === "send" || name === "sendTransaction"))(
+        "$name with prepareOnly",
+        ({ run }) => {
+            it("returns the request's validUntil", async () => {
+                mockQuorumResponses(api, "solana");
+
+                await expect(run(wallet, { prepareOnly: true })).resolves.toStrictEqual({
+                    hash: undefined,
+                    explorerLink: undefined,
+                    transactionId: "txn-1",
+                    validUntil: VALID_UNTIL,
+                });
+            });
+
+            it("returns no validUntil when the request has none (threshold 1, or not a quorum)", async () => {
+                api.send.mockResolvedValue({ id: "txn-1" } as never);
+                api.createTransaction.mockResolvedValue({ id: "txn-1" } as never);
+
+                await expect(run(wallet, { prepareOnly: true })).resolves.toStrictEqual({
+                    hash: undefined,
+                    explorerLink: undefined,
+                    transactionId: "txn-1",
+                });
+            });
+        }
+    );
+});
+
+describe("approve() on a cancelled Solana transaction", () => {
+    let api: MockedApiClient;
+    const alice = ed25519Member();
+    const quorum = createQuorumApiEntryWith([alice.member]);
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.useFakeTimers();
+        api = createMockApiClient();
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+        vi.restoreAllMocks();
+    });
+
+    async function aliceWallet() {
+        const wallet = await createMockWallet("solana", api, "api-key", [
+            { type: "api-key" },
+            quorum,
+        ] as unknown as RecoverySignerConfigForChain<"solana">[]);
+        await wallet.useRecoveryMethod(alice.config as never);
+        return wallet;
+    }
+
+    it("throws TransactionCancelledError on a retry after the cancellation, signing and sending nothing", async () => {
+        const wallet = await aliceWallet();
+        api.getTransaction.mockResolvedValue({
+            ...createAwaitingRequest("txn-1", [createQuorumPendingApproval({ quorum })], "solana"),
+            status: "cancelled",
+        } as never);
+
+        const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
+
+        expect(error).toBeInstanceOf(TransactionCancelledError);
+        expect((error as TransactionCancelledError).transactionId).toBe("txn-1");
+        expect(alice.config.onSign).not.toHaveBeenCalled();
+        expect(api.approveTransaction).not.toHaveBeenCalled();
+    });
+
+    it("throws TransactionCancelledError when the transaction is cancelled while it waits to land", async () => {
+        const wallet = await aliceWallet();
+        const transaction = solanaTransactionSignedBy([alice.keypair.publicKey]);
+        api.getTransaction
+            .mockResolvedValueOnce(awaitingSolanaTransaction(transaction, [alice.member], quorum) as never)
+            .mockResolvedValue({ id: "txn-1", status: "cancelled", chainType: "solana", onChain: {} } as never);
+        api.approveTransaction.mockResolvedValue({ id: "txn-1", status: "pending" } as never);
+
+        const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
+
+        expect(error).toBeInstanceOf(TransactionCancelledError);
+        expect((error as TransactionCancelledError).transactionId).toBe("txn-1");
     });
 });
 

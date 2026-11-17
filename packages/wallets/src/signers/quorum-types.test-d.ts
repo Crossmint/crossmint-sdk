@@ -1,6 +1,12 @@
 import { describe, expectTypeOf, it } from "vitest";
 import type { Chain } from "../chains/chains";
-import type { ApprovingMember, RecoverResult, TransactionInputOptions, WalletCreateArgs } from "../wallets/types";
+import type {
+    ApprovingMember,
+    RecoverResult,
+    Transaction,
+    TransactionInputOptions,
+    WalletCreateArgs,
+} from "../wallets/types";
 import type { Wallet } from "../wallets/wallet";
 import type { QuorumLocator, QuorumMemberConfig, QuorumSignerConfig } from "./types";
 
@@ -122,5 +128,12 @@ describe("approvingMembers", () => {
         expectTypeOf<Option<typeof solanaWallet.removeRecoveryMethod>>().toEqualTypeOf<Members | undefined>();
         expectTypeOf<Option<typeof solanaWallet.recover>>().toEqualTypeOf<Members | undefined>();
         expectTypeOf<NonNullable<TransactionInputOptions["approvingMembers"]>>().toEqualTypeOf<Members>();
+    });
+});
+
+describe("validUntil", () => {
+    it("is an optional ISO string on transaction results", () => {
+        expectTypeOf<Transaction<true>["validUntil"]>().toEqualTypeOf<string | undefined>();
+        expectTypeOf<Transaction<false>["validUntil"]>().toEqualTypeOf<string | undefined>();
     });
 });

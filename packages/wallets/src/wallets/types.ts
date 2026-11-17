@@ -349,16 +349,22 @@ export type UserLocator =
     | { phone: string }
     | { userId: string };
 
+/**
+ * `validUntil`: when present, the ISO time after which a transaction still awaiting approval is cancelled (Solana
+ * quorum transactions).
+ */
 export type Transaction<TPrepareOnly extends boolean = false> = TPrepareOnly extends true
     ? {
           hash?: string;
           explorerLink?: string;
           transactionId: string;
+          validUntil?: string;
       }
     : {
           hash: string;
           explorerLink: string;
           transactionId: string;
+          validUntil?: string;
       };
 
 export type Signature<TPrepareOnly extends boolean = false> = TPrepareOnly extends true
