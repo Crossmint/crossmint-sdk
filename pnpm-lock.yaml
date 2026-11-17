@@ -1995,7 +1995,7 @@ packages:
     resolution: {integrity: sha512-SDt/3nQGfq2dgmzueAfg1uMKpkhg7GJiENzwovu60v4IYcN8x2T0SCcLwgt8zI6U4gRswmP/cqTB0e//fL5N0w==, tarball: https://libraries.cgr.dev/javascript-upstream/@dynamic-labs/waas/-/waas-4.25.6.tgz}
 
   '@dynamic-labs/wallet-book@4.100.5':
-    resolution: {integrity: sha512-cXtNumBHNa6A6g1ktDn0wsl2EXAnkwoX43ufGquyP9Rszw7k3/BwTrCW+81+lAQ3oQV48fumk9CX1zpthUlOIg==, tarball: https://registry.npmjs.org/@dynamic-labs/wallet-book/-/wallet-book-4.100.5.tgz}
+    resolution: {integrity: sha512-cXtNumBHNa6A6g1ktDn0wsl2EXAnkwoX43ufGquyP9Rszw7k3/BwTrCW+81+lAQ3oQV48fumk9CX1zpthUlOIg==, tarball: https://libraries.cgr.dev/javascript-upstream/@dynamic-labs/wallet-book/-/wallet-book-4.100.5.tgz}
     peerDependencies:
       react: 19.3.0
       react-dom: 19.3.0
@@ -3751,7 +3751,7 @@ packages:
     engines: {node: '>=18'}
 
   '@noxcturnal/noxcturnal-linux-arm64-gnu@0.1.2':
-    resolution: {integrity: sha512-o4XdK2jcQvsuw+tAvwh5RvWnfyqe21+eV3owzpy6vQidkcgx1LIbWjIZH7x/IivEhypxeBtc5S0pQFwiKQWfTA==, tarball: https://registry.npmjs.org/@noxcturnal/noxcturnal-linux-arm64-gnu/-/noxcturnal-linux-arm64-gnu-0.1.2.tgz}
+    resolution: {integrity: sha512-o4XdK2jcQvsuw+tAvwh5RvWnfyqe21+eV3owzpy6vQidkcgx1LIbWjIZH7x/IivEhypxeBtc5S0pQFwiKQWfTA==, tarball: https://libraries.cgr.dev/javascript-upstream/@noxcturnal/noxcturnal-linux-arm64-gnu/-/noxcturnal-linux-arm64-gnu-0.1.2.tgz}
     engines: {node: '>=18'}
 
   '@noxcturnal/noxcturnal-linux-arm64-musl@0.1.2':
@@ -3767,11 +3767,11 @@ packages:
     engines: {node: '>=18'}
 
   '@noxcturnal/noxcturnal-win32-arm64-msvc@0.1.2':
-    resolution: {integrity: sha512-mierapyy7fFZe1Vw+fofPq65awK2y4pdRJi0MNzpVScOt9nDiP+e/arawbkji3W5car4B6Gbj6w3WPThZTND1A==, tarball: https://registry.npmjs.org/@noxcturnal/noxcturnal-win32-arm64-msvc/-/noxcturnal-win32-arm64-msvc-0.1.2.tgz}
+    resolution: {integrity: sha512-mierapyy7fFZe1Vw+fofPq65awK2y4pdRJi0MNzpVScOt9nDiP+e/arawbkji3W5car4B6Gbj6w3WPThZTND1A==, tarball: https://libraries.cgr.dev/javascript-upstream/@noxcturnal/noxcturnal-win32-arm64-msvc/-/noxcturnal-win32-arm64-msvc-0.1.2.tgz}
     engines: {node: '>=18'}
 
   '@noxcturnal/noxcturnal-win32-x64-msvc@0.1.2':
-    resolution: {integrity: sha512-TnUGq8qLAQ1OrbCyGuZFMq95ZpCyZtWbZinRGtQWlm5eGxj419ZwYlEj3ReMYQUx7l+Ojs4gpJPg9n0rxBJFLg==, tarball: https://registry.npmjs.org/@noxcturnal/noxcturnal-win32-x64-msvc/-/noxcturnal-win32-x64-msvc-0.1.2.tgz}
+    resolution: {integrity: sha512-TnUGq8qLAQ1OrbCyGuZFMq95ZpCyZtWbZinRGtQWlm5eGxj419ZwYlEj3ReMYQUx7l+Ojs4gpJPg9n0rxBJFLg==, tarball: https://libraries.cgr.dev/javascript-upstream/@noxcturnal/noxcturnal-win32-x64-msvc/-/noxcturnal-win32-x64-msvc-0.1.2.tgz}
     engines: {node: '>=18'}
 
   '@npmcli/fs@3.1.1':
@@ -5918,7 +5918,7 @@ packages:
     engines: {node: '>=8.0.0'}
 
   bitcoinjs-lib@6.1.10:
-    resolution: {integrity: sha512-9KpnS5JKVP0j0yfTsBNFIsNA6+JdBDb7VtL35F20I/pJYobosi3TmZFGtu6qxhJCfb0vubJixr5Zv61/lUYETw==, tarball: https://registry.npmjs.org/bitcoinjs-lib/-/bitcoinjs-lib-6.1.10.tgz}
+    resolution: {integrity: sha512-9KpnS5JKVP0j0yfTsBNFIsNA6+JdBDb7VtL35F20I/pJYobosi3TmZFGtu6qxhJCfb0vubJixr5Zv61/lUYETw==, tarball: https://libraries.cgr.dev/javascript-upstream/bitcoinjs-lib/-/bitcoinjs-lib-6.1.10.tgz}
     engines: {node: '>=8.0.0'}
 
   bl@4.1.0:
