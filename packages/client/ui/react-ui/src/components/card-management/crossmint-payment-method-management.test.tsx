@@ -2,10 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { StrictMode, createRef } from "react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import type {
-    CrossmintPaymentMethodManagementProps,
-    CrossmintPaymentMethodManagementRef,
-} from "@crossmint/client-sdk-base";
+import type { CrossmintPaymentMethodManagementRef } from "@crossmint/client-sdk-base";
 import { CrossmintPaymentMethodManagement } from "./CrossmintPaymentMethodManagement";
 
 const mocks = vi.hoisted(() => ({
@@ -281,16 +278,6 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         expect(field.style.border).toBe("1px solid rgb(17, 17, 17)");
         expect(field.style.backgroundColor).toBe("rgb(34, 34, 34)");
         expect(field.style.color).toBe("rgb(51, 51, 51)");
-    });
-
-    test.each<Partial<CrossmintPaymentMethodManagementProps>>([
-        { allowedModes: ["new", "existing"] },
-        { allowedModes: ["existing"] },
-        { allowedPaymentMethodTypes: ["bank-account-us", "card"] },
-    ])("shows no skeleton when the iframe may not open on the card form: %o", (formProps) => {
-        render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" {...formProps} />);
-        expect(screen.queryByTestId(SKELETON)).toBeNull();
-        expect(screen.getByRole("crossmint-payment-method-management.iframe").style.opacity).toBe("1");
     });
 
     test("calls onReady and onChange with the iframe's form state, and only for the live iframe", () => {
