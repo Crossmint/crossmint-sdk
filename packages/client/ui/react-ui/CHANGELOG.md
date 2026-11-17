@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-react-ui
 
+## 5.4.0
+
+### Minor Changes
+
+- 9c34c88: `CrossmintPaymentMethodManagement` shows pulsing placeholders of the iframe's first screen, in its appearance, while it loads, instead of rendering nothing until the iframe draws: the card form's fields, or with `allowedModes` including `"existing"`, the choice between a saved method and a new one. Within a browser tab, a mount with the same configuration opens on the screen and height the last one opened on. A loaded iframe that has not reported ready after 8 seconds is shown as it is. When bank accounts come first and saved methods are not allowed, it shows no placeholder.
+
+### Patch Changes
+
+- Updated dependencies [86ede5c]
+  - @crossmint/wallets-sdk@1.24.1
+  - @crossmint/client-sdk-react-base@2.6.2
+
 ## 5.3.1
 
 ### Patch Changes

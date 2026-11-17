@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 1.24.1
+
+### Patch Changes
+
+- 86ede5c: Add HTML anchors to headings in generated SDK reference docs, so links to class members such as `#constructor` resolve
+
 ## 1.24.0
 
 ### Minor Changes
