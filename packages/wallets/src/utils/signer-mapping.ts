@@ -91,7 +91,7 @@ export function mapApiSignerToSigner(apiSigner: APISigner, chain: Chain): Signer
         // For Solana/Stellar, status comes from the transaction field
         let status: SignerStatus = "success";
         if ("transaction" in apiSigner && apiSigner.transaction != null) {
-            status = apiSigner.transaction.status;
+            status = apiSigner.transaction.status === "cancelled" ? "failed" : apiSigner.transaction.status;
         }
         return { ...base, status, ...(scopes != null && { scopes }) } as Signer;
     }
