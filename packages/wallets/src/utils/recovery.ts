@@ -1,4 +1,5 @@
 import type { Chain } from "../chains/chains";
+import type { RecoverySignerConfigForChain } from "../signers/types";
 import { walletsLogger } from "../logger";
 import type { RecoverySignerConfigFor } from "../wallets/types";
 import type { WalletCreateArgs } from "../wallets/types";
@@ -35,6 +36,15 @@ export function recoveryMethodsFromCreateArgs<C extends Chain>(
         return args.recovery;
     }
     return [args.recovery];
+}
+
+/** The recovery methods the wallets API lists in a wallet's config: `recoveryMethods`, else the deprecated `adminSigner`. */
+export function recoveryMethodsFromWalletConfig<C extends Chain>(config: {
+    adminSigner?: unknown;
+    recoveryMethods?: unknown[];
+}): Array<RecoverySignerConfigForChain<C>> {
+    const recoveryMethods = config.recoveryMethods ?? (config.adminSigner != null ? [config.adminSigner] : []);
+    return recoveryMethods as Array<RecoverySignerConfigForChain<C>>;
 }
 
 /** True when the caller supplied a list of recovery methods, through `recoveryMethods` or a list under the deprecated `recovery`. */

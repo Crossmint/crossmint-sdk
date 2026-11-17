@@ -4,21 +4,29 @@ React Native SDK for integrating [Crossmint Wallets](https://docs.crossmint.com)
 
 ## Prerequisites
 
-Get a **client** API key from the [Crossmint developer console](https://docs.crossmint.com/introduction/platform/api-keys). Ensure your key has the **Wallet API** scopes enabled.
+Get a **client** API key from the [Crossmint developer console](https://docs.crossmint.com/introduction/platform/api-keys). Ensure your key has the **Wallet API** scopes enabled, including `wallets.fund` for `stagingFund`.
 
 ## Installation
 
 ```bash
-npm install @crossmint/client-sdk-react-native-ui expo-secure-store expo-web-browser expo-device
-# or
-pnpm add @crossmint/client-sdk-react-native-ui expo-secure-store expo-web-browser expo-device
+npx expo install @crossmint/client-sdk-react-native-ui expo-constants expo-device expo-secure-store expo-web-browser react-native-get-random-values react-native-webview
 ```
+
+The SDK requires Expo SDK 58 (React Native 0.88, iOS 16.4 or later). The native modules are peer dependencies, and `npx expo install` picks the versions that match your Expo SDK.
+
+### Xcode 27 and iOS 27
+
+Apps built with Xcode 27 (the iOS 27 SDK) must use the UIKit scene lifecycle. If they do not, they stop at launch with "UIScene life cycle is required for apps built with this SDK". Expo SDK 58 generates it: `npx expo prebuild` adds a `SceneDelegate.swift` and a scene manifest to `Info.plist`. No configuration is needed, and the Crossmint config plugin works with it.
+
+After you upgrade to Expo SDK 58, regenerate the native project. If your app generates `ios/` and `android/` (continuous native generation), run `npx expo prebuild --clean`. If you maintain those folders by hand, `--clean` deletes your changes; apply the scene lifecycle changes to your own AppDelegate and Info.plist instead, as described in [Expo's iOS scene lifecycle guide](https://expo.fyi/ios-scene-lifecycle).
+
+If your app config still sets `ios.enableSceneSupport` in `expo-build-properties`, you can remove it. It has no effect on Expo SDK 58.
 
 ## Quick Start
 
 ### 1. Setup Providers
 
-**With Crossmint Authentication (Recommended for quickstarts only)**
+**With Crossmint Auth (default in staging)**
 
 ```tsx
 import {
@@ -47,7 +55,7 @@ export default function App() {
 
 **Bring Your Own Authentication**
 
-Already have authentication? Skip `CrossmintAuthProvider` and use wallets with your existing auth system. See the [Custom Auth Guide](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth#react-native) for full details.
+Use this when your app already has an auth provider, and in production: connect your provider and configure [JWT Authentication](https://docs.crossmint.com/introduction/platform/api-keys/jwt-authentication) in the Crossmint Console (see [Move to Production](https://docs.crossmint.com/wallets/guides/crossmint-auth#move-to-production)). Then skip `CrossmintAuthProvider` and pass your provider's JWT to the wallets SDK. See the [Custom Auth Guide](https://docs.crossmint.com/wallets/guides/bring-your-own-auth#react-native) for full details.
 
 ```tsx
 import {
@@ -88,16 +96,24 @@ function WalletActions() {
   if (status === "in-progress") return <Text>Loading wallet...</Text>;
   if (!wallet) return <Text>No wallet</Text>;
 
+  // Staging only: mints USDXM, Crossmint's test stablecoin, into the wallet
+  const handleFund = async () => {
+    await wallet.stagingFund(10);
+  };
+
   const handleSend = async () => {
-    const tx = await wallet.send("0xRecipient", "usdc", "10");
+    const tx = await wallet.send("0xRecipient", "usdxm", "10");
     console.log("Transaction:", tx.explorerLink);
   };
 
   return (
     <View>
       <Text>Wallet: {wallet.address}</Text>
+      <TouchableOpacity onPress={handleFund}>
+        <Text>Get 10 USDXM</Text>
+      </TouchableOpacity>
       <TouchableOpacity onPress={handleSend}>
-        <Text>Send 10 USDC</Text>
+        <Text>Send 10 USDXM</Text>
       </TouchableOpacity>
     </View>
   );
@@ -119,6 +135,7 @@ function WalletActions() {
 | `createOnLogin` | `CreateOnLogin` | — | Auto-create wallet on auth. Uses `recovery` or `recoveryMethods` + optional `signers`. |
 | `showOtpSignerPrompt` | `boolean` | `true` | When `true` (default), built-in OTP dialogs are shown during signing flows. Set to `false` to suppress them and handle OTP manually via `useWalletOtpSigner()`. |
 | `deviceSignerKeyStorage` | `DeviceSignerKeyStorage` | — | Override the default native key storage. |
+| `passkeys` | `NativePasskeyConfig` | — | Enables passkey signers on every chain: `{ rpId, rpName?, passkey: Passkey }`, with `Passkey` from `react-native-passkey`. Requires an app associated with `rpId` (iOS `webcredentials:` associated domain, Android Digital Asset Links) and a development build, since Expo Go cannot run native modules. Keep `rpId` fixed once users have created passkeys. Without this prop, passkey signers are rejected. |
 | `appearance` | `UIConfig` | — | Styling for built-in UI components. |
 
 ## Hooks
@@ -207,7 +224,7 @@ EXPO_PUBLIC_CROSSMINT_API_KEY=your_api_key_here
 - [Crossmint Wallets Docs](https://docs.crossmint.com)
 - [SDK Reference](https://docs.crossmint.com/sdk-reference/wallets/react-native)
 - [Wallets Expo Quickstart](https://github.com/Crossmint/wallets-expo-quickstart)
-- [Custom Auth Guide (React Native)](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth#react-native)
+- [Custom Auth Guide (React Native)](https://docs.crossmint.com/wallets/guides/bring-your-own-auth#react-native)
 
 ## License
 

@@ -1,5 +1,217 @@
 # @crossmint/client-sdk-react-ui
 
+## 5.3.1
+
+### Patch Changes
+
+- b0c2af7: `CrossmintAgentCardAuthorization`, `OrderIntentVerification` and `CrossmintCvcRecollection` now send SDK logs to Crossmint for each step of the card authorization (start, order intent created, rail selected, verification started, succeeded, failed or abandoned, authorized). The logs carry ids and error types only, never card data, JWTs or keys. In the browser, SDK logs still waiting to be sent are now sent when the page is closed.
+- Updated dependencies [b0c2af7]
+- Updated dependencies [2132d18]
+- Updated dependencies [8f12147]
+- Updated dependencies [e83b497]
+- Updated dependencies [2a2be6a]
+- Updated dependencies [807df98]
+- Updated dependencies [e618b86]
+- Updated dependencies [657836f]
+- Updated dependencies [7ffe513]
+- Updated dependencies [324a663]
+- Updated dependencies [ce91fdd]
+  - @crossmint/common-sdk-base@0.13.5
+  - @crossmint/wallets-sdk@1.24.0
+  - @crossmint/client-sdk-base@5.2.2
+  - @crossmint/client-sdk-react-base@2.6.1
+  - @crossmint/common-sdk-auth@1.1.39
+
+## 5.3.0
+
+### Minor Changes
+
+- 9e650de: Let apps turn on the device signer biometric policy on web. `IframeDeviceSignerKeyStorage` takes a second argument, `{ biometricPolicy, biometricExpirationTime }`, and every device key it creates (at wallet creation and at device recovery) gets that policy. `setBiometricOptions` changes the policy for keys created later. `CrossmintWalletProvider` in `@crossmint/client-sdk-react-ui` takes the same options in a new `deviceSigner` prop, for example `deviceSigner={{ biometricPolicy: "always" }}`. Before each fingerprint, face or screen lock check, the React provider shows the passkey prompt so that the browser gets a user click. The policy is fixed when a key is created; existing keys keep their policy. `BiometricPolicy` and `DeviceSignerBiometricOptions` are now exported.
+
+### Patch Changes
+
+- Updated dependencies [4aff9cf]
+- Updated dependencies [9e650de]
+- Updated dependencies [4b49e71]
+- Updated dependencies [a089de2]
+  - @crossmint/wallets-sdk@1.23.0
+  - @crossmint/client-sdk-react-base@2.6.0
+  - @crossmint/common-sdk-base@0.13.4
+  - @crossmint/client-sdk-base@5.2.1
+  - @crossmint/common-sdk-auth@1.1.38
+
+## 5.2.0
+
+### Minor Changes
+
+- 8141911: `CrossmintPaymentMethodManagement` takes a `locale` prop, like the checkout, offramp and identity verification components. `Locale` adds `fr-CA` (Canadian French), so every component that takes a `locale` accepts it.
+
+### Patch Changes
+
+- c63b063: `CrossmintCheckoutProvider` now accepts order updates only from the checkout window that the SDK opened, and ignores updates with a bad shape. The hosted checkout service's `createWindow` now returns the window it opens.
+- Updated dependencies [c63b063]
+- Updated dependencies [8141911]
+  - @crossmint/client-sdk-base@5.2.0
+  - @crossmint/client-sdk-react-base@2.5.8
+  - @crossmint/common-sdk-auth@1.1.37
+  - @crossmint/wallets-sdk@1.22.4
+
+## 5.1.0
+
+### Minor Changes
+
+- 95d83ab: payment-method-management: behaviour change: the add-card form of `CrossmintPaymentMethodManagement` collects a billing address by default.
+
+  - `fields.billingDetails.address` now defaults to `true`. Issuers approve more cards that carry a billing address.
+  - A host that passes no `fields` (or `fields` without `billingDetails.address`) now shows the address form, and `onChange` reports `complete: false` until the buyer fills it in.
+  - Pass `fields: { billingDetails: { address: false } }` to keep the previous behaviour and save cards without a billing address.
+  - `defaultValues.billingDetails.address` now applies without `fields`, because the form collects an address by default.
+
+### Patch Changes
+
+- Updated dependencies [95d83ab]
+  - @crossmint/client-sdk-base@5.1.0
+  - @crossmint/client-sdk-react-base@2.5.7
+  - @crossmint/common-sdk-auth@1.1.36
+  - @crossmint/wallets-sdk@1.22.3
+
+## 5.0.1
+
+### Patch Changes
+
+- Updated dependencies [04ec76f]
+- Updated dependencies [e6ad150]
+- Updated dependencies [a2181ff]
+- Updated dependencies [36903ca]
+  - @crossmint/wallets-sdk@1.22.2
+  - @crossmint/common-sdk-auth@1.1.35
+  - @crossmint/client-sdk-react-base@2.5.6
+
+## 5.0.0
+
+### Major Changes
+
+- a55b5e4: BREAKING: `CrossmintPaymentMethodManagement` no longer renders a built-in submit button. The `hideSubmitButton` prop is removed — the component always asks the host to submit via `ref.submit()`, which must be wired to your own button. The iframe no longer draws the message of an `invalid` or `failed` submit: show the `message` that `ref.submit()` returns. Field errors stay in the iframe.
+
+  `CrossmintPaymentMethodManagement` adds `onReady` and `onChange({ mode, empty, complete })`, like Stripe's `ready` and `change` events, so your button can stay disabled until a submit can succeed. `invalid`, `failed` and `unavailable` submit results now carry a `code` (for example `incomplete_card`, `save_failed`, `timeout`); a code the component does not know becomes `unknown`. The code lists are exported as `PAYMENT_METHOD_SUBMIT_INVALID_CODES`, `PAYMENT_METHOD_SUBMIT_FAILED_CODES` and `PAYMENT_METHOD_SUBMIT_UNAVAILABLE_CODES`.
+
+### Patch Changes
+
+- 45514f6: Readmes now default to Crossmint Auth in staging, and their staging examples fund wallets with `stagingFund` and send USDXM. The bring-your-own-auth links point at the current docs page.
+- Updated dependencies [45514f6]
+- Updated dependencies [a55b5e4]
+- Updated dependencies [0c053ed]
+  - @crossmint/wallets-sdk@1.22.1
+  - @crossmint/client-sdk-base@5.0.0
+  - @crossmint/common-sdk-auth@1.1.34
+  - @crossmint/client-sdk-react-base@2.5.5
+
+## 4.13.4
+
+### Patch Changes
+
+- Updated dependencies [225e9e9]
+- Updated dependencies [cd18fde]
+- Updated dependencies [63b6933]
+- Updated dependencies [e981bab]
+  - @crossmint/common-sdk-base@0.13.3
+  - @crossmint/client-sdk-base@4.8.0
+  - @crossmint/wallets-sdk@1.22.0
+  - @crossmint/client-sdk-react-base@2.5.4
+  - @crossmint/common-sdk-auth@1.1.33
+
+## 4.13.3
+
+### Patch Changes
+
+- Updated dependencies [d3b62df]
+  - @crossmint/common-sdk-auth@1.1.32
+  - @crossmint/common-sdk-base@0.13.2
+  - @crossmint/client-sdk-react-base@2.5.3
+  - @crossmint/wallets-sdk@1.21.2
+  - @crossmint/client-sdk-base@4.7.2
+
+## 4.13.2
+
+### Patch Changes
+
+- 9b0c0cc: Document `CrossmintEmbeddedOfframp`, its props, statuses, error reasons and payer, so the offramp React and React Native SDK references can be generated from source.
+- Updated dependencies [77b8398]
+- Updated dependencies [9b0c0cc]
+- Updated dependencies [d170b2d]
+- Updated dependencies [6471943]
+- Updated dependencies [3de9265]
+  - @crossmint/common-sdk-base@0.13.1
+  - @crossmint/wallets-sdk@1.21.1
+  - @crossmint/client-sdk-base@4.7.1
+  - @crossmint/client-sdk-react-base@2.5.2
+  - @crossmint/common-sdk-auth@1.1.31
+
+## 4.13.1
+
+### Patch Changes
+
+- Updated dependencies [507f354]
+  - @crossmint/wallets-sdk@1.21.0
+  - @crossmint/client-sdk-react-base@2.5.1
+
+## 4.13.0
+
+### Minor Changes
+
+- 7c5ece0: Add CrossmintEmbeddedOfframp: an embedded stablecoin to fiat offramp driven by a server-minted offramp session, with createCrossmintWalletSigner for Crossmint wallets.
+  Set `fill` to make it fill its container's height instead of sizing to the content.
+
+### Patch Changes
+
+- ac38a8a: Remove dependencies the packages do not import: `lodash.isequal` and `@types/lodash.isequal` from `@crossmint/client-sdk-react-ui`, and `@types/uuid` from `@crossmint/client-sdk-base`.
+- Updated dependencies [7c5ece0]
+- Updated dependencies [712a06a]
+- Updated dependencies [754047d]
+- Updated dependencies [ac38a8a]
+- Updated dependencies [2ffaa93]
+- Updated dependencies [c138095]
+  - @crossmint/client-sdk-base@4.7.0
+  - @crossmint/client-sdk-react-base@2.5.0
+  - @crossmint/wallets-sdk@1.20.7
+  - @crossmint/common-sdk-auth@1.1.30
+
+## 4.12.1
+
+### Patch Changes
+
+- 9705007: Document the JWT sources supported by payment-method management. Crossmint Auth JWTs are not supported.
+- Updated dependencies [9705007]
+- Updated dependencies [46666e3]
+  - @crossmint/client-sdk-base@4.6.1
+  - @crossmint/wallets-sdk@1.20.6
+  - @crossmint/client-sdk-react-base@2.4.6
+  - @crossmint/common-sdk-auth@1.1.29
+
+## 4.12.0
+
+### Minor Changes
+
+- 0be2c42: `CrossmintCvcRecollection` can be submitted from your own button.
+
+  - New `ref`: `ref.current.submit()` resolves with `CvcRecollectionSubmitResult`: `complete` (the new CVC was stored; `onComplete` also fired), `invalid` (the component shows the field error), `failed` (retryable, with a message), `refused` (terminal, with the same `reason`/`message` `onError` reported) or `unavailable` (the component is not ready or did not answer). It never rejects. A call while one is in flight returns the same promise; after `complete`, submitting again returns `complete` without updating the vault twice.
+  - New `hideSubmitButton` prop (default `false`): the component renders no Confirm button. Nothing changes for hosts that do not pass it; `onComplete` and `onError` keep firing, including for submits started by `submit()`.
+  - `@crossmint/client-sdk-react-ui` now exports `CrossmintCvcRecollectionRef` and `CvcRecollectionSubmitResult`.
+
+  Pending submits resolve as `superseded` when the card, iframe configuration, or connection changes, or the component unmounts. The connection and handshake start on mount — so `submit()` also works if the iframe `load` event was missed (SSR/hydration) — and each later iframe reload establishes a fresh handshake before submitting. An iframe result with an unrecognized status resolves as `failed` instead of hanging until the timeout. Superseding a submit does not cancel an update already started on the server; after a timeout the update may still have completed, `onComplete` fires if it did, and submitting again returns the outcome.
+
+  Requires the updated `/sdk/unstable/cvc-recollection` iframe (crossbit-main); against an older frame `submit()` resolves `unavailable` after the timeout.
+
+### Patch Changes
+
+- Updated dependencies [0be2c42]
+- Updated dependencies [7401d02]
+- Updated dependencies [25e5591]
+  - @crossmint/client-sdk-base@4.6.0
+  - @crossmint/wallets-sdk@1.20.5
+  - @crossmint/client-sdk-react-base@2.4.5
+  - @crossmint/common-sdk-auth@1.1.28
+
 ## 4.11.0
 
 ### Minor Changes

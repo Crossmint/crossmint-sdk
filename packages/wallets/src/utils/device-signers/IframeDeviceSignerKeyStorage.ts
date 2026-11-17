@@ -1,9 +1,9 @@
 import { getEnvironmentForKey, APIKeyEnvironmentPrefix, WithLoggerContext } from "@crossmint/common-sdk-base";
 import { WebAuthnP256 } from "ox";
-import { DeviceSignerKeyStorage } from "./DeviceSignerKeyStorage";
+import { DeviceSignerKeyStorage, type DeviceSignerBiometricOptions } from "./DeviceSignerKeyStorage";
 import { walletsLogger } from "../../logger";
 import { hasPartitionedStorage } from "./storage-partitioning";
-import { UnsupportedBrowserError } from "../errors";
+import { InvalidWalletConfigError, UnsupportedBrowserError } from "../errors";
 
 const DEVICE_SIGNER_URL_MAP: Record<APIKeyEnvironmentPrefix, string> = {
     [APIKeyEnvironmentPrefix.DEVELOPMENT]: "https://development.devicekey.store", // "http://localhost:3002"
@@ -14,6 +14,8 @@ const DEVICE_SIGNER_URL_MAP: Record<APIKeyEnvironmentPrefix, string> = {
 const DEFAULT_TIMEOUT_MS = 60_000;
 
 const INDEXEDDB_FATAL_CODE = "indexeddb-fatal";
+
+const SIGNER_LOCATOR_STORAGE_PREFIX = "crossmint:device-signer-locator:";
 
 type IframeRpcResponse =
     | { type: "response"; id: string; result: unknown }
@@ -44,9 +46,15 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     private readonly iframeUrl: string;
     private biometricRequestHandler: BiometricRequestHandler | null = null;
     private biometricListener: ((event: MessageEvent) => void) | null = null;
+    private biometricOptions: DeviceSignerBiometricOptions = {};
 
-    constructor(apiKey: string) {
+    /**
+     * @param apiKey - Crossmint API key. Selects the device signer frame for its environment.
+     * @param biometricOptions - Biometric policy for the keys this storage creates. Default: `{ biometricPolicy: "none" }`.
+     */
+    constructor(apiKey: string, biometricOptions: DeviceSignerBiometricOptions = {}) {
         super(apiKey);
+        this.setBiometricOptions(biometricOptions);
 
         if (typeof window !== "undefined" && !hasPartitionedStorage()) {
             throw new UnsupportedBrowserError(
@@ -71,14 +79,35 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         this.biometricRequestHandler = handler;
     }
 
+    /**
+     * Set the biometric policy for the keys this storage creates from now on. Keys that already exist keep theirs.
+     * A wallet keeps the storage instance it loaded with, so change the policy here rather than replace the storage.
+     */
+    setBiometricOptions(biometricOptions: DeviceSignerBiometricOptions): void {
+        if (
+            biometricOptions.biometricPolicy === "session" &&
+            !(Number.isFinite(biometricOptions.biometricExpirationTime) && biometricOptions.biometricExpirationTime > 0)
+        ) {
+            throw new InvalidWalletConfigError(
+                'biometricExpirationTime must be a positive number of seconds when biometricPolicy is "session"'
+            );
+        }
+        this.biometricOptions = biometricOptions;
+    }
+
     @WithLoggerContext({
         logger: walletsLogger,
         methodName: "deviceSignerKeyStorage.generateKey",
     })
-    async generateKey(
-        params: Parameters<DeviceSignerKeyStorage["generateKey"]>[0] = { biometricPolicy: "none" }
-    ): Promise<string> {
-        const result = await this.rpc<{ publicKeyBase64: string }>("generateKey", params);
+    async generateKey(params: Parameters<DeviceSignerKeyStorage["generateKey"]>[0] = {}): Promise<string> {
+        // createDeviceSigner passes no policy, so the storage's own policy applies to wallet creation and recovery
+        const { biometricPolicy, biometricExpirationTime } =
+            params.biometricPolicy != null ? params : this.biometricOptions;
+        const result = await this.rpc<{ publicKeyBase64: string }>("generateKey", {
+            address: params.address,
+            biometricPolicy,
+            biometricExpirationTime,
+        });
         return result.publicKeyBase64;
     }
 
@@ -122,6 +151,15 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     })
     async deleteKey(address: string): Promise<void> {
         await this.rpc("deleteKey", { address });
+    }
+
+    /** Start loading the iframe, so the first key lookup doesn't wait for it. */
+    preload(): void {
+        if (typeof document === "undefined") {
+            return;
+        }
+        // a failed load is retried, and surfaced, by the next RPC
+        this.getIframe().catch(() => {});
     }
 
     destroy(): void {
@@ -323,6 +361,23 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
             iframe.onerror = () => reject(new Error("Failed to load device signer iframe"));
             document.body.appendChild(iframe);
         });
+    }
+
+    async saveSignerLocator(address: string, signerLocator: string): Promise<void> {
+        try {
+            window.localStorage.setItem(`${SIGNER_LOCATOR_STORAGE_PREFIX}${address}`, signerLocator);
+        } catch (error) {
+            walletsLogger.warn("deviceSignerKeyStorage.saveSignerLocator.failed", { error });
+        }
+    }
+
+    async getSavedSignerLocator(address: string): Promise<string | null> {
+        try {
+            return window.localStorage.getItem(`${SIGNER_LOCATOR_STORAGE_PREFIX}${address}`);
+        } catch (error) {
+            walletsLogger.warn("deviceSignerKeyStorage.getSavedSignerLocator.failed", { error });
+            return null;
+        }
     }
 
     getDeviceName(): string {

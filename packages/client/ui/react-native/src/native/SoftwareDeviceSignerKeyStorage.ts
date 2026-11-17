@@ -4,6 +4,7 @@ import * as SecureStore from "expo-secure-store";
 import { p256 } from "@noble/curves/p256";
 
 import { DeviceSignerKeyStorage } from "@crossmint/wallets-sdk";
+import * as signerLocatorStore from "./signerLocatorStore";
 
 const STORE_PREFIX = "crossmint_device_signer_";
 const PENDING_KEY_PREFIX = `${STORE_PREFIX}pending_`;
@@ -223,6 +224,14 @@ export class SoftwareDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
     async deletePendingKey(publicKeyBase64: string): Promise<void> {
         await SecureStore.deleteItemAsync(`${PENDING_KEY_PREFIX}${safeStoreKey(publicKeyBase64)}`);
         await this.untrackPublicKey(publicKeyBase64);
+    }
+
+    saveSignerLocator(address: string, signerLocator: string): Promise<void> {
+        return signerLocatorStore.saveSignerLocator(address, signerLocator);
+    }
+
+    getSavedSignerLocator(address: string): Promise<string | null> {
+        return signerLocatorStore.getSavedSignerLocator(address);
     }
 
     getDeviceName(): string {

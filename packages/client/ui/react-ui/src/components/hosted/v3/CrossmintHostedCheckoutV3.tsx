@@ -2,6 +2,7 @@ import { type MouseEvent, type JSX, useEffect, useState } from "react";
 import { CrossmintLogoV2 } from "@/components/common/CrossmintLogoV2/CrossmintLogoV2";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
+import { useTrustCheckoutWindow } from "@/hooks/useTrustCheckoutWindow";
 import {
     crossmintHostedCheckoutV3Service,
     crossmintHostedCheckoutV3StylesService,
@@ -60,6 +61,7 @@ export function CrossmintHostedCheckout(props: CrossmintHostedCheckoutV3ReactPro
 
     const { crossmint } = useCrossmint();
     const apiClient = createCrossmintApiClient(crossmint);
+    const trustCheckoutWindow = useTrustCheckoutWindow();
 
     const { customProps, onClick, className, children, restButtonProps } = extractProps(props);
 
@@ -69,7 +71,10 @@ export function CrossmintHostedCheckout(props: CrossmintHostedCheckoutV3ReactPro
     function _onClick(e: MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
         e.stopPropagation();
-        hostedCheckoutService.createWindow();
+        const checkoutWindow = hostedCheckoutService.createWindow();
+        if (checkoutWindow != null) {
+            trustCheckoutWindow?.(checkoutWindow);
+        }
 
         if (onClick) {
             onClick(e);

@@ -8,11 +8,12 @@ export class SolanaServerSigner implements SignerAdapter<"server"> {
     type = "server" as const;
     private _address: string;
     private _locator: ServerSignerLocator;
-    private keypair: Keypair;
+    // `#` keeps the key out of console.log, util.inspect and JSON.stringify output.
+    readonly #keypair: Keypair;
 
     constructor(config: ServerInternalSignerConfig) {
-        this.keypair = Keypair.fromSeed(config.derivedKeyBytes);
-        this._address = this.keypair.publicKey.toBase58();
+        this.#keypair = Keypair.fromSeed(config.derivedKeyBytes);
+        this._address = this.#keypair.publicKey.toBase58();
         this._locator = config.locator;
         // Wipe the input derived key bytes now that the keypair has been constructed
         secureWipe(config.derivedKeyBytes);
@@ -28,7 +29,7 @@ export class SolanaServerSigner implements SignerAdapter<"server"> {
 
     async signMessage(message: string) {
         const messageBytes = base58.decode(message);
-        const signatureBytes = ed25519Sign(messageBytes, this.keypair.secretKey);
+        const signatureBytes = ed25519Sign(messageBytes, this.#keypair.secretKey);
         return { signature: base58.encode(signatureBytes) };
     }
 

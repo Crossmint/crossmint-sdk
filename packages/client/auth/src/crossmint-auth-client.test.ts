@@ -186,7 +186,7 @@ describe("CrossmintAuthClient", () => {
 
             await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
-            expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledWith(mockRefreshToken);
+            expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledWith(mockRefreshToken, undefined);
             expect(crossmintAuthClient["storeAuthMaterial"]).toHaveBeenCalledWith(mockAuthMaterial);
             expect(queueTask).toHaveBeenCalledWith(expect.any(Function), expect.any(Number));
         });
@@ -226,7 +226,7 @@ describe("CrossmintAuthClient", () => {
 
             await crossmintAuthClient.handleRefreshAuthMaterial();
 
-            expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledWith(mockRefreshToken);
+            expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledWith(mockRefreshToken, undefined);
         });
 
         it("does not refresh if no refresh token is available and no custom refresh route is set", async () => {
@@ -273,7 +273,7 @@ describe("CrossmintAuthClient", () => {
 
             await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
-            expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledWith(mockRefreshToken);
+            expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledWith(mockRefreshToken, undefined);
             expect(spyStoreAuthMaterial).not.toHaveBeenCalled();
         });
     });
@@ -292,6 +292,20 @@ describe("CrossmintAuthClient", () => {
             expect(result).toBe(mockOAuthUrl);
             expect(mockApiClient.get).toHaveBeenCalledWith(
                 "api/2024-09-26/session/sdk/auth/social/google/start",
+                expect.any(Object)
+            );
+        });
+
+        it("sends the PKCE code challenge to the login start endpoint", async () => {
+            mockApiClient.get.mockResolvedValue({
+                json: () => Promise.resolve({ oauthUrl: "https://oauth.example.com/auth" }),
+                ok: true,
+            });
+
+            await crossmintAuthClient.getOAuthUrl("google", { codeChallenge: "challenge" });
+
+            expect(mockApiClient.get).toHaveBeenCalledWith(
+                "api/2024-09-26/session/sdk/auth/social/google/start?codeChallenge=challenge",
                 expect.any(Object)
             );
         });

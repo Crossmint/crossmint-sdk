@@ -13,17 +13,29 @@ export {
     RecoveryNotSupportedOnChainError,
     RecoverySignerConflictError,
     RecoverySignerLimitExceededError,
+    SignerLimitExceededError,
+    DeviceSignerAwaitingApprovalError,
     RecoveryMethodRequiredError,
     SignerRequiredError,
     WalletNotAvailableError,
     InvalidTransferAmountError,
     QuorumSignerNotSupportedError,
+    TransactionAwaitingApprovalError,
+    QuorumSelectionAmbiguousError,
+    QuorumRequestError,
+    type QuorumRequestErrorReason,
+    TransactionExpiredError,
     UnsupportedBrowserError,
     NotAuthorizedError,
+    TransactionNotCreatedError,
     JWTExpiredError,
     JWTInvalidError,
     JWTDecryptionError,
     JWTIdentifierError,
+    CollateralFundsInTransitError,
+    CollateralFundingTemporarilyUnavailableError,
+    CollateralWithdrawalUnavailableError,
+    CollateralWithdrawalIntegrityError,
 } from "./utils/errors";
 
 // API
@@ -71,6 +83,7 @@ export type {
     RemoveRecoveryMethodOptions,
     AddRecoveryMethodReturnType,
     RemoveRecoveryMethodReturnType,
+    RecoverResult,
 } from "./wallets/types";
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 
@@ -95,6 +108,15 @@ export type {
     ServerSignerConfig,
     SignerConfigForChain,
     RecoverySignerConfigForChain,
+    QuorumLocator,
+    QuorumMemberType,
+    QuorumMemberLocator,
+    QuorumMember,
+    QuorumMemberConfig,
+    PasskeyQuorumMemberConfig,
+    QuorumSignerConfig,
+    QuorumRef,
+    QuorumSigner,
     SignerLocator,
     EmailSignerLocator,
     PhoneSignerLocator,
@@ -117,4 +139,4 @@ export type { CreateServerSignerParams, ServerSigner } from "./utils/server-sign
 
 // Device Signer Key Storage Interface
 export { DeviceSignerKeyStorage, IframeDeviceSignerKeyStorage, createDeviceSigner } from "./utils/device-signers";
-export type { BiometricRequestHandler } from "./utils/device-signers";
+export type { BiometricPolicy, BiometricRequestHandler, DeviceSignerBiometricOptions } from "./utils/device-signers";

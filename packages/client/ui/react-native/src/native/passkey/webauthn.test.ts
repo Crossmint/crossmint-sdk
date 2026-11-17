@@ -1,14 +1,8 @@
 import { p256 } from "@noble/curves/p256";
 import { sha256 } from "@noble/hashes/sha256";
 import { describe, expect, it } from "vitest";
-import {
-    base64UrlToBytes,
-    bytesToBase64Url,
-    hexChallengeToBase64Url,
-    publicKeyFromRegistration,
-    toPasskeySignResult,
-    utf8Decode,
-} from "./webauthn";
+import { bytesToBase64Url } from "@crossmint/common-sdk-base";
+import { hexChallengeToBase64Url, publicKeyFromRegistration, toPasskeySignResult, utf8Decode } from "./webauthn";
 
 const SPKI_P256_HEADER = Uint8Array.from(
     "3059301306072a8648ce3d020106082a8648ce3d030107034200".match(/../g)!.map((byte) => Number.parseInt(byte, 16))
@@ -104,19 +98,7 @@ function softwarePasskey() {
     };
 }
 
-describe("base64url", () => {
-    it("round-trips bytes of every length", () => {
-        for (let length = 0; length < 8; length++) {
-            const bytes = Uint8Array.from({ length }, (_, i) => (i * 37 + 251) % 256);
-            expect(base64UrlToBytes(bytesToBase64Url(bytes))).toEqual(bytes);
-        }
-    });
-
-    it("decodes standard base64 with padding too", () => {
-        expect(base64UrlToBytes("+/8=")).toEqual(Uint8Array.of(0xfb, 0xff));
-        expect(base64UrlToBytes("-_8")).toEqual(Uint8Array.of(0xfb, 0xff));
-    });
-
+describe("hexChallengeToBase64Url", () => {
     it("turns the SDK's hex challenge into the base64url WebAuthn expects", () => {
         expect(hexChallengeToBase64Url(`0x${"ab".repeat(32)}`)).toBe(bytesToBase64Url(new Uint8Array(32).fill(0xab)));
         expect(() => hexChallengeToBase64Url("0xabc")).toThrow("hex");

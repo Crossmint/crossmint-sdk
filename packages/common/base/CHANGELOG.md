@@ -1,5 +1,36 @@
 # @crossmint/common-sdk-base
 
+## 0.13.5
+
+### Patch Changes
+
+- b0c2af7: `CrossmintAgentCardAuthorization`, `OrderIntentVerification` and `CrossmintCvcRecollection` now send SDK logs to Crossmint for each step of the card authorization (start, order intent created, rail selected, verification started, succeeded, failed or abandoned, authorized). The logs carry ids and error types only, never card data, JWTs or keys. In the browser, SDK logs still waiting to be sent are now sent when the page is closed.
+
+## 0.13.4
+
+### Patch Changes
+
+- a089de2: Keep signing keys and session credentials out of application logs. `wallet.signer` no longer exposes key material or the session JWT and API key to `console.log`, `util.inspect` or `JSON.stringify`: Solana and Stellar server signers and email and phone signers now hold them in private class fields. The SDK logger now also redacts compound key names (such as `serverSecret`, `privateKeyHex`, `seed`, `mnemonic` and `keyBytes`), replaces values nested deeper than its redaction limit with `[TRUNCATED]`, and redacts log calls made before the logger is initialized.
+
+## 0.13.3
+
+### Patch Changes
+
+- 225e9e9: Mask emails and phone numbers in SDK logs, for example `email:a***@example.com` and `phone:+1***4567`.
+
+## 0.13.2
+
+### Patch Changes
+
+- d3b62df: OAuth login in the React Native SDK now uses PKCE. The SDK sends a code challenge when the login starts and the matching verifier when it redeems the one-time secret.
+
+## 0.13.1
+
+### Patch Changes
+
+- 77b8398: Remove the deprecated Sei chains (`sei-pacific-1` and `sei-atlantic-2-testnet`) from the chain types, the smart wallet chain lists, the wallets OpenAPI spec and the hosted checkout order types. The SEI token (`CryptoCurrency.SEI`) stays.
+- d170b2d: Stop leaking server signer secrets through wallet signer-config mismatch errors. `compareSignerConfigs` no longer compares or echoes `secret` fields (or runtime callbacks), and its error message names only the mismatching field. A server recovery signer is matched by the address its secret derives to: on an existing wallet, a secret that derives to none of the wallet's server recovery signers is now rejected instead of passing a type-only match. The SDK logger now also scrubs known secret shapes (server signer master secrets, JWTs, Crossmint API keys) from error messages, stack traces and log messages before they reach the log sinks.
+
 ## 0.13.0
 
 ### Minor Changes

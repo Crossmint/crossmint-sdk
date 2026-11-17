@@ -8,7 +8,11 @@ import {
     useLogger,
 } from "@crossmint/client-sdk-react-base";
 import { LoggerContext } from "./CrossmintProvider";
-import { IframeDeviceSignerKeyStorage, UnsupportedBrowserError } from "@crossmint/wallets-sdk";
+import {
+    type DeviceSignerBiometricOptions,
+    IframeDeviceSignerKeyStorage,
+    UnsupportedBrowserError,
+} from "@crossmint/wallets-sdk";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
@@ -28,6 +32,12 @@ export interface CrossmintWalletProviderProps {
     };
     /** When true (default), built-in OTP signer UI prompts are shown during signing flows. When false, signing flows must be handled manually via the useWalletOtpSigner hook. Default: true. */
     showOtpSignerPrompt?: boolean;
+    /**
+     * Asks the user for a fingerprint, face or screen lock before the device signer signs.
+     * Applies to device keys created from now on; existing keys keep their policy. Default: `{ biometricPolicy: "none" }`.
+     * @example { biometricPolicy: "session", biometricExpirationTime: 300 }
+     */
+    deviceSigner?: DeviceSignerBiometricOptions;
     /** @internal */
     children: ReactNode;
 }
@@ -49,13 +59,15 @@ export function CrossmintWalletProvider({
     appearance,
     createOnLogin,
     callbacks,
+    deviceSigner,
 }: CrossmintWalletProviderProps) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const logger = useLogger(LoggerContext);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: one storage per API key; a loaded wallet keeps this instance, so policy changes go through setBiometricOptions below
     const deviceSignerKeyStorage = useMemo(() => {
         try {
-            return new IframeDeviceSignerKeyStorage(crossmint.apiKey);
+            return new IframeDeviceSignerKeyStorage(crossmint.apiKey, deviceSigner);
         } catch (error) {
             if (error instanceof UnsupportedBrowserError) {
                 logger.error(`[Crossmint] ${error.message}`, { error });
@@ -64,6 +76,13 @@ export function CrossmintWalletProvider({
             throw error;
         }
     }, [crossmint.apiKey]);
+
+    const biometricPolicy = deviceSigner?.biometricPolicy;
+    const biometricExpirationTime = deviceSigner?.biometricExpirationTime;
+    // biome-ignore lint/correctness/useExhaustiveDependencies: depend on the policy values, not on every new `deviceSigner` object literal
+    useEffect(() => {
+        deviceSignerKeyStorage?.setBiometricOptions(deviceSigner ?? {});
+    }, [deviceSignerKeyStorage, biometricPolicy, biometricExpirationTime]);
 
     useEffect(() => {
         return () => deviceSignerKeyStorage?.destroy();

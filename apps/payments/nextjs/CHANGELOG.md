@@ -1,5 +1,110 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 2.0.68
+
+### Patch Changes
+
+- Updated dependencies [b0c2af7]
+  - @crossmint/client-sdk-react-ui@5.3.1
+  - @crossmint/client-sdk-base@5.2.2
+
+## 2.0.67
+
+### Patch Changes
+
+- Updated dependencies [9e650de]
+  - @crossmint/client-sdk-react-ui@5.3.0
+  - @crossmint/client-sdk-base@5.2.1
+
+## 2.0.66
+
+### Patch Changes
+
+- Updated dependencies [c63b063]
+- Updated dependencies [8141911]
+  - @crossmint/client-sdk-react-ui@5.2.0
+  - @crossmint/client-sdk-base@5.2.0
+
+## 2.0.65
+
+### Patch Changes
+
+- Updated dependencies [95d83ab]
+  - @crossmint/client-sdk-base@5.1.0
+  - @crossmint/client-sdk-react-ui@5.1.0
+
+## 2.0.64
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@5.0.1
+
+## 2.0.63
+
+### Patch Changes
+
+- Updated dependencies [45514f6]
+- Updated dependencies [a55b5e4]
+  - @crossmint/client-sdk-react-ui@5.0.0
+  - @crossmint/client-sdk-base@5.0.0
+
+## 2.0.62
+
+### Patch Changes
+
+- Updated dependencies [cd18fde]
+  - @crossmint/client-sdk-base@4.8.0
+  - @crossmint/client-sdk-react-ui@4.13.4
+
+## 2.0.61
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.13.3
+- @crossmint/client-sdk-base@4.7.2
+
+## 2.0.60
+
+### Patch Changes
+
+- Updated dependencies [77b8398]
+- Updated dependencies [9b0c0cc]
+  - @crossmint/client-sdk-base@4.7.1
+  - @crossmint/client-sdk-react-ui@4.13.2
+
+## 2.0.59
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@4.13.1
+
+## 2.0.58
+
+### Patch Changes
+
+- Updated dependencies [7c5ece0]
+- Updated dependencies [712a06a]
+- Updated dependencies [754047d]
+- Updated dependencies [ac38a8a]
+  - @crossmint/client-sdk-base@4.7.0
+  - @crossmint/client-sdk-react-ui@4.13.0
+
+## 2.0.57
+
+### Patch Changes
+
+- Updated dependencies [9705007]
+  - @crossmint/client-sdk-base@4.6.1
+  - @crossmint/client-sdk-react-ui@4.12.1
+
+## 2.0.56
+
+### Patch Changes
+
+- Updated dependencies [0be2c42]
+  - @crossmint/client-sdk-base@4.6.0
+  - @crossmint/client-sdk-react-ui@4.12.0
+
 ## 2.0.55
 
 ### Patch Changes

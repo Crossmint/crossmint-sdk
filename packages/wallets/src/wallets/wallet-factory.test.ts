@@ -5,7 +5,6 @@ import {
     InvalidChainError,
     InvalidEnvironmentError,
     InvalidRecoveryConfigError,
-    RecoveryNotSupportedOnChainError,
     WalletCreationError,
 } from "../utils/errors";
 import { walletsLogger } from "../logger";
@@ -13,6 +12,12 @@ import type { ApiClient, GetWalletSuccessResponse } from "../api";
 import type { WalletArgsFor, WalletCreateArgs } from "./types";
 import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import { deriveServerSignerDetails } from "../signers/server";
+import {
+    QUORUM_SERVER_MEMBER_SECRET,
+    createQuorumApiEntry,
+    createQuorumFixture,
+    withMembersReordered,
+} from "./__tests__/test-helpers";
 
 type MockedApiClient = {
     isServerSide: boolean;
@@ -48,6 +53,16 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         },
         createdAt: Date.now(),
     } as GetWalletSuccessResponse;
+
+    const evmWalletWithRecovery = (recoveryMethods: Array<Record<string, unknown>>) =>
+        ({
+            chainType: "evm",
+            type: "smart",
+            address: "0x1234567890123456789012345678901234567890",
+            owner: "test-owner",
+            config: { adminSigner: recoveryMethods[0], recoveryMethods, delegatedSigners: [] },
+            createdAt: Date.now(),
+        }) as unknown as GetWalletSuccessResponse;
 
     beforeEach(() => {
         vi.resetAllMocks();
@@ -163,31 +178,19 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             expect(mockApiClient.createWallet).not.toHaveBeenCalled();
         });
 
-        it("uses adminSigner for a single recoveryMethods entry on EVM", async () => {
-            mockApiClient.createWallet.mockResolvedValue({
-                chainType: "evm",
-                type: "smart",
-                address: "0x1234567890123456789012345678901234567890",
-                owner: "test-owner",
-                config: {
-                    adminSigner: { type: "api-key" },
-                    delegatedSigners: [],
-                },
-                createdAt: Date.now(),
-            } as unknown as GetWalletSuccessResponse);
+        it("sends a single recoveryMethods entry on EVM under recoveryMethods", async () => {
+            mockApiClient.createWallet.mockResolvedValue(evmWalletWithRecovery([{ type: "api-key" }]));
 
             await walletFactory.createWallet({
                 chain: "base-sepolia",
                 recoveryMethods: [{ type: "api-key" }],
             });
 
-            expect(mockApiClient.createWallet).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    config: expect.objectContaining({
-                        adminSigner: expect.objectContaining({ type: "api-key" }),
-                    }),
-                })
+            const [createWalletParams] = mockApiClient.createWallet.mock.calls[0];
+            expect(createWalletParams.config).toEqual(
+                expect.objectContaining({ recoveryMethods: [{ type: "api-key" }] })
             );
+            expect(createWalletParams.config).not.toHaveProperty("adminSigner");
         });
 
         it("routes the deprecated recovery list form to config.recoveryMethods on Solana", async () => {
@@ -204,14 +207,15 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             expect(createWalletParams.config).not.toHaveProperty("adminSigner");
         });
 
-        it("still rejects more than one method on EVM when passed through the deprecated recovery list form", async () => {
-            await expect(
-                walletFactory.createWallet({
-                    chain: "base-sepolia",
-                    recovery: [{ type: "api-key" }, { type: "api-key" }],
-                })
-            ).rejects.toBeInstanceOf(RecoveryNotSupportedOnChainError);
-            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+        it("routes the deprecated recovery list form to config.recoveryMethods on EVM", async () => {
+            const recovery = [{ type: "api-key" as const }, { type: "email" as const, email: "user@example.com" }];
+            mockApiClient.createWallet.mockResolvedValue(evmWalletWithRecovery(recovery));
+
+            await walletFactory.createWallet({ chain: "base-sepolia", recovery });
+
+            const [createWalletParams] = mockApiClient.createWallet.mock.calls[0];
+            expect(createWalletParams.config).toEqual(expect.objectContaining({ recoveryMethods: recovery }));
+            expect(createWalletParams.config).not.toHaveProperty("adminSigner");
         });
 
         it("rejects an empty deprecated recovery list as empty", async () => {
@@ -231,14 +235,19 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             expect(mockApiClient.createWallet).not.toHaveBeenCalled();
         });
 
-        it("rejects multiple recoveryMethods entries on EVM", async () => {
-            await expect(
-                walletFactory.createWallet({
-                    chain: "base-sepolia",
-                    recoveryMethods: [{ type: "api-key" }, { type: "api-key" }],
-                })
-            ).rejects.toBeInstanceOf(RecoveryNotSupportedOnChainError);
-            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+        it("creates an EVM wallet with recovery methods under recoveryMethods", async () => {
+            const recoveryMethods = [
+                { type: "api-key" as const },
+                { type: "external-wallet" as const, address: "0x0000000000000000000000000000000000000456" },
+            ];
+            mockApiClient.createWallet.mockResolvedValue(evmWalletWithRecovery(recoveryMethods));
+
+            const wallet = await walletFactory.createWallet({ chain: "base-sepolia", recoveryMethods });
+
+            const [createWalletParams] = mockApiClient.createWallet.mock.calls[0];
+            expect(createWalletParams.config).toEqual(expect.objectContaining({ recoveryMethods }));
+            expect(createWalletParams.config).not.toHaveProperty("adminSigner");
+            expect(wallet.recoveryMethods).toHaveLength(2);
         });
     });
 
@@ -1400,18 +1409,6 @@ describe("WalletFactory - recovery signer lists", () => {
     });
 
     describe("createWallet validation", () => {
-        it("rejects a recovery list on a chain that only supports one recovery signer", async () => {
-            const recovery = [{ type: "api-key" as const }, { type: "api-key" as const }];
-
-            await expect(
-                walletFactory.createWallet({
-                    chain: "base-sepolia",
-                    recoveryMethods: recovery,
-                })
-            ).rejects.toBeInstanceOf(RecoveryNotSupportedOnChainError);
-            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
-        });
-
         it("rejects an empty recovery list without calling the API", async () => {
             await expect(walletFactory.createWallet({ chain: "solana", recoveryMethods: [] })).rejects.toBeInstanceOf(
                 InvalidRecoveryConfigError
@@ -1458,6 +1455,42 @@ describe("WalletFactory - recovery signer lists", () => {
             expect(withRecovery.recoveryMethods[0]).toEqual(
                 expect.objectContaining({ type: "phone", channel: "whatsapp" })
             );
+        });
+
+        it("accepts a server recovery secret that derives to the existing wallet's server signer address", async () => {
+            const firstAddress = derivedServerAddress(FIRST_SERVER_SECRET, "solana");
+            mockApiClient.getWallet.mockResolvedValue(
+                walletResponseWithRecovery("solana", SOLANA_ADDRESS, [
+                    { type: "server", address: firstAddress, locator: `server:${firstAddress}` },
+                ])
+            );
+
+            await expect(
+                walletFactory.getWallet(SOLANA_ADDRESS, {
+                    chain: "solana",
+                    recovery: { type: "server", secret: FIRST_SERVER_SECRET },
+                } as WalletCreateArgs<"solana">)
+            ).resolves.toBeDefined();
+        });
+
+        it("rejects a server recovery secret that derives to a different address, without echoing it", async () => {
+            const firstAddress = derivedServerAddress(FIRST_SERVER_SECRET, "solana");
+            mockApiClient.getWallet.mockResolvedValue(
+                walletResponseWithRecovery("solana", SOLANA_ADDRESS, [
+                    { type: "server", address: firstAddress, locator: `server:${firstAddress}` },
+                ])
+            );
+
+            const result = walletFactory.getWallet(SOLANA_ADDRESS, {
+                chain: "solana",
+                recovery: { type: "server", secret: SECOND_SERVER_SECRET },
+            } as WalletCreateArgs<"solana">);
+
+            await expect(result).rejects.toBeInstanceOf(WalletCreationError);
+            await expect(result).rejects.toThrow(/derives to a different address/);
+            const message = await result.catch((error: Error) => error.message);
+            expect(message).not.toContain(SECOND_SERVER_SECRET);
+            expect(message).not.toContain(FIRST_SERVER_SECRET);
         });
     });
 
@@ -1606,15 +1639,19 @@ describe("WalletFactory - recovery configuration rejected before any side effect
             expect(mockApiClient.getWallet).not.toHaveBeenCalled();
         });
 
-        it("rejects more than one recovery method on EVM", async () => {
-            await expect(
-                walletFactory.getWallet(EVM_ADDRESS, {
-                    chain: "base-sepolia",
-                    recoveryMethods: [email, secondEmail],
-                } as never)
-            ).rejects.toThrow(RecoveryNotSupportedOnChainError);
+        it("loads an EVM wallet with more than one recovery method", async () => {
+            mockApiClient.getWallet.mockResolvedValue({
+                ...existingWallet("evm", EVM_ADDRESS),
+                config: { adminSigner: email, recoveryMethods: [email, secondEmail] },
+            } as unknown as GetWalletSuccessResponse);
 
-            expect(mockApiClient.getWallet).not.toHaveBeenCalled();
+            const wallet = await walletFactory.getWallet(EVM_ADDRESS, {
+                chain: "base-sepolia",
+                recoveryMethods: [email, secondEmail],
+            } as never);
+
+            expect(wallet.address).toBe(EVM_ADDRESS);
+            expect(wallet.recoveryMethods).toEqual([email, secondEmail]);
         });
 
         it("rejects a device signer as the recovery method", async () => {
@@ -1663,5 +1700,524 @@ describe("WalletFactory - recovery configuration rejected before any side effect
 
             expect(mockApiClient.createWallet).not.toHaveBeenCalled();
         });
+    });
+});
+
+describe("WalletFactory - quorum entries", () => {
+    let walletFactory: WalletFactory;
+    let mockApiClient: MockedApiClient & { getSigner: MockedFunction<ApiClient["getSigner"]> };
+
+    const ADDRESSES = {
+        evm: "0x1234567890123456789012345678901234567890",
+        solana: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+        stellar: "GA6HCMBLTZS5VYYBCATRBRZ3BZJMAFUDKYYF6RBM4CFTJKZUZWFRTIYT",
+    } as const;
+    const EXTERNAL_WALLET_ADDRESS = "ExternalWalletRecoveryAddress123";
+
+    const walletResponse = (chainType: keyof typeof ADDRESSES, config: Record<string, unknown>) =>
+        ({
+            chainType,
+            type: "smart" as const,
+            address: ADDRESSES[chainType],
+            owner: "test-owner",
+            config,
+            createdAt: Date.now(),
+        }) as unknown as GetWalletSuccessResponse;
+
+    beforeEach(() => {
+        vi.resetAllMocks();
+        mockApiClient = {
+            isServerSide: false,
+            crossmint: { projectId: "test-project" },
+            projectId: "test-project",
+            environment: APIKeyEnvironmentPrefix.STAGING,
+            getWallet: vi.fn(),
+            createWallet: vi.fn(),
+            getSigner: vi.fn(),
+        };
+        walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    describe.each([
+        { chain: "base-sepolia", chainType: "evm" },
+        { chain: "solana", chainType: "solana" },
+        { chain: "stellar", chainType: "stellar" },
+    ] as const)("when the only recovery method of a $chain wallet is a quorum", ({ chain, chainType }) => {
+        it("loads the wallet with the quorum as its recovery method and no default signer", async () => {
+            const quorum = createQuorumApiEntry();
+            mockApiClient.getWallet.mockResolvedValue(
+                walletResponse(chainType, { adminSigner: quorum, recoveryMethods: [quorum] })
+            );
+
+            const wallet = await walletFactory.getWallet({ chain });
+
+            expect(wallet.recoveryMethods).toEqual([quorum]);
+            expect(wallet.signer).toBeUndefined();
+        });
+    });
+
+    describe.each([
+        { chain: "base-sepolia", chainType: "evm" },
+        { chain: "solana", chainType: "solana" },
+        { chain: "stellar", chainType: "stellar" },
+    ] as const)(
+        "when a $chain response carries the quorum only in the deprecated adminSigner field",
+        ({ chain, chainType }) => {
+            it("reads it as the wallet's only recovery method", async () => {
+                const quorum = createQuorumApiEntry();
+                mockApiClient.getWallet.mockResolvedValue(walletResponse(chainType, { adminSigner: quorum }));
+
+                const wallet = await walletFactory.getWallet({ chain });
+
+                expect(wallet.recoveryMethods).toEqual([quorum]);
+            });
+        }
+    );
+
+    describe("when a quorum comes before an external-wallet recovery method the caller holds", () => {
+        it("keeps the quorum as returned and makes the external wallet the default signer", async () => {
+            const quorum = createQuorumApiEntry();
+            const externalWallet = {
+                type: "external-wallet",
+                address: EXTERNAL_WALLET_ADDRESS,
+                locator: `external-wallet:${EXTERNAL_WALLET_ADDRESS}`,
+            };
+            mockApiClient.getWallet.mockResolvedValue(
+                walletResponse("solana", { adminSigner: quorum, recoveryMethods: [quorum, externalWallet] })
+            );
+
+            const wallet = await walletFactory.getWallet({
+                chain: "solana",
+                recovery: { type: "external-wallet", address: EXTERNAL_WALLET_ADDRESS, onSign: vi.fn() },
+            } as WalletCreateArgs<"solana">);
+
+            expect(wallet.recoveryMethods[0]).toEqual(quorum);
+            expect(wallet.recoveryMethods[1]).toEqual(expect.objectContaining({ onSign: expect.any(Function) }));
+            expect(wallet.signer?.type).toBe("external-wallet");
+            // Assembled as a recovery (admin) signer: active without asking the API for its status.
+            expect(wallet.signer?.status).toBe("active");
+            expect(mockApiClient.getSigner).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("when the wallet has two recovery quorums", () => {
+        it("keeps both, each with its own locator", async () => {
+            const first = createQuorumApiEntry();
+            const second = createQuorumApiEntry({ threshold: 3, memberCount: 4 });
+            mockApiClient.getWallet.mockResolvedValue(
+                walletResponse("stellar", { adminSigner: first, recoveryMethods: [first, second] })
+            );
+
+            const wallet = await walletFactory.getWallet({ chain: "stellar" });
+
+            expect(wallet.recoveryMethods).toEqual([first, second]);
+        });
+    });
+
+    describe("when the caller passes a quorum member as the recovery config", () => {
+        it("rejects with WalletCreationError, as for any recovery mismatch", async () => {
+            const quorum = createQuorumApiEntry();
+            mockApiClient.getWallet.mockResolvedValue(
+                walletResponse("stellar", { adminSigner: quorum, recoveryMethods: [quorum] })
+            );
+
+            await expect(
+                walletFactory.getWallet({
+                    chain: "stellar",
+                    recovery: { type: "email", email: quorum.members[0].email },
+                } as WalletCreateArgs<"stellar">)
+            ).rejects.toBeInstanceOf(WalletCreationError);
+        });
+    });
+});
+
+describe("WalletFactory - creating quorums", () => {
+    let walletFactory: WalletFactory;
+    let mockApiClient: MockedApiClient;
+
+    const CHAIN_TYPES = { "base-sepolia": "evm", solana: "solana", stellar: "stellar" } as const;
+    const walletResponse = (chain: keyof typeof CHAIN_TYPES, config: Record<string, unknown>) =>
+        ({
+            chainType: CHAIN_TYPES[chain],
+            type: "smart" as const,
+            address: "wallet-address",
+            owner: "test-owner",
+            config,
+            createdAt: Date.now(),
+        }) as unknown as GetWalletSuccessResponse;
+
+    beforeEach(() => {
+        vi.resetAllMocks();
+        mockApiClient = {
+            isServerSide: false,
+            crossmint: { projectId: "test-project" },
+            projectId: "test-project",
+            environment: APIKeyEnvironmentPrefix.STAGING,
+            getWallet: vi.fn(),
+            createWallet: vi.fn(),
+        };
+        walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    describe.each([{ chain: "base-sepolia" }, { chain: "solana" }, { chain: "stellar" }] as const)(
+        "on $chain",
+        ({ chain }) => {
+            describe("createWallet with a recovery quorum", () => {
+                it("sends each member's identity fields only, under recoveryMethods", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.createWallet.mockResolvedValue(
+                        walletResponse(chain, { recoveryMethods: [quorum.entry] })
+                    );
+
+                    await walletFactory.createWallet({ chain, recoveryMethods: [quorum.config] } as never);
+
+                    const params = mockApiClient.createWallet.mock.calls[0][0];
+                    expect(params.config).toEqual(expect.objectContaining({ recoveryMethods: [quorum.input] }));
+                    expect(params.config).not.toHaveProperty("adminSigner");
+                    expect(JSON.stringify(params)).not.toContain(QUORUM_SERVER_MEMBER_SECRET);
+                });
+
+                it("sends a quorum passed alone under recoveryMethods, never adminSigner", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.createWallet.mockResolvedValue(
+                        walletResponse(chain, { recoveryMethods: [quorum.entry] })
+                    );
+
+                    await walletFactory.createWallet({ chain, recovery: quorum.config } as never);
+
+                    const params = mockApiClient.createWallet.mock.calls[0][0];
+                    expect(params.config).toEqual(expect.objectContaining({ recoveryMethods: [quorum.input] }));
+                    expect(params.config).not.toHaveProperty("adminSigner");
+                });
+
+                it("lists the API's entry and holds none of the members' keys", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.createWallet.mockResolvedValue(
+                        walletResponse(chain, { recoveryMethods: [quorum.entry] })
+                    );
+
+                    const wallet = await walletFactory.createWallet({
+                        chain,
+                        recoveryMethods: [quorum.config],
+                    } as never);
+
+                    expect(wallet.recoveryMethods).toEqual([quorum.entry]);
+                    expect(wallet.signer).toBeUndefined();
+                });
+            });
+
+            describe("createWallet with a delegated quorum", () => {
+                it("registers it with each member's identity fields only", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.createWallet.mockResolvedValue(
+                        walletResponse(chain, {
+                            recoveryMethods: [{ type: "api-key", locator: "api-key" }],
+                            delegatedSigners: [quorum.entry],
+                        })
+                    );
+
+                    await walletFactory.createWallet({
+                        chain,
+                        recoveryMethods: [{ type: "api-key" }],
+                        signers: [quorum.config],
+                    } as never);
+
+                    const params = mockApiClient.createWallet.mock.calls[0][0];
+                    expect(params.config).toEqual(
+                        expect.objectContaining({ delegatedSigners: [{ signer: quorum.input }] })
+                    );
+                });
+            });
+
+            describe("createWallet with a delegated quorum and device key storage", () => {
+                const deviceKeyStorage = () => ({
+                    getKey: vi.fn().mockResolvedValue(null),
+                    saveKey: vi.fn().mockResolvedValue(undefined),
+                    generateKey: vi
+                        .fn()
+                        .mockResolvedValue(
+                            Buffer.concat([Buffer.from([0x04]), Buffer.alloc(32, 1), Buffer.alloc(32, 2)]).toString(
+                                "base64"
+                            )
+                        ),
+                    getDeviceName: vi.fn().mockReturnValue("Chrome on Mac"),
+                });
+                const sentDelegatedSigners = (call: number) =>
+                    (
+                        mockApiClient.createWallet.mock.calls[call][0].config as {
+                            delegatedSigners: Array<{ signer: unknown }>;
+                        }
+                    ).delegatedSigners;
+
+                it("registers the quorum next to the device signer it adds", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.createWallet.mockResolvedValue(
+                        walletResponse(chain, {
+                            recoveryMethods: [{ type: "api-key", locator: "api-key" }],
+                            delegatedSigners: [quorum.entry],
+                        })
+                    );
+
+                    await walletFactory.createWallet({
+                        chain,
+                        recoveryMethods: [{ type: "api-key" }],
+                        signers: [quorum.config],
+                        options: { deviceSignerKeyStorage: deviceKeyStorage() },
+                    } as never);
+
+                    const signers = sentDelegatedSigners(0);
+                    expect(signers).toContainEqual({ signer: quorum.input });
+                    expect(signers).toContainEqual({ signer: expect.objectContaining({ type: "device" }) });
+                });
+
+                it("keeps the quorum when it retries without a device signer the provider rejects", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.createWallet
+                        .mockResolvedValueOnce({
+                            error: true,
+                            code: "DEVICE_SIGNER_NOT_SUPPORTED",
+                            message: "Device signers are not supported",
+                        } as never)
+                        .mockResolvedValue(
+                            walletResponse(chain, {
+                                recoveryMethods: [{ type: "api-key", locator: "api-key" }],
+                                delegatedSigners: [quorum.entry],
+                            })
+                        );
+
+                    await walletFactory.createWallet({
+                        chain,
+                        recoveryMethods: [{ type: "api-key" }],
+                        signers: [quorum.config],
+                        options: { deviceSignerKeyStorage: deviceKeyStorage() },
+                    } as never);
+
+                    expect(sentDelegatedSigners(1)).toEqual([{ signer: quorum.input }]);
+                });
+            });
+
+            describe("getWallet with a recovery quorum in the config", () => {
+                it("takes the wallet's quorum whatever the member order and address case", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.getWallet.mockResolvedValue(
+                        walletResponse(chain, { recoveryMethods: [quorum.entry] })
+                    );
+
+                    const wallet = await walletFactory.getWallet({
+                        chain,
+                        recoveryMethods: [withMembersReordered(quorum.config)],
+                    } as never);
+
+                    expect(wallet.recoveryMethods).toEqual([quorum.entry]);
+                });
+
+                it("matches each of two quorums to its own entry", async () => {
+                    const first = createQuorumFixture(chain);
+                    const second = createQuorumFixture(chain, 3);
+                    mockApiClient.getWallet.mockResolvedValue(
+                        walletResponse(chain, { recoveryMethods: [first.entry, second.entry] })
+                    );
+
+                    const wallet = await walletFactory.getWallet({
+                        chain,
+                        recoveryMethods: [second.config, first.config],
+                    } as never);
+
+                    expect(wallet.recoveryMethods).toEqual([first.entry, second.entry]);
+                });
+
+                it.each([
+                    {
+                        name: "another threshold",
+                        change: (config: ReturnType<typeof createQuorumFixture>["config"]) => ({
+                            ...config,
+                            threshold: 3,
+                        }),
+                    },
+                    {
+                        name: "a member missing",
+                        change: (config: ReturnType<typeof createQuorumFixture>["config"]) => ({
+                            ...config,
+                            members: config.members.slice(1),
+                        }),
+                    },
+                    {
+                        name: "another member",
+                        change: (config: ReturnType<typeof createQuorumFixture>["config"]) => ({
+                            ...config,
+                            members: [{ type: "email", email: "mallory@example.com" }, ...config.members.slice(1)],
+                        }),
+                    },
+                ])("rejects a quorum with $name", async ({ change }) => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.getWallet.mockResolvedValue(
+                        walletResponse(chain, { recoveryMethods: [quorum.entry] })
+                    );
+
+                    await expect(
+                        walletFactory.getWallet({ chain, recoveryMethods: [change(quorum.config)] } as never)
+                    ).rejects.toBeInstanceOf(WalletCreationError);
+                });
+            });
+
+            describe("getWallet with a delegated quorum in the config", () => {
+                it("takes the wallet's delegated quorum whatever the member order", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.getWallet.mockResolvedValue(
+                        walletResponse(chain, {
+                            recoveryMethods: [{ type: "api-key", locator: "api-key" }],
+                            delegatedSigners: [quorum.entry],
+                        })
+                    );
+
+                    await expect(
+                        walletFactory.getWallet({ chain, signers: [withMembersReordered(quorum.config)] } as never)
+                    ).resolves.toBeDefined();
+                });
+
+                it("rejects a delegated quorum the wallet does not have", async () => {
+                    const quorum = createQuorumFixture(chain);
+                    mockApiClient.getWallet.mockResolvedValue(
+                        walletResponse(chain, {
+                            recoveryMethods: [{ type: "api-key", locator: "api-key" }],
+                            delegatedSigners: [createQuorumFixture(chain, 3).entry],
+                        })
+                    );
+
+                    await expect(
+                        walletFactory.getWallet({ chain, signers: [quorum.config] } as never)
+                    ).rejects.toBeInstanceOf(WalletCreationError);
+                });
+            });
+        }
+    );
+});
+
+describe("WalletFactory - signer initialization in getWallet", () => {
+    // getWallet awaits signer initialization. The wallet response already carries each delegated signer's
+    // per-chain status, so loading a wallet whose device key is on this device needs no request beyond GET wallet.
+
+    const WALLET_ADDRESS = "0x1234567890123456789012345678901234567890";
+    // a valid uncompressed P-256 public key: 0x04 + 32-byte x + 32-byte y
+    const DEVICE_KEY = Buffer.concat([Buffer.from([0x04]), Buffer.alloc(32, 1), Buffer.alloc(32, 2)]).toString(
+        "base64"
+    );
+    const DEVICE_LOCATOR = `device:${DEVICE_KEY}`;
+
+    const walletResponse = (deviceChains: Record<string, { status: string; id?: string }>) =>
+        ({
+            chainType: "evm",
+            type: "smart",
+            address: WALLET_ADDRESS,
+            owner: "email:user@example.com",
+            config: {
+                adminSigner: { type: "email", email: "user@example.com", locator: "email:user@example.com" },
+                delegatedSigners: [{ type: "device", locator: DEVICE_LOCATOR, chains: deviceChains }],
+            },
+            createdAt: Date.now(),
+        }) as unknown as GetWalletSuccessResponse;
+
+    const keyStorage = (where: "mapped" | "unmapped") => ({
+        preload: vi.fn(),
+        getKey: vi.fn().mockResolvedValue(where === "mapped" ? DEVICE_KEY : null),
+        hasKey: vi.fn().mockImplementation(async (key: string) => key === DEVICE_KEY),
+        mapAddressToKey: vi.fn().mockResolvedValue(undefined),
+        saveSignerLocator: vi.fn().mockResolvedValue(undefined),
+        generateKey: vi.fn(),
+        signMessage: vi.fn(),
+        deleteKey: vi.fn(),
+        getDeviceName: vi.fn().mockReturnValue("Test Device"),
+    });
+
+    let apiClient: {
+        isServerSide: boolean;
+        projectId: string;
+        environment: APIKeyEnvironmentPrefix;
+        getWallet: MockedFunction<ApiClient["getWallet"]>;
+        getSigner: MockedFunction<ApiClient["getSigner"]>;
+    };
+    let factory: WalletFactory;
+
+    beforeEach(() => {
+        vi.resetAllMocks();
+        walletsLogger.debug = vi.fn();
+        apiClient = {
+            isServerSide: false,
+            projectId: "test-project",
+            environment: APIKeyEnvironmentPrefix.STAGING,
+            getWallet: vi.fn(),
+            getSigner: vi.fn(),
+        };
+        factory = new WalletFactory(apiClient as unknown as ApiClient);
+    });
+
+    it.each(["mapped", "unmapped"] as const)(
+        "uses this device's signer with its status from the wallet response, in one request (key %s)",
+        async (where) => {
+            apiClient.getWallet.mockResolvedValue(walletResponse({ "base-sepolia": { status: "success" } }));
+            const storage = keyStorage(where);
+
+            const wallet = await factory.getWallet({
+                chain: "base-sepolia",
+                options: { deviceSignerKeyStorage: storage as never },
+            });
+
+            expect(apiClient.getWallet).toHaveBeenCalledTimes(1);
+            expect(apiClient.getSigner).not.toHaveBeenCalled();
+            expect(wallet.signer?.locator()).toBe(DEVICE_LOCATOR);
+            expect(wallet.signer?.status).toBe("success");
+            expect(wallet.needsRecovery()).toBe(false);
+            if (where === "unmapped") {
+                expect(storage.mapAddressToKey).toHaveBeenCalledWith(WALLET_ADDRESS, DEVICE_KEY);
+            }
+        }
+    );
+
+    it("needs recovery when the response shows this device's signer still awaiting approval", async () => {
+        apiClient.getWallet.mockResolvedValue(
+            walletResponse({ "base-sepolia": { status: "awaiting-approval", id: "sig-1" } })
+        );
+
+        const wallet = await factory.getWallet({
+            chain: "base-sepolia",
+            options: { deviceSignerKeyStorage: keyStorage("mapped") as never },
+        });
+
+        expect(apiClient.getSigner).not.toHaveBeenCalled();
+        expect(wallet.signer?.status).toBe("awaiting-approval");
+        expect(wallet.needsRecovery()).toBe(true);
+    });
+
+    it("ignores a device signer approved only on another chain, like signers() does", async () => {
+        apiClient.getWallet.mockResolvedValue(walletResponse({ base: { status: "success" } }));
+
+        const wallet = await factory.getWallet({
+            chain: "base-sepolia",
+            options: { deviceSignerKeyStorage: keyStorage("unmapped") as never },
+        });
+
+        expect(apiClient.getWallet).toHaveBeenCalledTimes(1);
+        expect(wallet.signer).toBeUndefined();
+        expect(wallet.needsRecovery()).toBe(true);
+    });
+
+    it("starts loading the key storage before the wallet request returns", async () => {
+        const storage = keyStorage("mapped");
+        apiClient.getWallet.mockImplementation(async () => {
+            expect(storage.preload).toHaveBeenCalledTimes(1);
+            return walletResponse({ "base-sepolia": { status: "success" } });
+        });
+
+        await factory.getWallet({ chain: "base-sepolia", options: { deviceSignerKeyStorage: storage as never } });
+
+        expect(storage.preload).toHaveBeenCalledTimes(1);
     });
 });

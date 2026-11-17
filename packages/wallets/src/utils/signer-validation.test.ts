@@ -347,3 +347,44 @@ describe("compareSignerConfigs - Email Normalization", () => {
         });
     });
 });
+
+describe("compareSignerConfigs - Secret handling", () => {
+    const masterSecret = `xmsk1_${"0123456789abcdef".repeat(4)}`;
+
+    it("never compares the caller's secret against an API-sourced secret field", () => {
+        const newConfig = { type: "server", secret: masterSecret };
+        const existingConfig = { type: "server", secret: "value-forged-by-the-api-response" };
+
+        expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
+    });
+
+    it("omits the caller's secret and the existing value from the mismatch message", () => {
+        const newConfig = { type: "server", secret: masterSecret, locator: "server:0xcaller" };
+        const existingConfig = { type: "server", secret: "forged", locator: "server:0xexisting" };
+
+        let thrown: unknown;
+        try {
+            compareSignerConfigs(newConfig, existingConfig);
+        } catch (error) {
+            thrown = error;
+        }
+
+        expect(thrown).toBeInstanceOf(WalletCreationError);
+        const { message, stack } = thrown as WalletCreationError;
+        expect(message).toMatch(/Wallet signer configuration mismatch at "locator"/);
+        for (const leaked of [masterSecret, "0123456789abcdef", "forged", "0xcaller", "0xexisting"]) {
+            expect(message).not.toContain(leaked);
+            expect(stack ?? "").not.toContain(leaked);
+        }
+    });
+
+    it("skips runtime-only callback fields", () => {
+        const newConfig = {
+            type: "passkey",
+            onCreatePasskey: async () => ({ id: "a", publicKey: { x: "1", y: "2" } }),
+        };
+        const existingConfig = { type: "passkey", onCreatePasskey: "not-a-function" };
+
+        expect(() => compareSignerConfigs(newConfig, existingConfig)).not.toThrow();
+    });
+});

@@ -4,6 +4,7 @@ export * from "./embed";
 export * from "./system";
 export * from "./payment-method-management";
 export * from "./identity-verification";
+export * from "./embedded-offramp";
 export * from "./cvc-recollection";
 export * from "./protected-input";
 export * from "./agent-card-authorization";
@@ -35,6 +36,7 @@ export type Locale =
     | "en-US"
     | "es-ES"
     | "fr-FR"
+    | "fr-CA"
     | "it-IT"
     | "ja-JP"
     | "ko-KR"

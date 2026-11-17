@@ -1,4 +1,7 @@
-import type { AndroidManifest, ManifestQuery } from "@expo/config-plugins/build/android/Manifest";
+import type { AndroidConfig } from "expo/config-plugins";
+
+type AndroidManifest = AndroidConfig.Manifest.AndroidManifest;
+type ManifestQuery = AndroidConfig.Manifest.ManifestQuery;
 
 export function addQueryToAndroidManifest(androidManifest: AndroidManifest, query: ManifestQuery): AndroidManifest {
     const manifest = androidManifest.manifest;

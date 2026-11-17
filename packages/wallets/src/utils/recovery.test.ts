@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { hasRecoveryMethodList, recoveryMethodsFromCreateArgs } from "./recovery";
+import { hasRecoveryMethodList, recoveryMethodsFromCreateArgs, recoveryMethodsFromWalletConfig } from "./recovery";
 import { InvalidRecoveryConfigError } from "./errors";
 import { walletsLogger } from "../logger";
 import type { WalletCreateArgs } from "../wallets/types";
@@ -91,5 +91,24 @@ describe("hasRecoveryMethodList", () => {
 
     test("is false when neither field is given", () => {
         expect(hasRecoveryMethodList({})).toBe(false);
+    });
+});
+
+describe("recoveryMethodsFromWalletConfig", () => {
+    test("returns the config's recoveryMethods list when the API sends one", () => {
+        expect(
+            recoveryMethodsFromWalletConfig({
+                adminSigner: API_KEY_METHOD,
+                recoveryMethods: [API_KEY_METHOD, EMAIL_METHOD],
+            })
+        ).toEqual([API_KEY_METHOD, EMAIL_METHOD]);
+    });
+
+    test("falls back to the deprecated adminSigner alone", () => {
+        expect(recoveryMethodsFromWalletConfig({ adminSigner: EMAIL_METHOD })).toEqual([EMAIL_METHOD]);
+    });
+
+    test("returns no recovery method when the config has neither", () => {
+        expect(recoveryMethodsFromWalletConfig({})).toEqual([]);
     });
 });

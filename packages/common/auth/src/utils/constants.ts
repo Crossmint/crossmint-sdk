@@ -7,3 +7,8 @@ export const AUTH_SDK_ROOT_ENDPOINT = `api/${CROSSMINT_API_VERSION}/session/sdk/
 
 export const SESSION_PREFIX = "crossmint-jwt";
 export const REFRESH_TOKEN_PREFIX = "crossmint-refresh-token";
+
+/** Project-scoped auth cookie name, e.g. `crossmint-jwt-<projectId>`, shared by the client and server SDKs. */
+export function getScopedCookieName(name: string, projectId: string): string {
+    return `${name}-${projectId}`;
+}

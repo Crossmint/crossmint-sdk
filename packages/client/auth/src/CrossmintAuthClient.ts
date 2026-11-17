@@ -119,7 +119,10 @@ export class CrossmintAuthClient extends CrossmintAuth {
         }
     }
 
-    public async handleRefreshAuthMaterial(refreshTokenSecret?: string): Promise<AuthMaterialWithUser | null> {
+    public async handleRefreshAuthMaterial(
+        refreshTokenSecret?: string,
+        codeVerifier?: string
+    ): Promise<AuthMaterialWithUser | null> {
         try {
             const refreshToken = refreshTokenSecret ?? (await this.storageProvider.get(REFRESH_TOKEN_PREFIX));
             // If there is a custom refresh route, that endpoint will fetch the cookies itself
@@ -131,7 +134,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
 
             // Create new refresh promise if none exists or return existing one for concurrent calls
             if (this.refreshPromise == null) {
-                this.refreshPromise = this.refreshAuthMaterial(refreshToken);
+                this.refreshPromise = this.refreshAuthMaterial(refreshToken, codeVerifier);
             }
 
             // Await the shared promise - this handles concurrent calls to the same refresh
@@ -177,11 +180,14 @@ export class CrossmintAuthClient extends CrossmintAuth {
         }
     }
 
-    public async getOAuthUrl(provider: OAuthProvider, options?: { appSchema?: string }) {
+    public async getOAuthUrl(provider: OAuthProvider, options?: { appSchema?: string; codeChallenge?: string }) {
         try {
             const queryParams = new URLSearchParams();
             if (options?.appSchema != null) {
                 queryParams.set("appSchema", options.appSchema);
+            }
+            if (options?.codeChallenge != null) {
+                queryParams.set("codeChallenge", options.codeChallenge);
             }
 
             const queryString = queryParams.toString();
