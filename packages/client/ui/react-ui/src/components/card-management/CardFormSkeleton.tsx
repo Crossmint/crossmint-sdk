@@ -106,7 +106,7 @@ export function SavedMethodsSkeleton({ appearance }: { appearance?: PaymentMetho
     return (
         <div
             aria-hidden="true"
-            data-testid="crossmint-payment-method-management.skeleton"
+            data-testid="crossmint-payment-method-management.saved-methods-skeleton"
             style={{ paddingBottom: FEEDBACK_HEIGHT }}
         >
             <div

@@ -2,7 +2,10 @@ import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { StrictMode, createRef } from "react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import type { CrossmintPaymentMethodManagementRef } from "@crossmint/client-sdk-base";
+import type {
+    CrossmintPaymentMethodManagementProps,
+    CrossmintPaymentMethodManagementRef,
+} from "@crossmint/client-sdk-base";
 import { CrossmintPaymentMethodManagement } from "./CrossmintPaymentMethodManagement";
 
 const mocks = vi.hoisted(() => ({
@@ -39,6 +42,7 @@ const CARD = {
 } as const;
 const SAVED = { status: "saved", paymentMethod: CARD } as const;
 const SKELETON = "crossmint-payment-method-management.skeleton";
+const SAVED_SKELETON = "crossmint-payment-method-management.saved-methods-skeleton";
 
 function mount({ load = true, onSelected }: { load?: boolean; onSelected?: (method: unknown) => void } = {}) {
     const ref = createRef<CrossmintPaymentMethodManagementRef>();
@@ -63,6 +67,7 @@ function deferred<T>() {
 }
 
 beforeEach(() => {
+    window.sessionStorage.clear();
     vi.resetAllMocks();
     mocks.handshakeWithChild.mockResolvedValue(undefined);
     mocks.on.mockReturnValue("subscription");
@@ -278,6 +283,54 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         expect(field.style.border).toBe("1px solid rgb(17, 17, 17)");
         expect(field.style.backgroundColor).toBe("rgb(34, 34, 34)");
         expect(field.style.color).toBe("rgb(51, 51, 51)");
+    });
+
+    test.each<[Partial<CrossmintPaymentMethodManagementProps>, string | null]>([
+        [{ allowedModes: ["new"] }, SKELETON],
+        [{ allowedModes: ["new", "existing"] }, SAVED_SKELETON],
+        [{ allowedPaymentMethodTypes: ["bank-account-us", "card"] }, null],
+    ])("picks the skeleton of the iframe's first screen: %o", (formProps, skeleton) => {
+        render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" {...formProps} />);
+        for (const id of [SKELETON, SAVED_SKELETON]) {
+            expect(screen.queryByTestId(id) != null).toBe(id === skeleton);
+        }
+    });
+
+    test("shows an unready iframe that has drawn once its document has loaded for a while", () => {
+        vi.useFakeTimers();
+        try {
+            const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+            render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" />);
+            const iframe = screen.getByRole("crossmint-payment-method-management.iframe");
+            fireEvent.load(iframe);
+            act(() => listener("ui:height.changed")?.({ height: 120 }));
+
+            act(() => vi.advanceTimersByTime(7_999));
+            expect(screen.getByTestId(SKELETON)).toBeTruthy();
+
+            act(() => vi.advanceTimersByTime(1));
+            expect(screen.queryByTestId(SKELETON)).toBeNull();
+            expect(iframe.style.opacity).toBe("1");
+            expect(iframe.inert).toBe(false);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    test("opens on the screen and height the same configuration last opened on in this session", () => {
+        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+        const first = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" allowedModes={["new", "existing"]} />);
+        act(() => {
+            listener("payment-method:ready")?.({});
+            listener("payment-method:change")?.({ mode: "new", empty: true, complete: false });
+            listener("ui:height.changed")?.({ height: 222 });
+        });
+        first.unmount();
+
+        render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" allowedModes={["new", "existing"]} />);
+
+        expect(screen.queryByTestId(SAVED_SKELETON)).toBeNull();
+        expect((screen.getByTestId(SKELETON).parentElement as HTMLElement).style.minHeight).toBe("222px");
     });
 
     test("calls onReady and onChange with the iframe's form state, and only for the live iframe", () => {
