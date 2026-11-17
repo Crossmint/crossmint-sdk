@@ -116,7 +116,7 @@ const PaymentMethodConnection = forwardRef<
     const [loads, setLoads] = useState(0);
     const [revealUnready, setRevealUnready] = useState(false);
     const [settled, setSettled] = useState(false);
-    const [openedOn, setOpenedOn] = useState<FirstScreen | null>(null);
+    const [openedOn, setOpenedOn] = useState<FirstScreen | "other" | null>(null);
     // Read after mount: the server has no storage, and hydration must match its render.
     const [remembered, setRemembered] = useState<RememberedScreen | null>(null);
     const guess = firstScreen(props);
@@ -163,8 +163,9 @@ const PaymentMethodConnection = forwardRef<
         }
         const timer = setTimeout(() => {
             setSettled(true);
-            if (skeleton != null) {
-                rememberFirstScreen(latestProps.current, { screen: openedOn ?? skeleton, height });
+            const screen = openedOn ?? skeleton;
+            if (skeleton != null && screen !== "other") {
+                rememberFirstScreen(latestProps.current, { screen, height });
             }
         }, FIRST_SCREEN_SETTLE_MS);
         return () => clearTimeout(timer);
@@ -226,7 +227,7 @@ const PaymentMethodConnection = forwardRef<
         });
         const changeListener = client.on("payment-method:change", (event) => {
             if (connection.current === active) {
-                setOpenedOn((screen) => screen ?? (event.mode === "existing" ? "saved" : "card"));
+                setOpenedOn((screen) => screen ?? openedScreen(event.mode, latestProps.current));
                 lastChange.current = event;
                 latestProps.current.onChange?.(event);
             }
@@ -343,7 +344,6 @@ const PaymentMethodConnection = forwardRef<
                     userSelect: "none",
                     transform: "translate(0px)",
                     opacity: "1",
-                    transition: "ease 0s, opacity 0.4s ease 0.1s",
                     height: `${height}px`,
                     backgroundColor: "transparent",
                     ...(showSkeleton
@@ -377,6 +377,17 @@ function firstScreen({
         return "card";
     }
     return null;
+}
+
+// The change event only says "new": that is the card form only when cards come first.
+function openedScreen(
+    mode: "new" | "existing",
+    { allowedPaymentMethodTypes }: CrossmintPaymentMethodManagementProps
+): FirstScreen | "other" {
+    if (mode === "existing") {
+        return "saved";
+    }
+    return (allowedPaymentMethodTypes?.[0] ?? "card") === "card" ? "card" : "other";
 }
 
 // Per tab and per configuration: with saved methods allowed, a buyer with none opens on the card form.

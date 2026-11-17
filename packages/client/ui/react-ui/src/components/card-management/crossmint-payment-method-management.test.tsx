@@ -360,6 +360,32 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         }
     });
 
+    test("does not remember a bank form as the card form", () => {
+        vi.useFakeTimers();
+        try {
+            const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+            const props = {
+                allowedModes: ["new", "existing"],
+                allowedPaymentMethodTypes: ["bank-account-us", "card"],
+            } satisfies Partial<CrossmintPaymentMethodManagementProps>;
+            const first = render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" {...props} />);
+            act(() => {
+                listener("payment-method:ready")?.({});
+                listener("payment-method:change")?.({ mode: "new", empty: true, complete: false });
+                listener("ui:height.changed")?.({ height: 300 });
+            });
+            act(() => vi.advanceTimersByTime(150));
+            first.unmount();
+
+            render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" {...props} />);
+
+            expect(screen.queryByTestId(SKELETON)).toBeNull();
+            expect((screen.getByTestId(SAVED_SKELETON).parentElement as HTMLElement).style.minHeight).toBe("");
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
     test("calls onReady and onChange with the iframe's form state, and only for the live iframe", () => {
         const onReady = vi.fn();
         const onChange = vi.fn();
