@@ -82,24 +82,32 @@ export function CardFormSkeleton({ appearance }: { appearance?: PaymentMethodMan
     );
 }
 
-// The iframe's saved-methods choice: in a 1px box with 11px corners, 16px apart, the "Use existing" radio,
+// The iframe's saved-methods choice: in a 1px box with 11px corners, 16px apart, the selected "Use existing" radio,
 // the selected method's 74px row, the "or" separator and the "Add new" radio, then the feedback row.
 // Keep in sync with `SavedOrNewSections` in the iframe (pinned by the same crossbit-main test).
 export function SavedMethodsSkeleton({ appearance }: { appearance?: PaymentMethodManagementAppearance }) {
     const colors = appearance?.variables?.colors;
     const border = `1px solid ${colors?.borderPrimary ?? DEFAULT_SAVED_BORDER}`;
     const tint: CSSProperties = { color: colors?.textPrimary ?? DEFAULT_TEXT };
-    const radio = (
+    const accent = colors?.accent ?? DEFAULT_ACCENT;
+    const radio = (selected: boolean) => (
         <div style={{ display: "flex", alignItems: "center", columnGap: 8, height: 24 }}>
             <div
                 style={{
                     boxSizing: "border-box",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     width: 20,
                     height: 20,
                     borderRadius: "50%",
-                    border: `1px solid ${colors?.accent ?? DEFAULT_ACCENT}`,
+                    border: `1px solid ${accent}`,
                 }}
-            />
+            >
+                {selected ? (
+                    <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: accent }} />
+                ) : null}
+            </div>
             <Field style={{ ...tint, width: 96, height: 14, borderRadius: 7 }} />
         </div>
     );
@@ -120,13 +128,13 @@ export function SavedMethodsSkeleton({ appearance }: { appearance?: PaymentMetho
                     borderRadius: 11,
                 }}
             >
-                {radio}
+                {radio(true)}
                 <Field style={{ ...tint, height: 74, border, borderRadius: 8 }} />
                 <div style={{ display: "flex", alignItems: "center", columnGap: 36, height: 20 }}>
                     {line}
                     {line}
                 </div>
-                {radio}
+                {radio(false)}
             </div>
         </div>
     );
