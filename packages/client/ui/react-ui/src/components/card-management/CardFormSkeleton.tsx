@@ -10,24 +10,36 @@ const DEFAULT_FONT_SIZE_UNIT = "4px";
 const DEFAULT_BORDER_RADIUS = "12px";
 const DEFAULT_BORDER = "#D1D5DB";
 const DEFAULT_BACKGROUND = "#ffffff";
+const DEFAULT_TEXT = "#000000";
 const FIELD_GAP = 12;
 const FEEDBACK_HEIGHT = 24;
 
 const pulse = keyframes`
     0%, 100% {
-        opacity: 1;
+        opacity: 0.1;
     }
     50% {
-        opacity: 0.5;
+        opacity: 0.04;
     }
 `;
 
+// A tint of the text colour over the field's own background, so the fields read as loading on
+// any theme instead of as an empty form.
 const Field = styled.div`
+    position: relative;
     box-sizing: border-box;
     width: 100%;
-    animation: ${pulse} 2s ease-in-out infinite;
-    @media (prefers-reduced-motion: reduce) {
-        animation: none;
+    overflow: hidden;
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-color: currentColor;
+        opacity: 0.07;
+        animation: ${pulse} 2s ease-in-out infinite;
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+        }
     }
 `;
 
@@ -43,6 +55,7 @@ export function CardFormSkeleton({ appearance }: { appearance?: PaymentMethodMan
         borderRadius: input?.borderRadius ?? variables?.borderRadius ?? DEFAULT_BORDER_RADIUS,
         border: `1px solid ${input?.colors?.border ?? variables?.colors?.borderPrimary ?? DEFAULT_BORDER}`,
         backgroundColor: input?.colors?.background ?? variables?.colors?.backgroundPrimary ?? DEFAULT_BACKGROUND,
+        color: input?.colors?.text ?? variables?.colors?.textPrimary ?? DEFAULT_TEXT,
     };
     return (
         <div

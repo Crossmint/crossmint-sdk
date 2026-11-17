@@ -271,7 +271,7 @@ describe("CrossmintPaymentMethodManagement ref", () => {
             <CrossmintPaymentMethodManagement
                 jwt="buyer-jwt"
                 appearance={{
-                    variables: { borderRadius: "4px", colors: { borderPrimary: "#111111" } },
+                    variables: { borderRadius: "4px", colors: { borderPrimary: "#111111", textPrimary: "#333333" } },
                     rules: { Input: { colors: { background: "#222222" } } },
                 }}
             />
@@ -280,6 +280,7 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         expect(field.style.borderRadius).toBe("4px");
         expect(field.style.border).toBe("1px solid rgb(17, 17, 17)");
         expect(field.style.backgroundColor).toBe("rgb(34, 34, 34)");
+        expect(field.style.color).toBe("rgb(51, 51, 51)");
     });
 
     test.each<Partial<CrossmintPaymentMethodManagementProps>>([
