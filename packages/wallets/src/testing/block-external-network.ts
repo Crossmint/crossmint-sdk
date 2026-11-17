@@ -10,6 +10,10 @@ type ConnectArgs =
 
 function tcpTarget(args: ConnectArgs): { host: string; port: number } | undefined {
     const first = args[0];
+    // net.connect, net.createConnection and http hand Socket#connect their normalized arguments as one array
+    if (Array.isArray(first)) {
+        return tcpTarget(first as unknown as ConnectArgs);
+    }
     if (typeof first === "object") {
         if ("path" in first && first.path) {
             return undefined;

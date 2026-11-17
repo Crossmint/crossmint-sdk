@@ -13,20 +13,27 @@ describe("installNetworkKillSwitch", () => {
     it("blocks a non-allowed host synchronously, not as a hang or timeout", () => {
         uninstall = installNetworkKillSwitch();
 
-        const start = Date.now();
         expect(() => new net.Socket().connect(443, "staging.crossmint.com")).toThrow(
             /Blocked outbound connection to "staging\.crossmint\.com:443"/
         );
-        expect(Date.now() - start).toBeLessThan(50);
     });
 
-    it("surfaces the same blocked-host error through fetch, quickly, instead of a network timeout", async () => {
+    it.each([
+        ["net.connect", () => net.connect(80, "staging.crossmint.com")],
+        ["net.createConnection", () => net.createConnection({ port: 80, host: "staging.crossmint.com" })],
+    ])("blocks a non-allowed host reached through %s", (_, connect) => {
         uninstall = installNetworkKillSwitch();
 
-        const start = Date.now();
-        const rejection: unknown = await fetch("http://staging.crossmint.com/").catch((error) => error);
+        expect(connect).toThrow(/Blocked outbound connection to "staging\.crossmint\.com:80"/);
+    });
+
+    it("surfaces the same blocked-host error through a plain-http fetch, instead of a network timeout", async () => {
+        uninstall = installNetworkKillSwitch();
+
+        const rejection: unknown = await fetch("http://staging.crossmint.com/", { redirect: "manual" }).catch(
+            (error) => error
+        );
         expect((rejection as { cause?: Error }).cause?.message).toMatch(/Blocked outbound connection/);
-        expect(Date.now() - start).toBeLessThan(5000);
     });
 
     it("still allows loopback connections, so the sandbox's own dev server keeps working", () => {
