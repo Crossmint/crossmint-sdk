@@ -16,7 +16,8 @@ const useCommittedLayoutEffect = typeof window === "undefined" ? useEffect : use
 // A loaded document that has not reported ready by then is shown as it is, so a broken form
 // is not hidden behind the skeleton for good.
 const REVEAL_UNREADY_AFTER_MS = 8_000;
-const OPENED_HEIGHT_SETTLE_MS = 500;
+// The iframe can be ready and report a spinner's height just before its first screen draws.
+const FIRST_SCREEN_SETTLE_MS = 150;
 const FIRST_SCREEN_KEY = "crossmint.payment-method-management.first-screen:";
 // A save is two Basis Theory tokenizations, the create call and the card art lookup.
 const SUBMIT_TIMEOUT_MS = 60_000;
@@ -114,14 +115,14 @@ const PaymentMethodConnection = forwardRef<
     const [formReady, setFormReady] = useState(false);
     const [loads, setLoads] = useState(0);
     const [revealUnready, setRevealUnready] = useState(false);
+    const [settled, setSettled] = useState(false);
     const [openedOn, setOpenedOn] = useState<FirstScreen | null>(null);
     // Read after mount: the server has no storage, and hydration must match its render.
     const [remembered, setRemembered] = useState<RememberedScreen | null>(null);
     const guess = firstScreen(props);
     const skeleton = guess === "saved" ? remembered?.screen ?? guess : guess;
     const reservedHeight = remembered?.screen === skeleton ? remembered.height : undefined;
-    const showSkeleton = skeleton != null && !((formReady || revealUnready) && height > 0);
-    const openedHeight = useRef<number | null>(null);
+    const showSkeleton = skeleton != null && !((settled || revealUnready) && height > 0);
     useEffect(() => {
         if (loads === 0) {
             return;
@@ -157,16 +158,17 @@ const PaymentMethodConnection = forwardRef<
         setRemembered(recallFirstScreen(latestProps.current));
     }, []);
     useEffect(() => {
-        if (!formReady || height <= 0 || skeleton == null || openedHeight.current != null) {
+        if (settled || !formReady || height <= 0) {
             return;
         }
-        // The iframe can report a spinner's height just before its first screen draws: keep the one that holds.
         const timer = setTimeout(() => {
-            openedHeight.current = height;
-            rememberFirstScreen(latestProps.current, { screen: openedOn ?? skeleton, height });
-        }, OPENED_HEIGHT_SETTLE_MS);
+            setSettled(true);
+            if (skeleton != null) {
+                rememberFirstScreen(latestProps.current, { screen: openedOn ?? skeleton, height });
+            }
+        }, FIRST_SCREEN_SETTLE_MS);
         return () => clearTimeout(timer);
-    }, [formReady, height, openedOn, skeleton]);
+    }, [settled, formReady, height, openedOn, skeleton]);
 
     useCommittedLayoutEffect(() => {
         if (iframe.current == null) {
@@ -181,8 +183,8 @@ const PaymentMethodConnection = forwardRef<
                 reportReload(lastChange, latestProps.current.onChange);
                 setFormReady(false);
                 setRevealUnready(false);
+                setSettled(false);
                 setOpenedOn(null);
-                openedHeight.current = null;
             }
             const client = iframeService.iframe.createClient(iframe.current);
             // Keep successful readiness, but discard a failed handshake so a later

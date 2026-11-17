@@ -223,38 +223,54 @@ describe("CrossmintPaymentMethodManagement ref", () => {
         expect(newIframe.style.height).toBe("500px");
     });
 
-    test("shows the card form's skeleton until the form is ready and has a height", () => {
-        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
-        render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" />);
-        const iframe = screen.getByRole("crossmint-payment-method-management.iframe");
-        expect(screen.getByTestId(SKELETON)).toBeTruthy();
-        expect(iframe.style.opacity).toBe("0");
-        expect(iframe.inert).toBe(true);
+    test("shows the card form's skeleton until the form is ready and its height holds", () => {
+        vi.useFakeTimers();
+        try {
+            const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+            render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" />);
+            const iframe = screen.getByRole("crossmint-payment-method-management.iframe");
+            expect(screen.getByTestId(SKELETON)).toBeTruthy();
+            expect(iframe.style.opacity).toBe("0");
+            expect(iframe.inert).toBe(true);
 
-        act(() => listener("payment-method:ready")?.({}));
-        expect(screen.getByTestId(SKELETON)).toBeTruthy();
+            act(() => listener("ui:height.changed")?.({ height: 96 }));
+            act(() => listener("payment-method:ready")?.({}));
+            act(() => vi.advanceTimersByTime(100));
+            act(() => listener("ui:height.changed")?.({ height: 198 }));
+            act(() => vi.advanceTimersByTime(149));
+            expect(screen.getByTestId(SKELETON)).toBeTruthy();
 
-        act(() => listener("ui:height.changed")?.({ height: 198 }));
-        expect(screen.queryByTestId(SKELETON)).toBeNull();
-        expect(iframe.style.opacity).toBe("1");
-        expect(iframe.style.position).toBe("");
-        expect(iframe.inert).toBe(false);
+            act(() => vi.advanceTimersByTime(1));
+            expect(screen.queryByTestId(SKELETON)).toBeNull();
+            expect(iframe.style.opacity).toBe("1");
+            expect(iframe.style.position).toBe("");
+            expect(iframe.inert).toBe(false);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     test("shows the skeleton again when the iframe reloads in place, until the new form is ready", () => {
-        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
-        render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" />);
-        const iframe = screen.getByRole("crossmint-payment-method-management.iframe");
-        fireEvent.load(iframe);
-        act(() => listener("ui:height.changed")?.({ height: 198 }));
-        act(() => listener("payment-method:ready")?.({}));
-        expect(screen.queryByTestId(SKELETON)).toBeNull();
+        vi.useFakeTimers();
+        try {
+            const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+            render(<CrossmintPaymentMethodManagement jwt="buyer-jwt" />);
+            const iframe = screen.getByRole("crossmint-payment-method-management.iframe");
+            fireEvent.load(iframe);
+            act(() => listener("ui:height.changed")?.({ height: 198 }));
+            act(() => listener("payment-method:ready")?.({}));
+            act(() => vi.advanceTimersByTime(150));
+            expect(screen.queryByTestId(SKELETON)).toBeNull();
 
-        fireEvent.load(iframe);
-        expect(screen.getByTestId(SKELETON)).toBeTruthy();
+            fireEvent.load(iframe);
+            expect(screen.getByTestId(SKELETON)).toBeTruthy();
 
-        act(() => listener("payment-method:ready")?.({}));
-        expect(screen.queryByTestId(SKELETON)).toBeNull();
+            act(() => listener("payment-method:ready")?.({}));
+            act(() => vi.advanceTimersByTime(150));
+            expect(screen.queryByTestId(SKELETON)).toBeNull();
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     test("shows the skeleton again when a prop change reloads the iframe", () => {
@@ -331,7 +347,7 @@ describe("CrossmintPaymentMethodManagement ref", () => {
             });
             act(() => vi.advanceTimersByTime(30));
             act(() => listener("ui:height.changed")?.({ height: 222 }));
-            act(() => vi.advanceTimersByTime(500));
+            act(() => vi.advanceTimersByTime(150));
             act(() => listener("ui:height.changed")?.({ height: 400 }));
             first.unmount();
 
