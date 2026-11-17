@@ -10,8 +10,15 @@ import {
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { generateRandomString } from "@crossmint/client-sdk-window";
 import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { CardFormSkeleton, SavedMethodsSkeleton } from "./CardFormSkeleton";
 
 const useCommittedLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+// A loaded document that has not reported ready by then is shown as it is, so a broken form
+// is not hidden behind the skeleton for good.
+const REVEAL_UNREADY_AFTER_MS = 8_000;
+// The iframe can be ready and report a spinner's height just before its first screen draws.
+const FIRST_SCREEN_SETTLE_MS = 150;
+const FIRST_SCREEN_KEY = "crossmint.payment-method-management.first-screen:";
 // A save is two Basis Theory tokenizations, the create call and the card art lookup.
 const SUBMIT_TIMEOUT_MS = 60_000;
 
@@ -103,6 +110,32 @@ const PaymentMethodConnection = forwardRef<
     // new client.
     const [reloads, setReloads] = useState(0);
     const sawFirstLoad = useRef(false);
+    // Until the form is ready, the skeleton of its first screen shows and the iframe draws unseen behind it,
+    // out of the tab order. The screen and height this mount last opened on in this session win over the guess.
+    const [formReady, setFormReady] = useState(false);
+    const [loads, setLoads] = useState(0);
+    const [revealUnready, setRevealUnready] = useState(false);
+    const [settled, setSettled] = useState(false);
+    const [openedOn, setOpenedOn] = useState<FirstScreen | "other" | null>(null);
+    // Read after mount: the server has no storage, and hydration must match its render.
+    const [remembered, setRemembered] = useState<RememberedScreen | null>(null);
+    const guess = firstScreen(props);
+    const skeleton = guess === "saved" ? remembered?.screen ?? guess : guess;
+    const reservedHeight = remembered?.screen === skeleton ? remembered.height : undefined;
+    const showSkeleton = skeleton != null && !((settled || revealUnready) && height > 0);
+    useEffect(() => {
+        if (loads === 0) {
+            return;
+        }
+        const timer = setTimeout(() => setRevealUnready(true), REVEAL_UNREADY_AFTER_MS);
+        return () => clearTimeout(timer);
+    }, [loads]);
+    useCommittedLayoutEffect(() => {
+        // Set directly: React before 19 drops a boolean `inert` prop.
+        if (iframe.current != null) {
+            iframe.current.inert = showSkeleton;
+        }
+    }, [showSkeleton]);
     const clientRef = useRef<{
         reloads: number;
         client: PaymentMethodManagementIFrameEmitter;
@@ -121,6 +154,22 @@ const PaymentMethodConnection = forwardRef<
     useCommittedLayoutEffect(() => {
         latestProps.current = props;
     });
+    useCommittedLayoutEffect(() => {
+        setRemembered(recallFirstScreen(latestProps.current));
+    }, []);
+    useEffect(() => {
+        if (settled || !formReady || height <= 0) {
+            return;
+        }
+        const timer = setTimeout(() => {
+            setSettled(true);
+            const screen = openedOn ?? skeleton;
+            if (skeleton != null && screen != null && screen !== "other") {
+                rememberFirstScreen(latestProps.current, { screen, height });
+            }
+        }, FIRST_SCREEN_SETTLE_MS);
+        return () => clearTimeout(timer);
+    }, [settled, formReady, height, openedOn, skeleton]);
 
     useCommittedLayoutEffect(() => {
         if (iframe.current == null) {
@@ -133,6 +182,10 @@ const PaymentMethodConnection = forwardRef<
             // The iframe navigated in place: the URL is the same, but the form starts over.
             if (reloads > 0) {
                 reportReload(lastChange, latestProps.current.onChange);
+                setFormReady(false);
+                setRevealUnready(false);
+                setSettled(false);
+                setOpenedOn(null);
             }
             const client = iframeService.iframe.createClient(iframe.current);
             // Keep successful readiness, but discard a failed handshake so a later
@@ -168,11 +221,13 @@ const PaymentMethodConnection = forwardRef<
         });
         const readyListener = client.on("payment-method:ready", () => {
             if (connection.current === active) {
+                setFormReady(true);
                 latestProps.current.onReady?.();
             }
         });
         const changeListener = client.on("payment-method:change", (event) => {
             if (connection.current === active) {
+                setOpenedOn((screen) => screen ?? openedScreen(event.mode, latestProps.current));
                 lastChange.current = event;
                 latestProps.current.onChange?.(event);
             }
@@ -254,34 +309,119 @@ const PaymentMethodConnection = forwardRef<
     }));
 
     return (
-        <iframe
-            ref={iframe}
-            src={url}
-            onLoad={() => {
-                if (!sawFirstLoad.current) {
-                    sawFirstLoad.current = true;
-                    return;
-                }
-                setReloads((n) => n + 1);
-            }}
-            id="crossmint-payment-method-management.iframe"
-            role="crossmint-payment-method-management.iframe"
-            allow="payment *; microphone; camera"
-            style={{
-                boxShadow: "none",
-                border: "none",
-                padding: "0px",
-                width: "100%",
-                minWidth: "100%",
-                overflow: "hidden",
-                display: "block",
-                userSelect: "none",
-                transform: "translate(0px)",
-                opacity: "1",
-                transition: "ease 0s, opacity 0.4s ease 0.1s",
-                height: `${height}px`,
-                backgroundColor: "transparent",
-            }}
-        />
+        <div style={{ position: "relative", width: "100%" }} aria-busy={showSkeleton || undefined}>
+            {showSkeleton ? (
+                <div style={{ minHeight: reservedHeight }}>
+                    {skeleton === "card" ? (
+                        <CardFormSkeleton appearance={props.appearance} />
+                    ) : (
+                        <SavedMethodsSkeleton appearance={props.appearance} />
+                    )}
+                </div>
+            ) : null}
+            <iframe
+                ref={iframe}
+                src={url}
+                onLoad={() => {
+                    setLoads((n) => n + 1);
+                    if (!sawFirstLoad.current) {
+                        sawFirstLoad.current = true;
+                        return;
+                    }
+                    setReloads((n) => n + 1);
+                }}
+                id="crossmint-payment-method-management.iframe"
+                role="crossmint-payment-method-management.iframe"
+                allow="payment *; microphone; camera"
+                style={{
+                    boxShadow: "none",
+                    border: "none",
+                    padding: "0px",
+                    width: "100%",
+                    minWidth: "100%",
+                    overflow: "hidden",
+                    display: "block",
+                    userSelect: "none",
+                    transform: "translate(0px)",
+                    opacity: "1",
+                    height: `${height}px`,
+                    backgroundColor: "transparent",
+                    ...(showSkeleton
+                        ? {
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              opacity: "0",
+                              pointerEvents: "none",
+                          }
+                        : {}),
+                }}
+            />
+        </div>
     );
 });
+
+// With saved methods allowed, the iframe opens on the choice between them and a new one (bare form when
+// nothing is saved yet); otherwise on the first type's form, of which only the card's has a skeleton.
+type FirstScreen = "saved" | "card";
+type RememberedScreen = { screen: FirstScreen; height: number };
+
+function firstScreen({
+    allowedModes,
+    allowedPaymentMethodTypes,
+}: CrossmintPaymentMethodManagementProps): FirstScreen | null {
+    if (allowedModes?.includes("existing")) {
+        return "saved";
+    }
+    if ((allowedPaymentMethodTypes?.[0] ?? "card") === "card") {
+        return "card";
+    }
+    return null;
+}
+
+// The change event only says "new": that is the card form only when cards come first.
+function openedScreen(
+    mode: "new" | "existing",
+    { allowedPaymentMethodTypes }: CrossmintPaymentMethodManagementProps
+): FirstScreen | "other" {
+    if (mode === "existing") {
+        return "saved";
+    }
+    return (allowedPaymentMethodTypes?.[0] ?? "card") === "card" ? "card" : "other";
+}
+
+// Per tab and per configuration: with saved methods allowed, a buyer with none opens on the card form.
+function firstScreenKey({
+    allowedModes,
+    allowedPaymentMethodTypes,
+    appearance,
+}: CrossmintPaymentMethodManagementProps) {
+    return (
+        FIRST_SCREEN_KEY + JSON.stringify([allowedModes ?? null, allowedPaymentMethodTypes ?? null, appearance ?? null])
+    );
+}
+
+function recallFirstScreen(
+    props: CrossmintPaymentMethodManagementProps
+): { screen: FirstScreen; height: number } | null {
+    try {
+        const stored = JSON.parse(window.sessionStorage.getItem(firstScreenKey(props)) ?? "null");
+        if ((stored?.screen === "saved" || stored?.screen === "card") && typeof stored.height === "number") {
+            return { screen: stored.screen, height: stored.height };
+        }
+    } catch {
+        /* No storage (SSR, blocked storage): fall back to the guess. */
+    }
+    return null;
+}
+
+function rememberFirstScreen(
+    props: CrossmintPaymentMethodManagementProps,
+    value: { screen: FirstScreen; height: number }
+) {
+    try {
+        window.sessionStorage.setItem(firstScreenKey(props), JSON.stringify(value));
+    } catch {
+        /* No storage: the next mount guesses again. */
+    }
+}
