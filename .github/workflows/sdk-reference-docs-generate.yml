@@ -269,6 +269,19 @@ jobs:
                   path: sdk-reference/
                   retention-days: 7
 
+    # The deploy-bot key lives only in this job: it checks out no code, installs nothing and runs
+    # no package scripts, so code run by generate-docs never shares a runner with the key.
+    # Only main may dispatch. Keep the key only as a secret of the environment below, with a
+    # deployment branch policy that admits main only.
+    dispatch-docs:
+        name: Dispatch SDK Reference Docs
+        needs: generate-docs
+        if: github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        environment: sdk-reference-docs-dispatch
+        permissions: {}
+        steps:
             - name: Generate App Token
               id: generate_app_token
               uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
