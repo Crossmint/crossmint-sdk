@@ -2,7 +2,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 
 import { createCrossmint } from "@crossmint/common-sdk-base";
-import { CrossmintWallets, WalletNotAvailableError } from "@crossmint/wallets-sdk";
+import { CrossmintWallets, type DeviceSignerKeyStorage, WalletNotAvailableError } from "@crossmint/wallets-sdk";
 
 import { CrossmintProvider } from "@/providers/CrossmintProvider";
 import { CrossmintWalletBaseProvider } from "./CrossmintWalletBaseProvider";
@@ -227,5 +227,43 @@ describe("CrossmintWalletBaseProvider — createOnLogin switched while a load is
 
         await waitFor(() => expect(getByTestId("chain").textContent).toBe("solana"), { timeout: 1500 });
         expect(createWallet).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe("CrossmintWalletBaseProvider — device signer key storage", () => {
+    const deviceSignerKeyStorage = {} as DeviceSignerKeyStorage;
+
+    function renderWithStorage(wallets: Partial<CrossmintWallets>) {
+        vi.mocked(createCrossmint).mockImplementation(() => ({ apiKey: MOCK_API_KEY, jwt: "jwt", setJwt: vi.fn() }));
+        vi.spyOn(CrossmintWallets, "from").mockReturnValue(wallets as CrossmintWallets);
+        return render(
+            <CrossmintProvider apiKey={MOCK_API_KEY}>
+                <CrossmintWalletBaseProvider
+                    createOnLogin={{ chain: "base-sepolia" }}
+                    deviceSignerKeyStorage={deviceSignerKeyStorage}
+                >
+                    <TestConsumer />
+                </CrossmintWalletBaseProvider>
+            </CrossmintProvider>
+        );
+    }
+
+    test("reaches the wallet the provider reads", async () => {
+        const getWallet = vi.fn().mockResolvedValue({ chain: "base-sepolia", alias: undefined });
+        const { getByTestId } = renderWithStorage({ getWallet, createWallet: vi.fn() });
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+        expect(getWallet.mock.calls[0][0].options.deviceSignerKeyStorage).toBe(deviceSignerKeyStorage);
+    });
+
+    test("reaches the wallet the provider creates", async () => {
+        const createWallet = vi.fn().mockResolvedValue({ chain: "base-sepolia", alias: undefined });
+        const { getByTestId } = renderWithStorage({
+            getWallet: vi.fn().mockRejectedValue(new WalletNotAvailableError("not found")),
+            createWallet,
+        });
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+        expect(createWallet.mock.calls[0][0].options.deviceSignerKeyStorage).toBe(deviceSignerKeyStorage);
     });
 });
