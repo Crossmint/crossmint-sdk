@@ -4,7 +4,8 @@ import type { CSSProperties } from "react";
 import type { PaymentMethodManagementAppearance } from "@crossmint/client-sdk-base";
 
 // The iframe's defaults (light theme) and layout: number, expiry and CVC, name, then the
-// iframe's 24px feedback row. Keep in sync with the add-card form in the iframe.
+// iframe's 24px feedback row. Keep in sync with the add-card form in the iframe;
+// crossbit-main pins what this copies in `payment-method-management/components/content/skeletonLayout.test.tsx`.
 const DEFAULT_SPACING_UNIT = `${10 / 3}px`;
 const DEFAULT_FONT_SIZE_UNIT = "4px";
 const DEFAULT_BORDER_RADIUS = "12px";
@@ -83,7 +84,7 @@ export function CardFormSkeleton({ appearance }: { appearance?: PaymentMethodMan
 
 // The iframe's saved-methods choice: in a 1px box with 11px corners, 16px apart, the "Use existing" radio,
 // the selected method's 74px row, the "or" separator and the "Add new" radio, then the feedback row.
-// Keep in sync with `SavedOrNewSections` in the iframe.
+// Keep in sync with `SavedOrNewSections` in the iframe (pinned by the same crossbit-main test).
 export function SavedMethodsSkeleton({ appearance }: { appearance?: PaymentMethodManagementAppearance }) {
     const colors = appearance?.variables?.colors;
     const border = `1px solid ${colors?.borderPrimary ?? DEFAULT_SAVED_BORDER}`;
