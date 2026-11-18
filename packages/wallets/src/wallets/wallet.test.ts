@@ -1886,7 +1886,7 @@ describe("Wallet - addRecoveryMethod() / removeRecoveryMethod()", () => {
 
             await expect(
                 solanaWallet.removeRecoveryMethod({ type: "external-wallet", address: "OldRecovery666" })
-            ).rejects.toThrow("Failed to remove recovery method");
+            ).rejects.toThrow("Cannot remove the last recovery method");
         });
     });
 });

@@ -59,9 +59,11 @@ import {
     WalletNotAvailableError,
     WalletTypeNotSupportedError,
     quorumSignerNotSupported,
+    throwIfApprovalRejected,
     throwIfCrossmintApiAuthError,
     throwIfQuorumApiError,
     throwIfRequestExpired,
+    signerOperationRejectedError,
     transactionNotCreatedError,
     transactionNotCreatedErrorFromApiClientError,
     RecoveryMethodRequiredError,
@@ -1125,7 +1127,7 @@ export class Wallet<C extends Chain> {
                 error: response,
             });
             throwIfQuorumApiError(response);
-            throw new Error(`Failed to remove signer: ${JSON.stringify(response)}`);
+            throw signerOperationRejectedError(response, `Failed to remove signer: ${JSON.stringify(response)}`);
         }
 
         const transactionId = response.id;
@@ -1256,7 +1258,10 @@ export class Wallet<C extends Chain> {
                 error: response,
             });
             throwIfQuorumApiError(response);
-            throw new Error(`Failed to remove recovery method: ${JSON.stringify(response)}`);
+            throw signerOperationRejectedError(
+                response,
+                `Failed to remove recovery method: ${JSON.stringify(response)}`
+            );
         }
 
         const transactionId = response.id;
@@ -2045,6 +2050,7 @@ export class Wallet<C extends Chain> {
         if (approvedTransaction.error) {
             throwIfCrossmintApiAuthError(approvedTransaction);
             throwIfQuorumApiError(approvedTransaction, { transactionId });
+            throwIfApprovalRejected(approvedTransaction, { transactionId });
             throw new TransactionFailedError(JSON.stringify(approvedTransaction));
         }
 
@@ -2059,6 +2065,7 @@ export class Wallet<C extends Chain> {
         if (approvedSignature.error) {
             throwIfCrossmintApiAuthError(approvedSignature);
             throwIfQuorumApiError(approvedSignature, { signatureId });
+            throwIfApprovalRejected(approvedSignature, { signatureId });
             // The client answers the API's 422 expiry with the stored request, which has no code.
             throwIfRequestExpired(approvedSignature, { signatureId });
             throw new SignatureFailedError(JSON.stringify(approvedSignature));

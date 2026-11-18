@@ -55,7 +55,12 @@ export class InvalidWalletConfigError extends CrossmintSDKError {
 }
 
 export class WalletCreationError extends CrossmintSDKError {
-    constructor(message: string, details?: string) {
+    constructor(
+        message: string,
+        details?: string,
+        /** The `code` returned by the wallets API, when it sent one. */
+        public readonly apiErrorCode?: string
+    ) {
         super(message, WalletErrorCode.WALLET_CREATION_FAILED, details);
     }
 }
@@ -159,6 +164,8 @@ const QUORUM_REQUEST_ERROR_REASONS = [
     "QUORUM_APPROVING_MEMBER_INVALID",
     "APPROVING_MEMBERS_NOT_APPLICABLE",
     "SCOPED_QUORUM_CANNOT_SIGN",
+    // Removing the wallet's only recovery signer, or the only single signer beside a recovery quorum.
+    "LAST_RECOVERY_SIGNER",
 ] as const;
 
 export type QuorumRequestErrorReason = (typeof QUORUM_REQUEST_ERROR_REASONS)[number];
@@ -175,6 +182,26 @@ export class QuorumRequestError extends CrossmintSDKError {
         super(message, WalletErrorCode.SIGNER_INVALID, details);
         this.reason = reason;
     }
+}
+
+/**
+ * The wallets API rejected a signer add/remove or recovery-method change with a `code` the SDK
+ * does not map to a narrower error, or with no `code` at all. `apiErrorCode` is the body's `code`.
+ */
+export class SignerOperationRejectedError extends CrossmintSDKError {
+    constructor(
+        message: string,
+        details?: string,
+        public readonly apiErrorCode?: string
+    ) {
+        super(message, WalletErrorCode.SIGNER_INVALID, details);
+    }
+}
+
+/** Builds the error for a signer-operation rejection: the API `message` or `fallbackMessage`. */
+export function signerOperationRejectedError(response: unknown, fallbackMessage: string): SignerOperationRejectedError {
+    const body = isResponseBody<CrossmintApiErrorBody>(response) ? response : {};
+    return new SignerOperationRejectedError(body.message ?? fallbackMessage, JSON.stringify(response), body.code);
 }
 
 /** Thrown for recovery configurations the SDK can reject before calling the API. */
@@ -393,6 +420,24 @@ export class TransactionFailedError extends CrossmintSDKError {
     }
 }
 
+/**
+ * The API rejected one quorum member's approval (e.g. an invalid member signature). The request
+ * stays `awaiting-approval` and the other members can still complete it, so this is not a failed
+ * transaction: `signerLocator` is the member whose approval was rejected.
+ */
+export class QuorumApprovalRejectedError extends CrossmintSDKError {
+    readonly signerLocator?: string;
+    readonly transactionId?: string;
+    readonly signatureId?: string;
+
+    constructor(message: string, request: ExpiredRequest = {}, signerLocator?: string, details?: string) {
+        super(message, WalletErrorCode.SIGNING_FAILED, details);
+        this.signerLocator = signerLocator;
+        this.transactionId = request.transactionId;
+        this.signatureId = request.signatureId;
+    }
+}
+
 /** The approval window of a transaction or signature request closed; create a new request. */
 export class TransactionExpiredError extends TransactionFailedError {
     readonly transactionId?: string;
@@ -520,6 +565,24 @@ export function throwIfRecoverySignerApiError(response: unknown): void {
     }
 }
 
+// The API message for a rejected member approval: `Invalid signature for signer <locator>…`.
+const APPROVAL_REJECTED_MESSAGE = /^Invalid signature for signer (\S+?)\.?(\s|$)/;
+
+/**
+ * Throws `QuorumApprovalRejectedError` when the API rejected a submitted approval for one member's
+ * signature (the request itself is still awaiting the other members). Returns for any other body.
+ */
+export function throwIfApprovalRejected(response: unknown, request: ExpiredRequest = {}): void {
+    if (!isResponseBody<CrossmintApiErrorBody>(response) || response.message == null) {
+        return;
+    }
+    const rejectedSigner = APPROVAL_REJECTED_MESSAGE.exec(response.message)?.[1];
+    if (rejectedSigner == null) {
+        return;
+    }
+    throw new QuorumApprovalRejectedError(response.message, request, rejectedSigner, JSON.stringify(response));
+}
+
 /** Throws the typed error for a quorum API code or `TRANSACTION_EXPIRED`; returns for any other response. */
 export function throwIfQuorumApiError(response: unknown, request: ExpiredRequest = {}): void {
     if (!isResponseBody<CrossmintApiErrorBody>(response) || response.code == null) {
@@ -602,6 +665,8 @@ export type WalletError =
     | TransactionAwaitingApprovalError
     | TransactionHashNotFoundError
     | TransactionFailedError
+    | QuorumApprovalRejectedError
+    | SignerOperationRejectedError
     | TransactionExpiredError
     | PendingApprovalsError
     | InvalidAddressError
