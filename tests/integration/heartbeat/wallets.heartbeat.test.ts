@@ -124,8 +124,11 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         });
     });
 
-    // The SDK reads the rejected signer's locator from these two messages (QuorumApprovalRejectedError).
-    it("approveTransaction signed by the wrong key names the signer as 'Invalid signature for signer <locator>'", async () => {
+    // The SDK reads the rejected signer's locator from this message (QuorumApprovalRejectedError). Stellar words it
+    // `Invalid signature for signer <locator>` instead; this heartbeat has no Stellar wallet to check that one.
+    const EVM_APPROVAL_REJECTED = /^Signature '[^']*' on the approval for signer '[^']+' is invalid/;
+
+    it("approveTransaction signed by the wrong key names the rejected signer", async () => {
         const created = await createdTransaction();
         const wrongKey = await externalWalletSigner().approval(pendingMessage(created));
 
@@ -134,10 +137,10 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         });
 
         expectErrorShape(rejected);
-        expect((rejected as { message: string }).message).toMatch(/^Invalid signature for signer \S+/);
+        expect((rejected as { message: string }).message).toMatch(EVM_APPROVAL_REJECTED);
     });
 
-    it("approveTransaction with a malformed signature names the signer in quotes", async () => {
+    it("approveTransaction with a malformed signature names the rejected signer", async () => {
         const created = await createdTransaction();
 
         const rejected = await apiClient.approveTransaction(evmWallet, created.id, {
@@ -145,9 +148,7 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         });
 
         expectErrorShape(rejected);
-        expect((rejected as { message: string }).message).toMatch(
-            /^Signature '[^']*' on the approval for signer '[^']+' is invalid/
-        );
+        expect((rejected as { message: string }).message).toMatch(EVM_APPROVAL_REJECTED);
     });
 
     it("getTransactions", async () => {
@@ -269,12 +270,16 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         // An EVM wallet keeps one single recovery signer next to a quorum, so removing it is refused.
         const single = externalWalletSigner();
         const member = externalWalletSigner();
+        const otherMember = externalWalletSigner();
         const created = await apiClient.createWallet({
             chainType: "evm",
             type: "smart",
             owner: `userId:heartbeat-last-recovery-${Date.now()}`,
             config: {
-                recoveryMethods: [single.signer, { type: "quorum", threshold: 1, members: [member.signer] }],
+                recoveryMethods: [
+                    single.signer,
+                    { type: "quorum", threshold: 1, members: [member.signer, otherMember.signer] },
+                ],
             },
         } as Parameters<typeof apiClient.createWallet>[0]);
         const { address } = expectContract<{ address: string }>(created, { address: "string" });
