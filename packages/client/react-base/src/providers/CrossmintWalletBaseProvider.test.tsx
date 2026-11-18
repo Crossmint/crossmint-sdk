@@ -347,6 +347,40 @@ describe("CrossmintWalletBaseProvider — React Native signer WebView", () => {
         });
     });
 
+    describe("when the WebView already runs and no key in createOnLogin signs through it", () => {
+        test("passes the running WebView's connection, so an email key used later can sign", async () => {
+            const webView = nativeWebView();
+            await webView.initializeWebView();
+            const createWallet = vi.fn(({ chain }: { chain: string; options: WalletOptions }) =>
+                Promise.resolve({ chain, alias: undefined })
+            );
+            vi.mocked(createCrossmint).mockImplementation(() => ({
+                apiKey: MOCK_API_KEY,
+                jwt: "jwt",
+                setJwt: vi.fn(),
+            }));
+            vi.spyOn(CrossmintWallets, "from").mockReturnValue({
+                getWallet: vi.fn().mockRejectedValue(new WalletNotAvailableError("not found")),
+                createWallet,
+            } as unknown as CrossmintWallets);
+
+            const { getByTestId } = render(
+                <CrossmintProvider apiKey={MOCK_API_KEY}>
+                    <CrossmintWalletBaseProvider
+                        createOnLogin={{ chain: "base-sepolia", recovery: ALICE_WALLET }}
+                        initializeWebView={webView.initializeWebView}
+                        clientTEEConnection={webView.clientTEEConnection as never}
+                    >
+                        <TestConsumer />
+                    </CrossmintWalletBaseProvider>
+                </CrossmintProvider>
+            );
+
+            await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+            expect(createWallet.mock.calls[0][0].options.clientTEEConnection).toBe(webView.connection);
+        });
+    });
+
     describe("when a key in createOnLogin signs through the WebView", () => {
         test.each<[string, CreateOnLogin]>([
             [

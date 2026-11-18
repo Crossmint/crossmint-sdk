@@ -211,6 +211,17 @@ export function needsSignerWebView<C extends Chain>(
     );
 }
 
+// The React Native connection throws until its WebView is initialized: a wallet built before then gets none.
+function readClientTEEConnection(
+    clientTEEConnection: CrossmintWalletBaseProviderProps["clientTEEConnection"]
+): WalletOptions["clientTEEConnection"] {
+    try {
+        return clientTEEConnection?.();
+    } catch {
+        return undefined;
+    }
+}
+
 export type LoadedWalletArgs = Pick<WalletCreateArgs<Chain>, "chain" | "alias">;
 
 export function cachedWalletMatchesArgs<C extends Chain>(
@@ -353,11 +364,10 @@ export function CrossmintWalletBaseProvider({
         [onAuthRequiredFromProps, signerOnAuthRequired]
     );
 
-    // The React Native connection throws until its WebView is initialized, so it is read only when the WebView is used.
     const buildWalletOptions = useCallback(
-        (argsOptions: WalletOptions | undefined, { signerWebView }: { signerWebView: boolean }): WalletOptions => {
+        (argsOptions?: WalletOptions): WalletOptions => {
             return {
-                clientTEEConnection: signerWebView ? clientTEEConnection?.() : undefined,
+                clientTEEConnection: readClientTEEConnection(clientTEEConnection),
                 resetSignerFrame,
                 callbacks: {
                     onWalletCreationStart:
@@ -382,11 +392,10 @@ export function CrossmintWalletBaseProvider({
 
     const prepareWalletOptions = useCallback(
         async <C extends Chain>(args: WalletCreateArgs<C>): Promise<WalletOptions> => {
-            const signerWebView = needsSignerWebView(args);
-            if (signerWebView) {
+            if (needsSignerWebView(args)) {
                 await initializeWebView?.();
             }
-            return buildWalletOptions(args.options, { signerWebView });
+            return buildWalletOptions(args.options);
         },
         [initializeWebView, buildWalletOptions]
     );
@@ -483,7 +492,7 @@ export function CrossmintWalletBaseProvider({
                 const wallet = await wallets.getWallet<C>({
                     chain: args.chain,
                     alias: args.alias,
-                    options: buildWalletOptions(undefined, { signerWebView: true }),
+                    options: buildWalletOptions(),
                 });
                 if (wallet != null) {
                     setWallet(wallet);
