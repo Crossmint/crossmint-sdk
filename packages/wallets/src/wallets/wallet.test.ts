@@ -1943,6 +1943,40 @@ describe("Wallet - signers()", () => {
             expect(mockApiClient.getSigner).not.toHaveBeenCalled();
         });
 
+        function delegatedQuorum(id: string, chains: Record<string, { status: string }>) {
+            return {
+                type: "quorum",
+                locator: `quorum:${id}`,
+                threshold: 1,
+                members: [{ type: "external-wallet", address: "0xmember", locator: "external-wallet:0xmember" }],
+                chains,
+            };
+        }
+
+        it("drops a delegated quorum not installed on this chain, including one removed everywhere", async () => {
+            mockApiClient.getWallet.mockResolvedValue(
+                evmWalletWith([
+                    delegatedQuorum("0d3b3f6c-2c2a-4f43-9a2e-4b6a3c5d7e8f", { ethereum: { status: "success" } }),
+                    delegatedQuorum("1e4c5d7e-2c2a-4f43-9a2e-4b6a3c5d7e8f", {}),
+                    externalWallet(1, { "base-sepolia": { status: "success" } }),
+                ])
+            );
+
+            const signers = await wallet.signers();
+
+            expect(signers.map((s) => s.locator)).toEqual(["external-wallet:0xsigner1"]);
+        });
+
+        it("rejects useSigner on a member of a delegated quorum installed on no chain", async () => {
+            mockApiClient.getWallet.mockResolvedValue(
+                evmWalletWith([delegatedQuorum("1e4c5d7e-2c2a-4f43-9a2e-4b6a3c5d7e8f", {})])
+            );
+
+            await expect(
+                wallet.useSigner({ type: "external-wallet", address: "0xmember", onSign: vi.fn() } as any)
+            ).rejects.toThrow('Signer "external-wallet:0xmember" is not registered in this wallet.');
+        });
+
         it("filters out signers without approval for current chain", async () => {
             mockApiClient.getWallet.mockResolvedValue(
                 evmWalletWith([

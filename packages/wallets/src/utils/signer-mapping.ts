@@ -112,6 +112,10 @@ export function isSignerOnChain(
     if (chain === "solana" || chain === "stellar" || apiSigner.chains == null) {
         return true;
     }
+    // A delegated quorum lists only the chains it is installed on; an empty map means removed everywhere.
+    if (apiSigner.locator.startsWith("quorum:")) {
+        return apiSigner.chains[chain] != null;
+    }
     return Object.keys(apiSigner.chains).length === 0 || apiSigner.chains[chain] != null;
 }
 

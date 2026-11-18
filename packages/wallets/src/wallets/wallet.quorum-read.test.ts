@@ -70,8 +70,8 @@ describe("Wallet - quorum entries", () => {
             {
                 name: "an EVM quorum installed with the wallet",
                 chain: "base-sepolia",
-                statusFields: { chains: {} },
-                status: "success",
+                statusFields: { chains: { "base-sepolia": { status: "active" } } },
+                status: "active",
             },
         ] as const)("when the wallet has $name", ({ chain, statusFields, status }) => {
             it(`lists the quorum with status ${status}`, async () => {

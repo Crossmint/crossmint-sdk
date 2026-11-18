@@ -107,7 +107,11 @@ describe("mapApiSignerToSigner", () => {
                 statusFields: { chains: { "base-sepolia": { id: "tx-1", status: "awaiting-approval" } } },
                 status: "awaiting-approval",
             },
-            { chain: "base-sepolia", statusFields: { chains: {} }, status: "success" },
+            {
+                chain: "base-sepolia",
+                statusFields: { chains: { "base-sepolia": { status: "active" } } },
+                status: "active",
+            },
             { chain: "stellar", statusFields: { transaction: { id: "tx-1", status: "pending" } }, status: "pending" },
             { chain: "solana", statusFields: { transaction: { id: "tx-1", status: "pending" } }, status: "pending" },
             { chain: "solana", statusFields: {}, status: "success" },
@@ -131,12 +135,11 @@ describe("mapApiSignerToSigner", () => {
             expect(() => mapApiSignerToSigner(apiSigner, "base-sepolia")).toThrow(/Malformed quorum locator/);
         });
 
-        it("returns null for an EVM quorum installed only on another chain", () => {
-            const quorum = createQuorumApiEntry();
-            const apiSigner = {
-                ...quorum,
-                chains: { "polygon-amoy": { id: "tx-1", status: "success" } },
-            } as unknown as APISigner;
+        it.each([
+            ["installed only on another chain", { chains: { "polygon-amoy": { id: "tx-1", status: "success" } } }],
+            ["removed on every chain", { chains: {} }],
+        ])("returns null for an EVM quorum %s", (_name, statusFields) => {
+            const apiSigner = { ...createQuorumApiEntry(), ...statusFields } as unknown as APISigner;
 
             expect(mapApiSignerToSigner(apiSigner, "base-sepolia")).toBeNull();
         });
@@ -172,6 +175,12 @@ describe("isSignerOnChain", () => {
             expected: true,
         },
         { name: "a Stellar signer", listed: { ...signer, chains: { polygon: {} } }, chain: "stellar", expected: true },
+        {
+            name: "an EVM quorum removed on every chain",
+            listed: { ...signer, type: "quorum", locator: "quorum:0d3b3f6c-2c2a-4f43-9a2e-4b6a3c5d7e8f", chains: {} },
+            chain: "base-sepolia",
+            expected: false,
+        },
     ] as const)("is $expected for $name", ({ listed, chain, expected }) => {
         expect(isSignerOnChain(listed, chain)).toBe(expected);
     });
