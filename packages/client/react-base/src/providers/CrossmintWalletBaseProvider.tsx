@@ -226,7 +226,7 @@ export function isSameFailedAttempt<C extends Chain>(
  * A rejected fetch (no response) surfaces as a TypeError whose message names the transport failure;
  * TypeErrors raised by config validation carry anything else and must not be reported as `network`.
  */
-const FETCH_REJECT_PATTERN = /failed to fetch|fetch failed|network request failed|networkerror/i;
+const FETCH_REJECT_PATTERN = /failed to fetch|fetch failed|load failed|network request failed|networkerror/i;
 
 /** The API wraps failures in a JSON body; expose its `message` field instead of raw JSON. */
 function apiErrorMessage(raw: string | null): string | undefined {
@@ -267,6 +267,17 @@ export function mapWalletError(error: unknown): WalletContextError {
     return { code: "unknown", message: error instanceof Error ? error.message : String(error) };
 }
 
+/** State plus a ref written in the same call, so async code reads the value before the next render. */
+function useStateWithRef<T>(initial: T) {
+    const [state, setState] = useState(initial);
+    const ref = useRef(initial);
+    const set = useCallback((next: T) => {
+        ref.current = next;
+        setState(next);
+    }, []);
+    return [state, set, ref] as const;
+}
+
 export function CrossmintWalletBaseProvider({
     children,
     createOnLogin,
@@ -284,11 +295,17 @@ export function CrossmintWalletBaseProvider({
 }: CrossmintWalletBaseProviderProps) {
     const logger = useLogger(LoggerContext);
     const { crossmint } = useCrossmint("CrossmintWalletBaseProvider must be used within CrossmintProvider");
-    const [wallet, setWallet] = useState<Wallet<Chain> | undefined>(undefined);
-    const [loadedWalletArgs, setLoadedWalletArgs] = useState<LoadedWalletArgs | undefined>(undefined);
-    const [failedAttempt, setFailedAttempt] = useState<FailedWalletAttempt | undefined>(undefined);
-    const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
-    const [walletError, setWalletError] = useState<WalletContextError | null>(null);
+    const [wallet, setWallet, walletRef] = useStateWithRef<Wallet<Chain> | undefined>(undefined);
+    const [loadedWalletArgs, setLoadedWalletArgs, loadedWalletArgsRef] = useStateWithRef<LoadedWalletArgs | undefined>(
+        undefined
+    );
+    const [failedAttempt, setFailedAttempt, failedAttemptRef] = useStateWithRef<FailedWalletAttempt | undefined>(
+        undefined
+    );
+    const [walletStatus, setWalletStatus, walletStatusRef] = useStateWithRef<
+        "not-loaded" | "in-progress" | "loaded" | "error"
+    >("not-loaded");
+    const [walletError, setWalletError, walletErrorRef] = useStateWithRef<WalletContextError | null>(null);
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
     const signerAuth = useSignerAuth();
     const { onAuthRequired: signerOnAuthRequired } = signerAuth;
@@ -402,17 +419,22 @@ export function CrossmintWalletBaseProvider({
     );
 
     // `walletStatus` lives in the render closure, so a second call fired in the same tick can't
-    // see `in-progress`; this ref is the real serialization point. Identical args share the
-    // in-flight request (one API call); different args queue behind it and still win last.
-    const inFlightWalletRef = useRef<{ args: unknown; promise: Promise<Wallet<Chain> | undefined> } | null>(null);
+    // see `in-progress`; this ref is the real serialization point. Identical args under the same
+    // JWT share the in-flight request (one API call); different args queue behind it and still
+    // win last, so a stale read can never overwrite a newer create.
+    const inFlightWalletRef = useRef<{
+        args: unknown;
+        jwt: string | undefined;
+        promise: Promise<Wallet<Chain> | undefined>;
+    } | null>(null);
     const serializeWalletCall = useCallback(
         (args: unknown, run: () => Promise<Wallet<Chain> | undefined>): Promise<Wallet<Chain> | undefined> => {
             const inFlight = inFlightWalletRef.current;
-            if (inFlight != null && isEqual(inFlight.args, args)) {
+            if (inFlight != null && inFlight.jwt === crossmint.jwt && isEqual(inFlight.args, args)) {
                 return inFlight.promise;
             }
             const promise = inFlight == null ? run() : inFlight.promise.then(run, run);
-            inFlightWalletRef.current = { args, promise };
+            inFlightWalletRef.current = { args, jwt: crossmint.jwt, promise };
             const clear = () => {
                 if (inFlightWalletRef.current?.promise === promise) {
                     inFlightWalletRef.current = null;
@@ -421,7 +443,37 @@ export function CrossmintWalletBaseProvider({
             promise.then(clear, clear);
             return promise;
         },
-        []
+        [crossmint]
+    );
+
+    // Try to get the existing wallet first, then create it when the API reports none.
+    const loadAndCreateWallet = useCallback(
+        async <C extends Chain>(args: WalletCreateArgs<C>) => {
+            const wallets = CrossmintWallets.from(crossmint);
+
+            await initializeWebViewIfNeeded(recoveryMethodsFromCreateArgs(args));
+
+            const walletOptions = buildWalletOptions(args.options);
+
+            let wallet: Awaited<ReturnType<typeof wallets.getWallet<C>>> | undefined;
+            try {
+                wallet = await getExistingWallet(wallets, args, walletOptions, logger);
+            } catch (error) {
+                if (!(error instanceof WalletNotAvailableError)) {
+                    throw error;
+                }
+                // Wallet doesn't exist yet, create it
+            }
+
+            if (wallet == null) {
+                wallet = await wallets.createWallet<C>({
+                    ...args,
+                    options: walletOptions,
+                });
+            }
+            return wallet;
+        },
+        [crossmint, logger, initializeWebViewIfNeeded, buildWalletOptions]
     );
 
     const getOrCreateWallet = useCallback(
@@ -432,46 +484,28 @@ export function CrossmintWalletBaseProvider({
                 if (crossmint.jwt == null) {
                     return undefined;
                 }
-                if (cachedWalletMatchesArgs(wallet, loadedWalletArgs, args)) {
-                    return wallet;
+                // A queued call runs after renders it never saw, so the guards read the refs.
+                const loadedWallet = walletRef.current;
+                if (cachedWalletMatchesArgs(loadedWallet, loadedWalletArgsRef.current, args)) {
+                    return loadedWallet;
                 }
-                if (walletError?.code === "region-blocked") {
+                if (walletErrorRef.current?.code === "region-blocked") {
                     return undefined;
                 }
                 // A failed attempt rewrites walletError, which recreates this callback and refires the
                 // createOnLogin effect; without this latch the same request would be retried forever.
                 // Any change to the args or the JWT is a new request and goes through.
-                if (walletStatus === "error" && isSameFailedAttempt(failedAttempt, args, crossmint.jwt)) {
+                if (
+                    walletStatusRef.current === "error" &&
+                    isSameFailedAttempt(failedAttemptRef.current, args, crossmint.jwt)
+                ) {
                     return undefined;
                 }
 
                 try {
                     setWalletStatus("in-progress");
                     setWalletError(null);
-                    const wallets = CrossmintWallets.from(crossmint);
-
-                    await initializeWebViewIfNeeded(recoveryMethodsFromCreateArgs(args));
-
-                    const walletOptions = buildWalletOptions(args.options);
-
-                    // Try to get existing wallet first, then create if not found
-                    let wallet: Awaited<ReturnType<typeof wallets.getWallet<C>>> | undefined;
-                    try {
-                        wallet = await getExistingWallet(wallets, args, walletOptions, logger);
-                    } catch (error) {
-                        if (!(error instanceof WalletNotAvailableError)) {
-                            throw error;
-                        }
-                        // Wallet doesn't exist yet, create it
-                    }
-
-                    if (wallet == null) {
-                        wallet = await wallets.createWallet<C>({
-                            ...args,
-                            options: walletOptions,
-                        });
-                    }
-
+                    const wallet = await loadAndCreateWallet(args);
                     setWallet(wallet);
                     setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
                     setFailedAttempt(undefined);
@@ -498,50 +532,50 @@ export function CrossmintWalletBaseProvider({
             failedAttempt,
             walletError,
             serializeWalletCall,
-            initializeWebViewIfNeeded,
-            buildWalletOptions,
+            loadAndCreateWallet,
         ]
     );
 
     const getWallet = useCallback(
-        async <C extends Chain>(args: Pick<ClientSideWalletArgsFor<C>, "chain" | "alias">) => {
-            if (crossmint?.jwt == null) {
-                return undefined;
-            }
-
-            try {
-                setWalletStatus("in-progress");
-                setWalletError(null);
-                const wallets = CrossmintWallets.from(crossmint);
-
-                // Initialize WebView before building options. Unlike getOrCreateWallet/createWallet,
-                // getWallet doesn't know the recovery type upfront, so we initialize unconditionally.
-                // On web this is a no-op (initializeWebView is undefined). On React Native, this
-                // ensures the TEE connection is available for email/phone signer wallets.
-                await initializeWebView?.();
-
-                const wallet = await wallets.getWallet<C>({
-                    chain: args.chain,
-                    alias: args.alias,
-                    options: buildWalletOptions(),
-                });
-                if (wallet != null) {
-                    setWallet(wallet);
-                    setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
-                    setWalletError(null);
-                    setWalletStatus("loaded");
-                } else {
-                    setWalletStatus("not-loaded");
+        async <C extends Chain>(args: Pick<ClientSideWalletArgsFor<C>, "chain" | "alias">) =>
+            serializeWalletCall(args, async () => {
+                if (crossmint?.jwt == null) {
+                    return undefined;
                 }
-                return wallet;
-            } catch (error) {
-                logger.error("react.wallet.getWallet.error", { error });
-                setWalletError(mapWalletError(error));
-                setWalletStatus("error");
-                return undefined;
-            }
-        },
-        [crossmint, initializeWebView, buildWalletOptions]
+
+                try {
+                    setWalletStatus("in-progress");
+                    setWalletError(null);
+                    const wallets = CrossmintWallets.from(crossmint);
+
+                    // Initialize WebView before building options. Unlike getOrCreateWallet/createWallet,
+                    // getWallet doesn't know the recovery type upfront, so we initialize unconditionally.
+                    // On web this is a no-op (initializeWebView is undefined). On React Native, this
+                    // ensures the TEE connection is available for email/phone signer wallets.
+                    await initializeWebView?.();
+
+                    const wallet = await wallets.getWallet<C>({
+                        chain: args.chain,
+                        alias: args.alias,
+                        options: buildWalletOptions(),
+                    });
+                    if (wallet != null) {
+                        setWallet(wallet);
+                        setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
+                        setWalletError(null);
+                        setWalletStatus("loaded");
+                    } else {
+                        setWalletStatus("not-loaded");
+                    }
+                    return wallet;
+                } catch (error) {
+                    logger.error("react.wallet.getWallet.error", { error });
+                    setWalletError(mapWalletError(error));
+                    setWalletStatus("error");
+                    return undefined;
+                }
+            }),
+        [crossmint, serializeWalletCall, initializeWebView, buildWalletOptions]
     );
 
     const createWallet = useCallback(

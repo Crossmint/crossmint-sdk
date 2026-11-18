@@ -267,11 +267,11 @@ describe("CrossmintWalletBaseProvider — error reporting", () => {
         expect(getByTestId("error").textContent).toBe("A quorum requires members");
     });
 
-    test("does not report a config TypeError as network", async () => {
+    test("reports a config TypeError as unknown", async () => {
         const { getByTestId } = renderFailing(new TypeError("Cannot read properties of null (reading 'type')"));
 
         await waitFor(() => expect(getByTestId("status").textContent).toBe("error"));
-        expect(getByTestId("error-code").textContent).not.toBe("network");
+        expect(getByTestId("error-code").textContent).toBe("unknown");
     });
 });
 
@@ -325,6 +325,77 @@ describe("CrossmintWalletBaseProvider — concurrent createWallet", () => {
         await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
         expect(createWallet).toHaveBeenCalledTimes(1);
         expect(getByTestId("error").textContent).toBe("");
+    });
+});
+
+describe("CrossmintWalletBaseProvider — calls overlapping a session change or a read", () => {
+    const createArgs = { chain: "ethereum", recovery: { type: "email", email: "owner@example.com" } } as const;
+
+    function TestOverlapConsumer() {
+        const { status, wallet, getWallet, createWallet } = useWallet();
+        const { crossmint, setJwt } = useCrossmint();
+        return (
+            <div>
+                <div data-testid="status">{status}</div>
+                <div data-testid="chain">{wallet?.chain ?? ""}</div>
+                <div data-testid="jwt">{crossmint.jwt ?? ""}</div>
+                <button type="button" onClick={() => void createWallet({ ...createArgs })}>
+                    create
+                </button>
+                <button type="button" onClick={() => void getWallet({ chain: "solana" })}>
+                    read
+                </button>
+                <button type="button" onClick={() => setJwt("refreshed-jwt")}>
+                    refresh jwt
+                </button>
+            </div>
+        );
+    }
+
+    function renderOverlap(wallets: Partial<CrossmintWallets>) {
+        vi.mocked(createCrossmint).mockImplementation(() => ({ apiKey: MOCK_API_KEY, jwt: "jwt", setJwt: vi.fn() }));
+        vi.spyOn(CrossmintWallets, "from").mockReturnValue(wallets as CrossmintWallets);
+        return render(
+            <CrossmintProvider apiKey={MOCK_API_KEY}>
+                <CrossmintWalletBaseProvider>
+                    <TestOverlapConsumer />
+                </CrossmintWalletBaseProvider>
+            </CrossmintProvider>
+        );
+    }
+
+    function resolveAfter(chain: string, delayMs: number) {
+        return new Promise((resolve) => setTimeout(() => resolve({ chain, alias: undefined }), delayMs));
+    }
+
+    test("sends a new request when the same args are used after the JWT changed", async () => {
+        const createWallet = vi.fn(() => resolveAfter("ethereum", 60));
+        const { getByTestId, getByText } = renderOverlap({ createWallet } as unknown as Partial<CrossmintWallets>);
+
+        fireEvent.click(getByText("create"));
+        fireEvent.click(getByText("refresh jwt"));
+        await waitFor(() => expect(getByTestId("jwt").textContent).toBe("refreshed-jwt"));
+        fireEvent.click(getByText("create"));
+
+        await waitFor(() => expect(createWallet).toHaveBeenCalledTimes(2));
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+    });
+
+    test("keeps the wallet created after a slower read that started first", async () => {
+        const getWallet = vi.fn(() => resolveAfter("solana", 60));
+        const createWallet = vi.fn(() => resolveAfter("ethereum", 0));
+        const { getByTestId, getByText } = renderOverlap({
+            getWallet,
+            createWallet,
+        } as unknown as Partial<CrossmintWallets>);
+
+        fireEvent.click(getByText("read"));
+        fireEvent.click(getByText("create"));
+
+        await waitFor(() => expect(getByTestId("chain").textContent).toBe("ethereum"));
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        expect(getByTestId("chain").textContent).toBe("ethereum");
+        expect(getByTestId("status").textContent).toBe("loaded");
     });
 });
 

@@ -63,13 +63,15 @@ describe("mapWalletError", () => {
         test("maps to network", () => {
             expect(mapWalletError(new TypeError("Failed to fetch")).code).toBe("network");
             expect(mapWalletError(new TypeError("Network request failed")).code).toBe("network");
+            // Safari reports a rejected fetch as "Load failed"
+            expect(mapWalletError(new TypeError("Load failed")).code).toBe("network");
         });
     });
 
     describe("when the error is a TypeError raised by config validation, not a request", () => {
-        test("does not report it as network", () => {
+        test("reports it as unknown", () => {
             const error = new TypeError("Cannot read properties of null (reading 'type')");
-            expect(mapWalletError(error).code).not.toBe("network");
+            expect(mapWalletError(error).code).toBe("unknown");
         });
     });
 
