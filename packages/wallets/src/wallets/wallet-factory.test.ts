@@ -85,6 +85,30 @@ describe("WalletFactory - OnCreateConfig Support", () => {
     });
 
     describe("createWallet recovery methods", () => {
+        describe("when the API rejects the recovery config without an error code", () => {
+            it("throws WalletCreationError with the API's message and the response body as details", async () => {
+                const response = {
+                    error: true,
+                    message: "A wallet created with a recovery quorum also needs a single recovery signer.",
+                };
+                mockApiClient.createWallet.mockResolvedValue(response as any);
+
+                const error = await walletFactory
+                    .createWallet({
+                        chain: "solana",
+                        recovery: { type: "external-wallet", address: "AdminSignerAddress123" },
+                    })
+                    .catch((thrown: unknown) => thrown);
+
+                expect(error).toBeInstanceOf(WalletCreationError);
+                expect(error).toMatchObject({
+                    code: "wallet:wallet-creation-failed",
+                    message: response.message,
+                    details: JSON.stringify(response),
+                });
+            });
+        });
+
         it("creates a wallet with a single recovery method under adminSigner", async () => {
             mockApiClient.createWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 

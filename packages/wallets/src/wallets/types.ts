@@ -281,6 +281,7 @@ export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
     /**
      * Recovery methods, each able to authorize on its own.
      * Required unless the deprecated `recovery` is passed.
+     * On EVM, a recovery quorum needs at least one single recovery method next to it; Stellar accepts quorums alone.
      */
     recoveryMethods?: Array<RecoverySignerConfigFor<C>>;
     /** Signers to register on the wallet during creation. */

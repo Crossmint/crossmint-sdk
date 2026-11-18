@@ -65,6 +65,11 @@ const CHAINS = [
     { chain: "stellar" as const, member: stellarMember, recipient: TEST_RECIPIENT_WALLET_ADDRESSES.stellar },
 ];
 
+// EVM keeps a single recovery signer next to a recovery quorum; Stellar takes a quorum alone.
+function recoveryMethodsWith<Q>(chain: (typeof CHAINS)[number]["chain"], quorum: Q) {
+    return chain === "stellar" ? [quorum] : [quorum, evmMember()];
+}
+
 for (const { chain, member, recipient } of CHAINS) {
     test.describe(`Quorum on ${chain} — SDK`, { tag: "@quorum" }, () => {
         test.beforeAll(() => {
@@ -76,11 +81,14 @@ for (const { chain, member, recipient } of CHAINS) {
 
             const wallet = await makeSdk().createWallet({
                 chain,
-                recoveryMethods: [{ type: "quorum", threshold: 2, members }],
+                recoveryMethods: recoveryMethodsWith(chain, { type: "quorum", threshold: 2, members }),
                 owner: `userId:sdk-quorum-create-${chain}-${Date.now()}`,
             });
 
-            const [recovery] = wallet.recoveryMethods;
+            const recovery = wallet.recoveryMethods.find((method) => method.type === "quorum");
+            if (recovery == null) {
+                throw new Error("the wallet lists no recovery quorum");
+            }
             assertQuorum(recovery);
             expect(recovery).toMatchObject({ type: "quorum", threshold: 2 });
             expect(recovery.locator).toMatch(/^quorum:[0-9a-f-]{36}$/);
@@ -92,7 +100,11 @@ for (const { chain, member, recipient } of CHAINS) {
             const [dave, erin, frank] = [member(), member(), member()];
             const wallet = await makeSdk().createWallet({
                 chain,
-                recoveryMethods: [{ type: "quorum", threshold: 2, members: [alice, bob, carol] }],
+                recoveryMethods: recoveryMethodsWith(chain, {
+                    type: "quorum",
+                    threshold: 2,
+                    members: [alice, bob, carol],
+                }),
                 owner: `userId:sdk-quorum-delegated-${chain}-${Date.now()}`,
             });
 
@@ -128,7 +140,11 @@ for (const { chain, member, recipient } of CHAINS) {
             const sdk = makeSdk();
             const created = await sdk.createWallet({
                 chain,
-                recoveryMethods: [{ type: "quorum", threshold: 2, members: [alice, bob, carol] }],
+                recoveryMethods: recoveryMethodsWith(chain, {
+                    type: "quorum",
+                    threshold: 2,
+                    members: [alice, bob, carol],
+                }),
                 options: { deviceSignerKeyStorage: storage },
                 owner: `userId:sdk-quorum-recovery-${chain}-${Date.now()}`,
             });
@@ -173,7 +189,7 @@ test.describe("Quorum on base-sepolia — ERC-1271", { tag: "@quorum" }, () => {
         const [dave, erin, frank] = [evmMember(), evmMember(), evmMember()];
         const wallet = await makeSdk().createWallet({
             chain: "base-sepolia",
-            recoveryMethods: [{ type: "quorum", threshold: 2, members: [alice, bob, carol] }],
+            recoveryMethods: [{ type: "quorum", threshold: 2, members: [alice, bob, carol] }, evmMember()],
             owner: `userId:sdk-quorum-1271-${Date.now()}`,
         });
         await wallet.useRecoveryMethod(alice);
