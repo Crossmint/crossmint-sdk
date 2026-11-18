@@ -29,10 +29,10 @@ jobs:
               with:
                   chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
 
-            - name: Build all
+            - name: Build SDK packages
               env:
                   NODE_OPTIONS: --max-old-space-size=6144
-              run: pnpm turbo build --concurrency=1
+              run: pnpm build:libs --concurrency=1
 
             - name: Run heartbeat suite
               id: first
