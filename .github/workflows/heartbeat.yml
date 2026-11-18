@@ -1,0 +1,58 @@
+name: SDK Heartbeat
+
+on:
+    schedule:
+        - cron: "0 7,19 * * *"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: sdk-heartbeat
+    cancel-in-progress: false
+
+jobs:
+    heartbeat:
+        name: wallets API contract (preview)
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        permissions:
+            contents: read
+            id-token: write
+        steps:
+            - name: Checkout
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
+              with:
+                  chainguard-identity: ${{ vars.CHAINGUARD_IDENTITY }}
+
+            - name: Build all
+              env:
+                  NODE_OPTIONS: --max-old-space-size=6144
+              run: pnpm turbo build --concurrency=1
+
+            - name: Run heartbeat suite
+              id: first
+              continue-on-error: true
+              env:
+                  TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY: ${{ secrets.TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY }}
+              run: pnpm test:heartbeat
+
+            - name: Retry once before alerting
+              id: retry
+              if: steps.first.outcome == 'failure'
+              env:
+                  TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY: ${{ secrets.TESTS_PREVIEW_CROSSMINT_SERVER_API_KEY }}
+              run: pnpm test:heartbeat
+
+            - name: Notify Slack on failure
+              if: failure()
+              run: |
+                  curl --fail-with-body -sS -X POST -H 'Content-type: application/json' \
+                      --data "{\"text\": \":rotating_light: SDK heartbeat failed — the wallets API contract may have changed, or the job broke before reaching it. <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\"}" \
+                      "$SLACK_WEBHOOK"
+              env:
+                  SLACK_WEBHOOK: ${{ secrets.SLACK_QA_ALERTS_WEBHOOK }}
