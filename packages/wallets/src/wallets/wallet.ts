@@ -1444,7 +1444,13 @@ export class Wallet<C extends Chain> {
     async #syncRecoveryQuorums(): Promise<void> {
         try {
             const walletConfig = await this.#readWalletConfig();
-            for (const quorum of recoveryMethodsFromWalletConfig<C>(walletConfig).filter(isQuorumSigner)) {
+            // Only quorums whose add landed on this chain: one still awaiting approval would make the member ambiguous.
+            const installedOnChain = (entry: object) => {
+                const onChain = mapApiSignerToSigner(entry as APISigner, this.chain);
+                return onChain != null && this.#signerManager.isApprovedSignerStatus(onChain.status);
+            };
+            const quorums = recoveryMethodsFromWalletConfig<C>(walletConfig).filter(isQuorumSigner);
+            for (const quorum of quorums.filter(installedOnChain)) {
                 this.#signerManager.addRecoverySigner(quorum);
             }
         } catch (error) {

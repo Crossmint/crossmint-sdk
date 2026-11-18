@@ -350,6 +350,25 @@ describe("CrossmintWalletBaseProvider — createWallet", () => {
         expect(initializeWebView).toHaveBeenCalledTimes(1);
     });
 
+    test.each([
+        ["a null member", [null]],
+        ["a members value that is not a list", "alice@example.com"],
+    ])("leaves a quorum with %s for the wallet SDK to reject with its code", async (_label, members) => {
+        const createWallet = vi
+            .fn()
+            .mockRejectedValue(
+                new CrossmintSDKError("A quorum needs a `members` list.", WalletErrorCode.SIGNER_INVALID)
+            );
+        const { getByTestId, getByText } = renderCreateWallet({ createWallet }, {
+            chain: "stellar",
+            recoveryMethods: [{ type: "quorum", threshold: 1, members }],
+        } as never);
+
+        fireEvent.click(getByText("create twice"));
+
+        await waitFor(() => expect(getByTestId("error").textContent).toMatch(/^wallet:signer-invalid: /));
+    });
+
     test("creates a wallet whose signers need no WebView while the TEE connection is not ready", async () => {
         const createWallet = vi.fn().mockResolvedValue({ chain: "stellar", alias: undefined });
         const clientTEEConnection = () => {

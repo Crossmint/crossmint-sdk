@@ -362,9 +362,12 @@ export function CrossmintWalletBaseProvider({
     );
 
     const initializeWebViewIfNeeded = useCallback(
-        async (signers: Array<{ type: string; members?: Array<{ type: string }> }>) => {
-            const needsTEE = (signer: { type: string }) => signer.type === "email" || signer.type === "phone";
-            if (signers.some((signer) => needsTEE(signer) || (signer.members ?? []).some(needsTEE))) {
+        async (signers: Array<{ type: string; members?: unknown }>) => {
+            // Members are scanned leniently: a malformed list is left for the wallet SDK to reject with its own code.
+            const needsTEE = (signer: { type?: unknown } | null | undefined) =>
+                signer?.type === "email" || signer?.type === "phone";
+            const memberNeedsTEE = (members: unknown) => Array.isArray(members) && members.some(needsTEE);
+            if (signers.some((signer) => needsTEE(signer) || memberNeedsTEE(signer.members))) {
                 await initializeWebView?.();
             }
         },

@@ -218,6 +218,18 @@ describe.each(CHAINS)("managing quorums on $chain", ({ chain }) => {
             expect(wallet.recoveryMethods.filter(isQuorumSigner).map((q) => q.locator)).toContain(quorum.entry.locator);
         });
 
+        it("skips a quorum of the member whose add still awaits approval", async () => {
+            const active = createQuorumFixture(chain);
+            const pending = registered(chain, createQuorumFixture(chain).entry, "awaiting-approval");
+            api.getWallet.mockResolvedValue(walletRead(chain, { recoveryMethods: [active.entry, pending] }) as never);
+
+            await wallet.useRecoveryMethod(memberOf(active) as never);
+
+            const quorumLocators = wallet.recoveryMethods.filter(isQuorumSigner).map((q) => q.locator);
+            expect(quorumLocators).toContain(active.entry.locator);
+            expect(quorumLocators).not.toContain((pending as { locator: string }).locator);
+        });
+
         it("still rejects a key the reread wallet does not list either", async () => {
             api.getWallet.mockResolvedValue(walletRead(chain, {}) as never);
 
