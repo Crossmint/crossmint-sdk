@@ -27,6 +27,7 @@ export {
     TransactionExpiredError,
     TransactionFailedError,
     QuorumApprovalRejectedError,
+    ApprovalSigningTimeoutError,
     SignerOperationRejectedError,
     WalletCreationError,
     UnsupportedBrowserError,

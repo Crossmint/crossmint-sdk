@@ -1406,7 +1406,10 @@ export class Wallet<C extends Chain> {
         if (index == null) {
             // A key that is only a member of a recovery quorum selects that quorum as the approver (EDD 007 §7 "Role").
             const memberLocator = this.resolveSignerLocator(recoveryMethod);
-            if (quorumsWithMember(this.recoveryMethods.filter(isQuorumSigner), memberLocator).length > 0) {
+            if (!this.#isRecoveryQuorumMember(memberLocator)) {
+                await this.#syncRecoveryQuorums();
+            }
+            if (this.#isRecoveryQuorumMember(memberLocator)) {
                 this.#signerManager.selectRecoveryMember(this.#withoutServerSecret(recoveryMethod), memberLocator);
                 walletsLogger.info("wallet.useRecoveryMethod.success", { recoveryMemberLocator: memberLocator });
                 return;
@@ -1431,6 +1434,22 @@ export class Wallet<C extends Chain> {
         walletsLogger.info("wallet.useRecoveryMethod.success", {
             recoveryMethodLocator: this.#signerManager.recoveryLocator(selected),
         });
+    }
+
+    #isRecoveryQuorumMember(memberLocator: string): boolean {
+        return quorumsWithMember(this.recoveryMethods.filter(isQuorumSigner), memberLocator).length > 0;
+    }
+
+    // A quorum-approved addRecoveryMethod lands outside this object, so a member miss rereads the wallet's quorums.
+    async #syncRecoveryQuorums(): Promise<void> {
+        try {
+            const walletConfig = await this.#readWalletConfig();
+            for (const quorum of recoveryMethodsFromWalletConfig<C>(walletConfig).filter(isQuorumSigner)) {
+                this.#signerManager.addRecoverySigner(quorum);
+            }
+        } catch (error) {
+            walletsLogger.warn("wallet.useRecoveryMethod.syncRecoveryQuorums.error", { error });
+        }
     }
 
     /**

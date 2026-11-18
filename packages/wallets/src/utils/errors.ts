@@ -321,6 +321,19 @@ export class SignatureConfirmationTimeoutError extends CrossmintSDKError {
     }
 }
 
+/** A key did not sign an approval in time; the request is still open and can be approved again. */
+export class ApprovalSigningTimeoutError extends CrossmintSDKError {
+    constructor(
+        public readonly signerLocator: string,
+        timeoutMs: number
+    ) {
+        super(
+            `Signer ${signerLocator} did not sign the approval within ${timeoutMs / 1000} seconds`,
+            WalletErrorCode.SIGNING_FAILED
+        );
+    }
+}
+
 export class InvalidTransferAmountError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.NO_TRANSACTION, details);
@@ -666,6 +679,7 @@ export type WalletError =
     | TransactionHashNotFoundError
     | TransactionFailedError
     | QuorumApprovalRejectedError
+    | ApprovalSigningTimeoutError
     | SignerOperationRejectedError
     | TransactionExpiredError
     | PendingApprovalsError

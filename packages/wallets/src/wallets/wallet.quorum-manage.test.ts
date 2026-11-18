@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Chain } from "../chains/chains";
 import { isQuorumSigner, type QuorumLocator } from "../signers/types";
-import { InvalidSignerError, QuorumRequestError } from "../utils/errors";
+import { InvalidRecoveryConfigError, InvalidSignerError, QuorumRequestError } from "../utils/errors";
 import { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import type { ApiClient } from "../api";
 import { deriveServerSignerCandidates } from "../signers/server";
@@ -200,6 +200,30 @@ describe.each(CHAINS)("managing quorums on $chain", ({ chain }) => {
             await wallet.addSigner(quorum.config as never);
 
             expect(api.getSigner).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("useRecoveryMethod with a member of a quorum added outside this wallet object", () => {
+        const memberOf = (quorum: ReturnType<typeof createQuorumFixture>) => {
+            const member = quorum.entry.members[1];
+            return { type: "external-wallet", address: "address" in member ? member.address : "", onSign: vi.fn() };
+        };
+
+        it("rereads the wallet's recovery quorums and selects the member", async () => {
+            const quorum = createQuorumFixture(chain);
+            api.getWallet.mockResolvedValue(walletRead(chain, { recoveryMethods: [quorum.entry] }) as never);
+
+            await wallet.useRecoveryMethod(memberOf(quorum) as never);
+
+            expect(wallet.recoveryMethods.filter(isQuorumSigner).map((q) => q.locator)).toContain(quorum.entry.locator);
+        });
+
+        it("still rejects a key the reread wallet does not list either", async () => {
+            api.getWallet.mockResolvedValue(walletRead(chain, {}) as never);
+
+            await expect(wallet.useRecoveryMethod(memberOf(createQuorumFixture(chain)) as never)).rejects.toThrow(
+                InvalidRecoveryConfigError
+            );
         });
     });
 

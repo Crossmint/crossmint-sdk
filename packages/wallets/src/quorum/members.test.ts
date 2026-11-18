@@ -85,6 +85,14 @@ describe("quorumsWithComposition", () => {
         expect(quorumsWithComposition([quorum], 2, [EVM_CHECKSUMMED, quorum.members[1].locator])).toEqual([quorum]);
     });
 
+    it("matches a server member the API lists as an external-wallet at the same address", () => {
+        const quorum = createQuorumApiEntry({ threshold: 2, memberCount: 2 });
+        const address = EVM_CHECKSUMMED.slice("external-wallet:".length);
+        quorum.members[0] = { type: "external-wallet", address, locator: `external-wallet:${address}` };
+
+        expect(quorumsWithComposition([quorum], 2, [`server:${address}`, quorum.members[1].locator])).toEqual([quorum]);
+    });
+
     it("returns both quorums when two have the same composition", () => {
         const first = createQuorumApiEntry({ threshold: 2, memberCount: 2 });
         const second = { ...first, locator: createQuorumApiEntry().locator };

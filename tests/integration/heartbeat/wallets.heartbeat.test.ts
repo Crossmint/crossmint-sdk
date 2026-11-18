@@ -124,6 +124,18 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         });
     });
 
+    it("approveTransaction with a bad member signature returns the 'Invalid signature for signer' message", async () => {
+        const created = await createdTransaction();
+        const rejected = await apiClient.approveTransaction(evmWallet, created.id, {
+            approvals: [{ signer: evmAdmin.locator, signature: "0xdeadbeef" }],
+        });
+
+        const body = rejected as { error?: boolean; message?: string };
+        expect(body.error, `expected an error response, got: ${JSON.stringify(body)}`).toBe(true);
+        // The SDK maps this message to QuorumApprovalRejectedError.
+        expect(body.message).toMatch(/^Invalid signature for signer \S+/);
+    });
+
     it("getTransactions", async () => {
         const result = expectContract<{ transactions: unknown }>(await apiClient.getTransactions(evmWallet), {
             transactions: "object",
@@ -238,6 +250,15 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         } as Parameters<typeof apiClient.removeRecoveryMethod>[2]);
         expectContract(result, { id: "string" });
     }, 120_000);
+
+    it("removeRecoveryMethod of the only recovery method returns LAST_RECOVERY_SIGNER", async () => {
+        const rejected = await apiClient.removeRecoveryMethod(solanaWallet, solanaAdmin.locator, {
+            approver: solanaAdmin.locator,
+        } as Parameters<typeof apiClient.removeRecoveryMethod>[2]);
+
+        // The SDK maps this code to QuorumRequestError.
+        expectErrorShape(rejected, "LAST_RECOVERY_SIGNER");
+    });
 
     it.fails("getNfts (known broken: the SDK calls a route the API does not serve)", async () => {
         expectContract(await apiClient.getNfts({ address: evmWallet, chain: EVM_CHAIN, page: 1, perPage: 1 }), {});
