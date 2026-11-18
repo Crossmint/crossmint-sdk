@@ -1,7 +1,7 @@
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 
-import { createCrossmint } from "@crossmint/common-sdk-base";
+import { createCrossmint, CrossmintSDKError, WalletErrorCode } from "@crossmint/common-sdk-base";
 import { CrossmintWallets, type DeviceSignerKeyStorage, WalletNotAvailableError } from "@crossmint/wallets-sdk";
 
 import { CrossmintProvider } from "@/providers/CrossmintProvider";
@@ -227,6 +227,104 @@ describe("CrossmintWalletBaseProvider — createOnLogin switched while a load is
 
         await waitFor(() => expect(getByTestId("chain").textContent).toBe("solana"), { timeout: 1500 });
         expect(createWallet).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe("CrossmintWalletBaseProvider — error reporting", () => {
+    function TestErrorConsumer() {
+        const { status, error } = useWallet();
+        return (
+            <div>
+                <div data-testid="status">{status}</div>
+                <div data-testid="error-code">{error?.code ?? ""}</div>
+                <div data-testid="error">{error?.message ?? ""}</div>
+            </div>
+        );
+    }
+
+    function renderFailing(rejected: unknown) {
+        vi.mocked(createCrossmint).mockImplementation(() => ({ apiKey: MOCK_API_KEY, jwt: "jwt", setJwt: vi.fn() }));
+        vi.spyOn(CrossmintWallets, "from").mockReturnValue({
+            getWallet: vi.fn().mockRejectedValue(new WalletNotAvailableError("not found")),
+            createWallet: vi.fn().mockRejectedValue(rejected),
+        } as unknown as CrossmintWallets);
+        return render(
+            <CrossmintProvider apiKey={MOCK_API_KEY}>
+                <CrossmintWalletBaseProvider createOnLogin={{ chain: "ethereum" }}>
+                    <TestErrorConsumer />
+                </CrossmintWalletBaseProvider>
+            </CrossmintProvider>
+        );
+    }
+
+    test("preserves the SDK error code on useWallet().error", async () => {
+        const { getByTestId } = renderFailing(
+            new CrossmintSDKError("A quorum requires members", WalletErrorCode.SIGNER_INVALID)
+        );
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("error"));
+        expect(getByTestId("error-code").textContent).toBe("wallet:signer-invalid");
+        expect(getByTestId("error").textContent).toBe("A quorum requires members");
+    });
+
+    test("does not report a config TypeError as network", async () => {
+        const { getByTestId } = renderFailing(new TypeError("Cannot read properties of null (reading 'type')"));
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("error"));
+        expect(getByTestId("error-code").textContent).not.toBe("network");
+    });
+});
+
+describe("CrossmintWalletBaseProvider — concurrent createWallet", () => {
+    function TestCreateConsumer() {
+        const { status, error, wallet, createWallet } = useWallet();
+        const args = { chain: "ethereum", recovery: { type: "email", email: "owner@example.com" } } as const;
+        return (
+            <div>
+                <div data-testid="status">{status}</div>
+                <div data-testid="chain">{wallet?.chain ?? ""}</div>
+                <div data-testid="error">{error?.message ?? ""}</div>
+                <button
+                    type="button"
+                    onClick={() => {
+                        void createWallet({ ...args });
+                        void createWallet({ ...args });
+                    }}
+                >
+                    create twice
+                </button>
+            </div>
+        );
+    }
+
+    function renderCreate(createWalletImpl: ReturnType<typeof vi.fn>) {
+        vi.mocked(createCrossmint).mockImplementation(() => ({ apiKey: MOCK_API_KEY, jwt: "jwt", setJwt: vi.fn() }));
+        vi.spyOn(CrossmintWallets, "from").mockReturnValue({
+            createWallet: createWalletImpl,
+        } as unknown as CrossmintWallets);
+        return render(
+            <CrossmintProvider apiKey={MOCK_API_KEY}>
+                <CrossmintWalletBaseProvider>
+                    <TestCreateConsumer />
+                </CrossmintWalletBaseProvider>
+            </CrossmintProvider>
+        );
+    }
+
+    test("sends a single request for two calls fired in the same tick", async () => {
+        const createWallet = vi
+            .fn()
+            .mockImplementation(
+                ({ chain }: { chain: string }) =>
+                    new Promise((resolve) => setTimeout(() => resolve({ chain, alias: undefined }), 20))
+            );
+        const { getByTestId, getByText } = renderCreate(createWallet);
+
+        fireEvent.click(getByText("create twice"));
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+        expect(createWallet).toHaveBeenCalledTimes(1);
+        expect(getByTestId("error").textContent).toBe("");
     });
 });
 

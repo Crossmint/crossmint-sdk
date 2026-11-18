@@ -1,4 +1,4 @@
-import { ApiClientError } from "@crossmint/common-sdk-base";
+import { ApiClientError, CrossmintSDKError, WalletErrorCode } from "@crossmint/common-sdk-base";
 import { describe, expect, test } from "vitest";
 
 import { mapWalletError } from "./CrossmintWalletBaseProvider";
@@ -62,6 +62,44 @@ describe("mapWalletError", () => {
     describe("when the error is a rejected fetch (TypeError)", () => {
         test("maps to network", () => {
             expect(mapWalletError(new TypeError("Failed to fetch")).code).toBe("network");
+            expect(mapWalletError(new TypeError("Network request failed")).code).toBe("network");
+        });
+    });
+
+    describe("when the error is a TypeError raised by config validation, not a request", () => {
+        test("does not report it as network", () => {
+            const error = new TypeError("Cannot read properties of null (reading 'type')");
+            expect(mapWalletError(error).code).not.toBe("network");
+        });
+    });
+
+    describe("when the error is a CrossmintSDKError carrying a code", () => {
+        test("preserves the SDK code", () => {
+            const error = new CrossmintSDKError("A quorum requires members", WalletErrorCode.SIGNER_INVALID);
+            expect(mapWalletError(error)).toEqual({
+                code: "wallet:signer-invalid",
+                message: "A quorum requires members",
+            });
+        });
+
+        test("unwraps an API error JSON body to its message field", () => {
+            const error = new CrossmintSDKError(
+                JSON.stringify({ statusCode: 400, message: "already a wallet with this address" }),
+                WalletErrorCode.WALLET_CREATION_FAILED
+            );
+            expect(mapWalletError(error)).toEqual({
+                code: "wallet:wallet-creation-failed",
+                message: "already a wallet with this address",
+            });
+        });
+    });
+
+    describe("when the API error body carries a JSON message", () => {
+        test("surfaces the body message instead of the request line", () => {
+            const body = JSON.stringify({ message: "owner does not match the wallet's linked user" });
+            expect(mapWalletError(apiClientError(400, body)).message).toBe(
+                "owner does not match the wallet's linked user"
+            );
         });
     });
 

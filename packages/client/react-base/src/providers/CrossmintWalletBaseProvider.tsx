@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
     type Chain,
     CrossmintWallets,
@@ -40,9 +40,10 @@ import { CrossmintAuthBaseContext } from "./CrossmintAuthBaseProvider";
  * - `region-blocked`: request was blocked (e.g. Cloudflare 403 from a restricted region). Permanent — do not retry.
  * - `network`: transient failure (fetch reject/timeout, 5xx, or 429). Retryable.
  * - `unknown`: anything else.
+ * - A `CrossmintSDKError` code (e.g. `wallet:signer-invalid`) is passed through unchanged.
  */
 export type WalletContextError = {
-    code: "region-blocked" | "network" | "unknown";
+    code: "region-blocked" | "network" | "unknown" | (string & {});
     status?: number;
     message: string;
 };
@@ -222,23 +223,46 @@ export function isSameFailedAttempt<C extends Chain>(
 }
 
 /**
+ * A rejected fetch (no response) surfaces as a TypeError whose message names the transport failure;
+ * TypeErrors raised by config validation carry anything else and must not be reported as `network`.
+ */
+const FETCH_REJECT_PATTERN = /failed to fetch|fetch failed|network request failed|networkerror/i;
+
+/** The API wraps failures in a JSON body; expose its `message` field instead of raw JSON. */
+function apiErrorMessage(raw: string | null): string | undefined {
+    if (raw == null) {
+        return undefined;
+    }
+    try {
+        const body: unknown = JSON.parse(raw);
+        if (body != null && typeof body === "object" && "message" in body && typeof body.message === "string") {
+            return body.message;
+        }
+    } catch {}
+    return undefined;
+}
+
+/**
  * Maps a thrown wallet load/creation error to the structured shape exposed on the context.
  * A Cloudflare region-ban 403 is treated as a permanent block; fetch rejects/timeouts, 5xx, and
- * 429 are treated as transient network failures; everything else (incl. other 403s) is unknown.
+ * 429 are treated as transient network failures; SDK error codes pass through; the rest is unknown.
  */
 export function mapWalletError(error: unknown): WalletContextError {
     if (error instanceof ApiClientError) {
+        const message = apiErrorMessage(error.responseBody) ?? error.message;
         if (error.status === 403 && isCloudflareRegionBlock(error.responseBody)) {
-            return { code: "region-blocked", status: error.status, message: error.message };
+            return { code: "region-blocked", status: error.status, message };
         }
         if (error.status >= 500 || error.status === 429) {
-            return { code: "network", status: error.status, message: error.message };
+            return { code: "network", status: error.status, message };
         }
-        return { code: "unknown", status: error.status, message: error.message };
+        return { code: "unknown", status: error.status, message };
     }
-    // A rejected fetch (no response) surfaces as a TypeError; treat as transient network failure.
-    if (error instanceof TypeError) {
+    if (error instanceof TypeError && FETCH_REJECT_PATTERN.test(error.message)) {
         return { code: "network", message: error.message };
+    }
+    if (error instanceof Error && "code" in error && typeof error.code === "string") {
+        return { code: error.code, message: apiErrorMessage(error.message) ?? error.message };
     }
     return { code: "unknown", message: error instanceof Error ? error.message : String(error) };
 }
@@ -377,67 +401,93 @@ export function CrossmintWalletBaseProvider({
         ]
     );
 
+    // `walletStatus` lives in the render closure, so a second call fired in the same tick can't
+    // see `in-progress`; this ref is the real serialization point. Identical args share the
+    // in-flight request (one API call); different args queue behind it and still win last.
+    const inFlightWalletRef = useRef<{ args: unknown; promise: Promise<Wallet<Chain> | undefined> } | null>(null);
+    const serializeWalletCall = useCallback(
+        (args: unknown, run: () => Promise<Wallet<Chain> | undefined>): Promise<Wallet<Chain> | undefined> => {
+            const inFlight = inFlightWalletRef.current;
+            if (inFlight != null && isEqual(inFlight.args, args)) {
+                return inFlight.promise;
+            }
+            const promise = inFlight == null ? run() : inFlight.promise.then(run, run);
+            inFlightWalletRef.current = { args, promise };
+            const clear = () => {
+                if (inFlightWalletRef.current?.promise === promise) {
+                    inFlightWalletRef.current = null;
+                }
+            };
+            promise.then(clear, clear);
+            return promise;
+        },
+        []
+    );
+
     const getOrCreateWallet = useCallback(
         async <C extends Chain>(_args: WalletCreateArgs<C>) => {
             // Deep clone the args object to avoid mutating the original object
             const args = cloneDeep(_args);
-            if (crossmint.jwt == null || walletStatus === "in-progress") {
-                return undefined;
-            }
-            if (cachedWalletMatchesArgs(wallet, loadedWalletArgs, args)) {
-                return wallet;
-            }
-            if (walletError?.code === "region-blocked") {
-                return undefined;
-            }
-            // A failed attempt rewrites walletError, which recreates this callback and refires the
-            // createOnLogin effect; without this latch the same request would be retried forever.
-            // Any change to the args or the JWT is a new request and goes through.
-            if (walletStatus === "error" && isSameFailedAttempt(failedAttempt, args, crossmint.jwt)) {
-                return undefined;
-            }
+            return serializeWalletCall(args, async () => {
+                if (crossmint.jwt == null) {
+                    return undefined;
+                }
+                if (cachedWalletMatchesArgs(wallet, loadedWalletArgs, args)) {
+                    return wallet;
+                }
+                if (walletError?.code === "region-blocked") {
+                    return undefined;
+                }
+                // A failed attempt rewrites walletError, which recreates this callback and refires the
+                // createOnLogin effect; without this latch the same request would be retried forever.
+                // Any change to the args or the JWT is a new request and goes through.
+                if (walletStatus === "error" && isSameFailedAttempt(failedAttempt, args, crossmint.jwt)) {
+                    return undefined;
+                }
 
-            try {
-                setWalletStatus("in-progress");
-                setWalletError(null);
-                const wallets = CrossmintWallets.from(crossmint);
-
-                await initializeWebViewIfNeeded(recoveryMethodsFromCreateArgs(args));
-
-                const walletOptions = buildWalletOptions(args.options);
-
-                // Try to get existing wallet first, then create if not found
-                let wallet: Awaited<ReturnType<typeof wallets.getWallet<C>>> | undefined;
                 try {
-                    wallet = await getExistingWallet(wallets, args, walletOptions, logger);
-                } catch (error) {
-                    if (!(error instanceof WalletNotAvailableError)) {
-                        throw error;
+                    setWalletStatus("in-progress");
+                    setWalletError(null);
+                    const wallets = CrossmintWallets.from(crossmint);
+
+                    await initializeWebViewIfNeeded(recoveryMethodsFromCreateArgs(args));
+
+                    const walletOptions = buildWalletOptions(args.options);
+
+                    // Try to get existing wallet first, then create if not found
+                    let wallet: Awaited<ReturnType<typeof wallets.getWallet<C>>> | undefined;
+                    try {
+                        wallet = await getExistingWallet(wallets, args, walletOptions, logger);
+                    } catch (error) {
+                        if (!(error instanceof WalletNotAvailableError)) {
+                            throw error;
+                        }
+                        // Wallet doesn't exist yet, create it
                     }
-                    // Wallet doesn't exist yet, create it
-                }
 
-                if (wallet == null) {
-                    wallet = await wallets.createWallet<C>({
-                        ...args,
-                        options: walletOptions,
-                    });
-                }
+                    if (wallet == null) {
+                        wallet = await wallets.createWallet<C>({
+                            ...args,
+                            options: walletOptions,
+                        });
+                    }
 
-                setWallet(wallet);
-                setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
-                setFailedAttempt(undefined);
-                setWalletStatus("loaded");
-                return wallet;
-            } catch (error) {
-                logger.error("react.wallet.getOrCreateWallet.error", { error });
-                setWallet(undefined);
-                setLoadedWalletArgs(undefined);
-                setFailedAttempt({ args, jwt: crossmint.jwt });
-                setWalletError(mapWalletError(error));
-                setWalletStatus("error");
-                return undefined;
-            }
+                    setWallet(wallet);
+                    setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
+                    setFailedAttempt(undefined);
+                    setWalletError(null);
+                    setWalletStatus("loaded");
+                    return wallet;
+                } catch (error) {
+                    logger.error("react.wallet.getOrCreateWallet.error", { error });
+                    setWallet(undefined);
+                    setLoadedWalletArgs(undefined);
+                    setFailedAttempt({ args, jwt: crossmint.jwt });
+                    setWalletError(mapWalletError(error));
+                    setWalletStatus("error");
+                    return undefined;
+                }
+            });
         },
         [
             crossmint,
@@ -447,6 +497,7 @@ export function CrossmintWalletBaseProvider({
             loadedWalletArgs,
             failedAttempt,
             walletError,
+            serializeWalletCall,
             initializeWebViewIfNeeded,
             buildWalletOptions,
         ]
@@ -477,6 +528,7 @@ export function CrossmintWalletBaseProvider({
                 if (wallet != null) {
                     setWallet(wallet);
                     setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
+                    setWalletError(null);
                     setWalletStatus("loaded");
                 } else {
                     setWalletStatus("not-loaded");
@@ -493,36 +545,38 @@ export function CrossmintWalletBaseProvider({
     );
 
     const createWallet = useCallback(
-        async <C extends Chain>(args: ClientSideWalletCreateArgs<C>) => {
-            if (crossmint.jwt == null || walletStatus === "in-progress") {
-                return undefined;
-            }
+        async <C extends Chain>(args: ClientSideWalletCreateArgs<C>) =>
+            serializeWalletCall(args, async () => {
+                if (crossmint.jwt == null) {
+                    return undefined;
+                }
 
-            try {
-                setWalletStatus("in-progress");
-                setWalletError(null);
-                const wallets = CrossmintWallets.from(crossmint);
+                try {
+                    setWalletStatus("in-progress");
+                    setWalletError(null);
+                    const wallets = CrossmintWallets.from(crossmint);
 
-                await initializeWebViewIfNeeded(recoveryMethodsFromCreateArgs(args));
+                    await initializeWebViewIfNeeded(recoveryMethodsFromCreateArgs(args));
 
-                const wallet = await wallets.createWallet<C>({
-                    ...args,
-                    options: buildWalletOptions(args.options),
-                });
-                setWallet(wallet);
-                setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
-                setWalletStatus("loaded");
-                return wallet;
-            } catch (error) {
-                logger.error("react.wallet.createWallet.error", { error });
-                setWallet(undefined);
-                setLoadedWalletArgs(undefined);
-                setWalletError(mapWalletError(error));
-                setWalletStatus("error");
-                return undefined;
-            }
-        },
-        [crossmint, walletStatus, initializeWebViewIfNeeded, buildWalletOptions]
+                    const wallet = await wallets.createWallet<C>({
+                        ...args,
+                        options: buildWalletOptions(args.options),
+                    });
+                    setWallet(wallet);
+                    setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
+                    setWalletError(null);
+                    setWalletStatus("loaded");
+                    return wallet;
+                } catch (error) {
+                    logger.error("react.wallet.createWallet.error", { error });
+                    setWallet(undefined);
+                    setLoadedWalletArgs(undefined);
+                    setWalletError(mapWalletError(error));
+                    setWalletStatus("error");
+                    return undefined;
+                }
+            }),
+        [crossmint, serializeWalletCall, initializeWebViewIfNeeded, buildWalletOptions]
     );
 
     const createDeviceSigner = useCallback(
