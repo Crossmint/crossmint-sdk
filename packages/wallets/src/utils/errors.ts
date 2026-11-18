@@ -578,8 +578,11 @@ export function throwIfRecoverySignerApiError(response: unknown): void {
     }
 }
 
-// The API message for a rejected member approval: `Invalid signature for signer <locator>…`.
-const APPROVAL_REJECTED_MESSAGE = /^Invalid signature for signer (\S+?)\.?(\s|$)/;
+// The API messages for a rejected member approval: one for a signature by the wrong key, one for a malformed signature.
+const APPROVAL_REJECTED_MESSAGES = [
+    /^Invalid signature for signer (\S+?)\.?(\s|$)/,
+    /^Signature '[^']*' on the approval for signer '([^']+)' is invalid/,
+];
 
 /**
  * Throws `QuorumApprovalRejectedError` when the API rejected a submitted approval for one member's
@@ -589,7 +592,10 @@ export function throwIfApprovalRejected(response: unknown, request: ExpiredReque
     if (!isResponseBody<CrossmintApiErrorBody>(response) || response.message == null) {
         return;
     }
-    const rejectedSigner = APPROVAL_REJECTED_MESSAGE.exec(response.message)?.[1];
+    const message = response.message;
+    const rejectedSigner = APPROVAL_REJECTED_MESSAGES.map((pattern) => pattern.exec(message)?.[1]).find(
+        (locator) => locator != null
+    );
     if (rejectedSigner == null) {
         return;
     }

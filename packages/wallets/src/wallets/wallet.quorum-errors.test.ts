@@ -388,6 +388,24 @@ describe("quorum API errors at wallet call sites", () => {
             expect(error).not.toBeInstanceOf(SignatureFailedError);
             expect(error).toMatchObject({ signerLocator: MEMBER, signatureId: "sig-1" });
         });
+
+        it("throws QuorumApprovalRejectedError for a malformed member signature too", async () => {
+            const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
+            api.getTransaction.mockResolvedValue(AWAITING_TRANSACTION as never);
+            api.approveTransaction.mockResolvedValue({
+                error: true,
+                statusCode: 400,
+                message: `Signature '0xdeadbeef...' on the approval for signer '${MEMBER}' is invalid. Please ensure you're providing a valid hex-encoded ECDSA signature and the signer is correct.`,
+            } as never);
+
+            const error = await wallet.approve({ transactionId: "txn-1", options: { approval: APPROVAL } }).then(
+                () => expect.fail("Expected approve to throw"),
+                (thrown: unknown) => thrown
+            );
+
+            expect(error).toBeInstanceOf(QuorumApprovalRejectedError);
+            expect(error).toMatchObject({ signerLocator: MEMBER, transactionId: "txn-1" });
+        });
     });
 
     describe("Stellar upgrade, when the wallet is already locked", () => {

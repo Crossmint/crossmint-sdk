@@ -124,16 +124,30 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         });
     });
 
-    it("approveTransaction with a bad member signature returns the 'Invalid signature for signer' message", async () => {
+    // The SDK reads the rejected signer's locator from these two messages (QuorumApprovalRejectedError).
+    it("approveTransaction signed by the wrong key names the signer as 'Invalid signature for signer <locator>'", async () => {
         const created = await createdTransaction();
+        const wrongKey = await externalWalletSigner().approval(pendingMessage(created));
+
+        const rejected = await apiClient.approveTransaction(evmWallet, created.id, {
+            approvals: [{ signer: evmAdmin.locator, signature: wrongKey.signature }],
+        });
+
+        expectErrorShape(rejected);
+        expect((rejected as { message: string }).message).toMatch(/^Invalid signature for signer \S+/);
+    });
+
+    it("approveTransaction with a malformed signature names the signer in quotes", async () => {
+        const created = await createdTransaction();
+
         const rejected = await apiClient.approveTransaction(evmWallet, created.id, {
             approvals: [{ signer: evmAdmin.locator, signature: "0xdeadbeef" }],
         });
 
-        const body = rejected as { error?: boolean; message?: string };
-        expect(body.error, `expected an error response, got: ${JSON.stringify(body)}`).toBe(true);
-        // The SDK maps this message to QuorumApprovalRejectedError.
-        expect(body.message).toMatch(/^Invalid signature for signer \S+/);
+        expectErrorShape(rejected);
+        expect((rejected as { message: string }).message).toMatch(
+            /^Signature '[^']*' on the approval for signer '[^']+' is invalid/
+        );
     });
 
     it("getTransactions", async () => {
@@ -251,9 +265,23 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         expectContract(result, { id: "string" });
     }, 120_000);
 
-    it("removeRecoveryMethod of the only recovery method returns LAST_RECOVERY_SIGNER", async () => {
-        const rejected = await apiClient.removeRecoveryMethod(solanaWallet, solanaAdmin.locator, {
-            approver: solanaAdmin.locator,
+    it("removeRecoveryMethod of the single recovery signer next to a quorum returns LAST_RECOVERY_SIGNER", async () => {
+        // An EVM wallet keeps one single recovery signer next to a quorum, so removing it is refused.
+        const single = externalWalletSigner();
+        const member = externalWalletSigner();
+        const created = await apiClient.createWallet({
+            chainType: "evm",
+            type: "smart",
+            owner: `userId:heartbeat-last-recovery-${Date.now()}`,
+            config: {
+                recoveryMethods: [single.signer, { type: "quorum", threshold: 1, members: [member.signer] }],
+            },
+        } as Parameters<typeof apiClient.createWallet>[0]);
+        const { address } = expectContract<{ address: string }>(created, { address: "string" });
+
+        const rejected = await apiClient.removeRecoveryMethod(address as Locator, single.locator, {
+            chain: EVM_CHAIN,
+            approver: member.locator,
         } as Parameters<typeof apiClient.removeRecoveryMethod>[2]);
 
         // The SDK maps this code to QuorumRequestError.
