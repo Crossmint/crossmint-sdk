@@ -282,11 +282,16 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
                 ],
             },
         } as Parameters<typeof apiClient.createWallet>[0]);
-        const { address } = expectContract<{ address: string }>(created, { address: "string" });
+        const { address, config } = expectContract<{
+            address: string;
+            config: { recoveryMethods?: Array<{ type: string; locator: string }> };
+        }>(created, { address: "string", config: "object" });
+        const quorum = config.recoveryMethods?.find((method) => method.type === "quorum");
+        expect(quorum, `expected a quorum in: ${JSON.stringify(config)}`).toBeDefined();
 
         const rejected = await apiClient.removeRecoveryMethod(address as Locator, single.locator, {
             chain: EVM_CHAIN,
-            approver: member.locator,
+            approver: quorum?.locator,
         } as Parameters<typeof apiClient.removeRecoveryMethod>[2]);
 
         // The SDK maps this code to QuorumRequestError.
