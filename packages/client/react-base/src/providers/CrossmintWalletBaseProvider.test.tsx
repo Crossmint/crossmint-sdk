@@ -2,7 +2,12 @@ import { fireEvent, render, waitFor } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 
 import { createCrossmint } from "@crossmint/common-sdk-base";
-import { CrossmintWallets, type DeviceSignerKeyStorage, WalletNotAvailableError } from "@crossmint/wallets-sdk";
+import {
+    CrossmintWallets,
+    type DeviceSignerKeyStorage,
+    WalletNotAvailableError,
+    type WalletOptions,
+} from "@crossmint/wallets-sdk";
 
 import { CrossmintProvider } from "@/providers/CrossmintProvider";
 import { CrossmintWalletBaseProvider } from "./CrossmintWalletBaseProvider";
@@ -265,5 +270,119 @@ describe("CrossmintWalletBaseProvider — device signer key storage", () => {
 
         await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
         expect(createWallet.mock.calls[0][0].options.deviceSignerKeyStorage).toBe(deviceSignerKeyStorage);
+    });
+});
+
+describe("CrossmintWalletBaseProvider — React Native signer WebView", () => {
+    const ALICE = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    const BOB = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+    const ALICE_WALLET = { type: "external-wallet" as const, address: ALICE, onSign: async () => "0x" };
+
+    // Mirrors the React Native provider: the connection exists only after the WebView is initialized.
+    function nativeWebView() {
+        let ready = false;
+        const connection = { name: "signer-webview" };
+        return {
+            connection,
+            initializeWebView: vi.fn(() => {
+                ready = true;
+                return Promise.resolve();
+            }),
+            clientTEEConnection: () => {
+                if (!ready) {
+                    throw new Error("WebView not ready or handshake incomplete");
+                }
+                return connection;
+            },
+        };
+    }
+
+    function renderNative(createOnLogin: CreateOnLogin, getWallet = vi.fn()) {
+        const webView = nativeWebView();
+        const createWallet = vi.fn(({ chain }: { chain: string; options: WalletOptions }) =>
+            Promise.resolve({ chain, alias: undefined })
+        );
+        getWallet.mockRejectedValue(new WalletNotAvailableError("not found"));
+        vi.mocked(createCrossmint).mockImplementation(() => ({ apiKey: MOCK_API_KEY, jwt: "jwt", setJwt: vi.fn() }));
+        vi.spyOn(CrossmintWallets, "from").mockReturnValue({ getWallet, createWallet } as unknown as CrossmintWallets);
+        const rendered = render(
+            <CrossmintProvider apiKey={MOCK_API_KEY}>
+                <CrossmintWalletBaseProvider
+                    createOnLogin={createOnLogin}
+                    initializeWebView={webView.initializeWebView}
+                    clientTEEConnection={webView.clientTEEConnection as never}
+                >
+                    <TestConsumer />
+                </CrossmintWalletBaseProvider>
+            </CrossmintProvider>
+        );
+        return { ...rendered, webView, createWallet, getWallet };
+    }
+
+    describe("when no key in createOnLogin signs through the WebView", () => {
+        test.each<[string, CreateOnLogin]>([
+            ["an external-wallet recovery method", { chain: "base-sepolia", recovery: ALICE_WALLET }],
+            [
+                "a quorum of external wallets",
+                {
+                    chain: "base-sepolia",
+                    recoveryMethods: [
+                        {
+                            type: "quorum",
+                            threshold: 1,
+                            members: [
+                                { type: "external-wallet", address: ALICE },
+                                { type: "external-wallet", address: BOB },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        ])("loads the wallet with %s, without the WebView", async (_, createOnLogin) => {
+            const { getByTestId, webView, createWallet } = renderNative(createOnLogin);
+
+            await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+            expect(webView.initializeWebView).not.toHaveBeenCalled();
+            expect(createWallet.mock.calls[0][0].options.clientTEEConnection).toBeUndefined();
+        });
+    });
+
+    describe("when a key in createOnLogin signs through the WebView", () => {
+        test.each<[string, CreateOnLogin]>([
+            [
+                "an email recovery method",
+                { chain: "base-sepolia", recovery: { type: "email", email: "alice@example.com" } },
+            ],
+            [
+                "a quorum with an email member",
+                {
+                    chain: "base-sepolia",
+                    recoveryMethods: [
+                        {
+                            type: "quorum",
+                            threshold: 1,
+                            members: [
+                                { type: "email", email: "alice@example.com" },
+                                { type: "external-wallet", address: BOB },
+                            ],
+                        },
+                    ],
+                },
+            ],
+            [
+                "a delegated phone signer",
+                {
+                    chain: "base-sepolia",
+                    recovery: ALICE_WALLET,
+                    signers: [{ type: "phone", phone: "+15555550100" }],
+                },
+            ],
+        ])("initializes the WebView for %s and passes its connection", async (_, createOnLogin) => {
+            const { getByTestId, webView, createWallet } = renderNative(createOnLogin);
+
+            await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+            expect(webView.initializeWebView).toHaveBeenCalled();
+            expect(createWallet.mock.calls[0][0].options.clientTEEConnection).toBe(webView.connection);
+        });
     });
 });

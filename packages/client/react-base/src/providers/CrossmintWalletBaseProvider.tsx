@@ -200,6 +200,17 @@ export async function getExistingWallet<C extends Chain>(
     return await wallets.getWallet<C>(base);
 }
 
+const signsThroughWebView = (signer: { type: string }) => signer.type === "email" || signer.type === "phone";
+
+/** Email and phone keys sign through the signer WebView, also as quorum members; no other key needs it. */
+export function needsSignerWebView<C extends Chain>(
+    args: Pick<WalletCreateArgs<C>, "recovery" | "recoveryMethods" | "signers">
+): boolean {
+    return [...recoveryMethodsFromCreateArgs(args), ...(args.signers ?? [])].some((signer) =>
+        signer.type === "quorum" ? signer.members.some(signsThroughWebView) : signsThroughWebView(signer)
+    );
+}
+
 export type LoadedWalletArgs = Pick<WalletCreateArgs<Chain>, "chain" | "alias">;
 
 export function cachedWalletMatchesArgs<C extends Chain>(
@@ -342,19 +353,11 @@ export function CrossmintWalletBaseProvider({
         [onAuthRequiredFromProps, signerOnAuthRequired]
     );
 
-    const initializeWebViewIfNeeded = useCallback(
-        async (signers: Array<{ type: string }>) => {
-            if (signers.some((signer) => signer.type === "email" || signer.type === "phone")) {
-                await initializeWebView?.();
-            }
-        },
-        [initializeWebView]
-    );
-
+    // The React Native connection throws until its WebView is initialized, so it is read only when the WebView is used.
     const buildWalletOptions = useCallback(
-        (argsOptions?: WalletOptions): WalletOptions => {
+        (argsOptions: WalletOptions | undefined, { signerWebView }: { signerWebView: boolean }): WalletOptions => {
             return {
-                clientTEEConnection: clientTEEConnection?.(),
+                clientTEEConnection: signerWebView ? clientTEEConnection?.() : undefined,
                 resetSignerFrame,
                 callbacks: {
                     onWalletCreationStart:
@@ -375,6 +378,17 @@ export function CrossmintWalletBaseProvider({
             passkeyProvider,
             wrappedOnAuthRequired,
         ]
+    );
+
+    const prepareWalletOptions = useCallback(
+        async <C extends Chain>(args: WalletCreateArgs<C>): Promise<WalletOptions> => {
+            const signerWebView = needsSignerWebView(args);
+            if (signerWebView) {
+                await initializeWebView?.();
+            }
+            return buildWalletOptions(args.options, { signerWebView });
+        },
+        [initializeWebView, buildWalletOptions]
     );
 
     const getOrCreateWallet = useCallback(
@@ -402,9 +416,7 @@ export function CrossmintWalletBaseProvider({
                 setWalletError(null);
                 const wallets = CrossmintWallets.from(crossmint);
 
-                await initializeWebViewIfNeeded(recoveryMethodsFromCreateArgs(args));
-
-                const walletOptions = buildWalletOptions(args.options);
+                const walletOptions = await prepareWalletOptions(args);
 
                 // Try to get existing wallet first, then create if not found
                 let wallet: Awaited<ReturnType<typeof wallets.getWallet<C>>> | undefined;
@@ -447,8 +459,7 @@ export function CrossmintWalletBaseProvider({
             loadedWalletArgs,
             failedAttempt,
             walletError,
-            initializeWebViewIfNeeded,
-            buildWalletOptions,
+            prepareWalletOptions,
         ]
     );
 
@@ -472,7 +483,7 @@ export function CrossmintWalletBaseProvider({
                 const wallet = await wallets.getWallet<C>({
                     chain: args.chain,
                     alias: args.alias,
-                    options: buildWalletOptions(),
+                    options: buildWalletOptions(undefined, { signerWebView: true }),
                 });
                 if (wallet != null) {
                     setWallet(wallet);
@@ -503,11 +514,9 @@ export function CrossmintWalletBaseProvider({
                 setWalletError(null);
                 const wallets = CrossmintWallets.from(crossmint);
 
-                await initializeWebViewIfNeeded(recoveryMethodsFromCreateArgs(args));
-
                 const wallet = await wallets.createWallet<C>({
                     ...args,
-                    options: buildWalletOptions(args.options),
+                    options: await prepareWalletOptions(args),
                 });
                 setWallet(wallet);
                 setLoadedWalletArgs({ chain: args.chain, alias: args.alias });
@@ -522,7 +531,7 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [crossmint, walletStatus, initializeWebViewIfNeeded, buildWalletOptions]
+        [crossmint, walletStatus, prepareWalletOptions]
     );
 
     const createDeviceSigner = useCallback(
