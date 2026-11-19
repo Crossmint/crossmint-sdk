@@ -284,6 +284,38 @@ describe("quorum API errors at wallet call sites", () => {
         });
     });
 
+    describe("when the API answers 422 PENDING_QUORUM_TRANSACTIONS_CAP_EXCEEDED", () => {
+        const CAP_CODE = "PENDING_QUORUM_TRANSACTIONS_CAP_EXCEEDED";
+        const CAP_SITES = ERROR_SITES.filter(({ name }) =>
+            [
+                "addSigner",
+                "addRecoveryMethod",
+                "send",
+                "EVM sendTransaction",
+                "Solana sendTransaction",
+                "Stellar sendTransaction",
+                "approve (transaction)",
+            ].includes(name)
+        );
+
+        it.each(CAP_SITES)(
+            "$name throws QuorumRequestError with the cap reason",
+            async ({ chain, signerType, arrange, act }) => {
+                const wallet = await createMockWallet(chain, api, signerType);
+                arrange(api, { ...errorBody(CAP_CODE), statusCode: 422 });
+
+                const error = await act(wallet).then(
+                    () => expect.fail("Expected the call to throw"),
+                    (thrown: unknown) => thrown
+                );
+
+                expect(error).toBeInstanceOf(QuorumRequestError);
+                expect((error as QuorumRequestError).reason).toBe(CAP_CODE);
+                expect((error as QuorumRequestError).message).toBe(`rejected: ${CAP_CODE}`);
+            }
+        );
+    });
+
     describe("approve, when the request expired", () => {
         const EXPIRED = { error: true, code: "TRANSACTION_EXPIRED", message: "The transaction expired." };
 
