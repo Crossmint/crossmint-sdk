@@ -266,19 +266,18 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         expectContract(result, { id: "string" });
     }, 120_000);
 
-    it("removeRecoveryMethod of the single recovery signer next to a quorum returns LAST_RECOVERY_SIGNER", async () => {
-        // An EVM wallet keeps one single recovery signer next to a quorum, so removing it is refused.
-        const single = externalWalletSigner();
-        const member = externalWalletSigner();
-        const otherMember = externalWalletSigner();
+    it("removeRecoveryMethod of the wallet's only recovery method, a quorum, returns LAST_RECOVERY_SIGNER", async () => {
         const created = await apiClient.createWallet({
             chainType: "evm",
             type: "smart",
             owner: `userId:heartbeat-last-recovery-${Date.now()}`,
             config: {
                 recoveryMethods: [
-                    single.signer,
-                    { type: "quorum", threshold: 1, members: [member.signer, otherMember.signer] },
+                    {
+                        type: "quorum",
+                        threshold: 1,
+                        members: [externalWalletSigner().signer, externalWalletSigner().signer],
+                    },
                 ],
             },
         } as Parameters<typeof apiClient.createWallet>[0]);
@@ -289,7 +288,7 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         const quorum = config.recoveryMethods?.find((method) => method.type === "quorum");
         expect(quorum, `expected a quorum in: ${JSON.stringify(config)}`).toBeDefined();
 
-        const rejected = await apiClient.removeRecoveryMethod(address as Locator, single.locator, {
+        const rejected = await apiClient.removeRecoveryMethod(address as Locator, quorum?.locator ?? "", {
             chain: EVM_CHAIN,
             approver: quorum?.locator,
         } as Parameters<typeof apiClient.removeRecoveryMethod>[2]);

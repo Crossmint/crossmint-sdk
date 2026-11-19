@@ -164,7 +164,7 @@ const QUORUM_REQUEST_ERROR_REASONS = [
     "QUORUM_APPROVING_MEMBER_INVALID",
     "APPROVING_MEMBERS_NOT_APPLICABLE",
     "SCOPED_QUORUM_CANNOT_SIGN",
-    // Removing the wallet's only recovery signer, or the only single signer beside a recovery quorum.
+    // Removing the wallet's only recovery method.
     "LAST_RECOVERY_SIGNER",
 ] as const;
 
