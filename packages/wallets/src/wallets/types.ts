@@ -45,7 +45,7 @@ export type ApprovingMember = QuorumMemberLocator | QuorumMemberConfig<Chain>;
 
 /**
  * `approvingMembers`: when the signer or approver is a quorum, the members that approve the request, exactly its
- * threshold of them. Required on Solana; on EVM and Stellar the API validates them. The SDK never picks members.
+ * threshold of them. Required on Solana; on EVM and Stellar the API ignores them. The SDK never picks members.
  */
 export type ApprovingMembersOption = { approvingMembers?: ApprovingMember[] };
 
