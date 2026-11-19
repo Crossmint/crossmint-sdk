@@ -51,7 +51,7 @@ async function readSolanaUsdxmBalance(walletAddress: string): Promise<number | n
 
 async function readTokenBalance(walletAddress: string, chainId: string, token: string): Promise<number> {
     const url = `https://staging.crossmint.com/api/v1-alpha2/wallets/${walletAddress}/balances?tokens=${token}&chains=${chainId}`;
-    const response = await fetch(url, { headers: { "x-api-key": AUTH_CONFIG.crossmintApiKey } });
+    const response = await fetch(url, { headers: { "x-api-key": AUTH_CONFIG.crossmintServerApiKey } });
     if (!response.ok) {
         return 0;
     }
@@ -84,6 +84,10 @@ export async function fundWalletWithCrossmintFaucet(
 ): Promise<void> {
     const apiUrl = `https://staging.crossmint.com/api/v1-alpha2/wallets/${walletAddress}/balances`;
 
+    if (!AUTH_CONFIG.crossmintServerApiKey) {
+        throw new Error("TESTS_CROSSMINT_SERVER_API_KEY environment variable must be set to fund wallets");
+    }
+
     console.log(`💰 Funding wallet ${walletAddress} on ${chainId} with ${amount} ${token}...`);
 
     try {
@@ -91,7 +95,7 @@ export async function fundWalletWithCrossmintFaucet(
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-api-key": AUTH_CONFIG.crossmintApiKey,
+                "x-api-key": AUTH_CONFIG.crossmintServerApiKey,
             },
             body: JSON.stringify({
                 amount,

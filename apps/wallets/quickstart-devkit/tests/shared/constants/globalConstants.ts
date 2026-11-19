@@ -3,6 +3,8 @@ import { createHash } from "node:crypto";
 // Environment variables and configuration
 export const AUTH_CONFIG = {
     crossmintApiKey: process.env.TESTS_CROSSMINT_API_KEY || "",
+    // Calls made from Node send no origin, which a client key requires
+    crossmintServerApiKey: process.env.TESTS_CROSSMINT_SERVER_API_KEY || "",
     mailosaurApiKey: process.env.MAILOSAUR_API_KEY || "",
     mailosaurServerId: process.env.MAILOSAUR_SERVER_ID || "",
     mailosaurPhoneNumber: process.env.MAILOSAUR_PHONE_NUMBER || "",
