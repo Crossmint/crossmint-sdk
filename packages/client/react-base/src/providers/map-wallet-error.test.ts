@@ -74,10 +74,14 @@ describe("mapWalletError", () => {
     });
 
     describe("when the error is an SDK error", () => {
-        test("keeps its code and message", () => {
+        test("maps to unknown and keeps the SDK code in sdkCode", () => {
             const error = new CrossmintSDKError("A quorum needs a `members` list.", WalletErrorCode.SIGNER_INVALID);
 
-            expect(mapWalletError(error)).toEqual({ code: "wallet:signer-invalid", message: error.message });
+            expect(mapWalletError(error)).toEqual({
+                code: "unknown",
+                sdkCode: "wallet:signer-invalid",
+                message: error.message,
+            });
         });
     });
 

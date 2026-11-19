@@ -585,10 +585,15 @@ const APPROVAL_REJECTED_MESSAGES = [
 ];
 
 /**
- * Throws `QuorumApprovalRejectedError` when the API rejected a submitted approval for one member's
- * signature (the request itself is still awaiting the other members). Returns for any other body.
+ * Throws `QuorumApprovalRejectedError` when the API rejected a submitted approval for one quorum member's
+ * signature (the request itself is still awaiting the other members). Returns for any other body, and for a
+ * rejected signer that `isQuorumMember` does not recognise.
  */
-export function throwIfApprovalRejected(response: unknown, request: ExpiredRequest = {}): void {
+export function throwIfApprovalRejected(
+    response: unknown,
+    request: ExpiredRequest,
+    isQuorumMember: (signerLocator: string) => boolean
+): void {
     if (!isResponseBody<CrossmintApiErrorBody>(response) || response.message == null) {
         return;
     }
@@ -596,7 +601,7 @@ export function throwIfApprovalRejected(response: unknown, request: ExpiredReque
     const rejectedSigner = APPROVAL_REJECTED_MESSAGES.map((pattern) => pattern.exec(message)?.[1]).find(
         (locator) => locator != null
     );
-    if (rejectedSigner == null) {
+    if (rejectedSigner == null || !isQuorumMember(rejectedSigner)) {
         return;
     }
     throw new QuorumApprovalRejectedError(response.message, request, rejectedSigner, JSON.stringify(response));

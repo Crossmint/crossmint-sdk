@@ -25,6 +25,8 @@ import {
     createMockApiClient,
     createMockSolanaSerializedTransaction,
     createMockWallet,
+    createQuorumApiEntryWith,
+    createQuorumPendingApproval,
     type MockedApiClient,
     EVM_TYPED_DATA,
 } from "./__tests__/test-helpers";
@@ -357,10 +359,16 @@ describe("quorum API errors at wallet call sites", () => {
             statusCode: 400,
             message: `Invalid signature for signer ${MEMBER}`,
         };
+        const quorumEntry = () =>
+            createQuorumPendingApproval({
+                quorum: createQuorumApiEntryWith([{ type: "external-wallet", address: "0x123", locator: MEMBER }]),
+            });
+        const QUORUM_TRANSACTION = { ...AWAITING_TRANSACTION, approvals: { pending: [quorumEntry()], submitted: [] } };
+        const QUORUM_SIGNATURE = { ...AWAITING_SIGNATURE, approvals: { pending: [quorumEntry()], submitted: [] } };
 
         it("throws QuorumApprovalRejectedError, not TransactionFailedError, for a transaction", async () => {
             const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
-            api.getTransaction.mockResolvedValue(AWAITING_TRANSACTION as never);
+            api.getTransaction.mockResolvedValue(QUORUM_TRANSACTION as never);
             api.approveTransaction.mockResolvedValue(REJECTED as never);
 
             const error = await wallet.approve({ transactionId: "txn-1", options: { approval: APPROVAL } }).then(
@@ -376,7 +384,7 @@ describe("quorum API errors at wallet call sites", () => {
 
         it("throws QuorumApprovalRejectedError, not SignatureFailedError, for a signature", async () => {
             const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
-            api.getSignature.mockResolvedValue(AWAITING_SIGNATURE as never);
+            api.getSignature.mockResolvedValue(QUORUM_SIGNATURE as never);
             api.approveSignature.mockResolvedValue(REJECTED as never);
 
             const error = await wallet.approve({ signatureId: "sig-1", options: { approval: APPROVAL } }).then(
@@ -391,7 +399,7 @@ describe("quorum API errors at wallet call sites", () => {
 
         it("throws QuorumApprovalRejectedError for a malformed member signature too", async () => {
             const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
-            api.getTransaction.mockResolvedValue(AWAITING_TRANSACTION as never);
+            api.getTransaction.mockResolvedValue(QUORUM_TRANSACTION as never);
             api.approveTransaction.mockResolvedValue({
                 error: true,
                 statusCode: 400,
@@ -405,6 +413,28 @@ describe("quorum API errors at wallet call sites", () => {
 
             expect(error).toBeInstanceOf(QuorumApprovalRejectedError);
             expect(error).toMatchObject({ signerLocator: MEMBER, transactionId: "txn-1" });
+        });
+
+        describe("when the rejected signer is not a member of a pending quorum", () => {
+            it("still throws TransactionFailedError for a transaction", async () => {
+                const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
+                api.getTransaction.mockResolvedValue(AWAITING_TRANSACTION as never);
+                api.approveTransaction.mockResolvedValue(REJECTED as never);
+
+                await expect(
+                    wallet.approve({ transactionId: "txn-1", options: { approval: APPROVAL } })
+                ).rejects.toBeInstanceOf(TransactionFailedError);
+            });
+
+            it("still throws SignatureFailedError for a signature", async () => {
+                const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
+                api.getSignature.mockResolvedValue(AWAITING_SIGNATURE as never);
+                api.approveSignature.mockResolvedValue(REJECTED as never);
+
+                await expect(
+                    wallet.approve({ signatureId: "sig-1", options: { approval: APPROVAL } })
+                ).rejects.toBeInstanceOf(SignatureFailedError);
+            });
         });
     });
 

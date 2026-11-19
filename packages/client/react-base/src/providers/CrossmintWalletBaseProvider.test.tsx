@@ -274,7 +274,7 @@ describe("CrossmintWalletBaseProvider — createWallet", () => {
         return (
             <div>
                 <div data-testid="status">{status}</div>
-                <div data-testid="error">{error == null ? "" : `${error.code}: ${error.message}`}</div>
+                <div data-testid="error">{error == null ? "" : `${error.code}/${error.sdkCode}: ${error.message}`}</div>
                 <button
                     type="button"
                     onClick={() => {
@@ -326,7 +326,9 @@ describe("CrossmintWalletBaseProvider — createWallet", () => {
         fireEvent.click(getByText("create twice"));
 
         await waitFor(() =>
-            expect(getByTestId("error").textContent).toBe("wallet:signer-invalid: A quorum needs a `members` list.")
+            expect(getByTestId("error").textContent).toBe(
+                "unknown/wallet:signer-invalid: A quorum needs a `members` list."
+            )
         );
     });
 
@@ -366,7 +368,7 @@ describe("CrossmintWalletBaseProvider — createWallet", () => {
 
         fireEvent.click(getByText("create twice"));
 
-        await waitFor(() => expect(getByTestId("error").textContent).toMatch(/^wallet:signer-invalid: /));
+        await waitFor(() => expect(getByTestId("error").textContent).toMatch(/^unknown\/wallet:signer-invalid: /));
     });
 
     test("creates a wallet whose signers need no WebView while the TEE connection is not ready", async () => {

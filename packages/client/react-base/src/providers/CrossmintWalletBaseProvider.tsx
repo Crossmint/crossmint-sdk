@@ -43,8 +43,9 @@ import { CrossmintAuthBaseContext } from "./CrossmintAuthBaseProvider";
  * - `unknown`: anything else.
  */
 export type WalletContextError = {
-    /** An SDK error keeps its own code, e.g. `wallet:signer-invalid`. */
-    code: "region-blocked" | "network" | "unknown" | CrossmintErrors;
+    code: "region-blocked" | "network" | "unknown";
+    /** The code of an SDK error (`code` is then `unknown`), e.g. `wallet:signer-invalid`. */
+    sdkCode?: CrossmintErrors;
     status?: number;
     message: string;
 };
@@ -242,7 +243,7 @@ export function mapWalletError(error: unknown): WalletContextError {
         return { code: "unknown", status: error.status, message: error.message };
     }
     if (error instanceof CrossmintSDKError) {
-        return { code: error.code, message: error.message };
+        return { code: "unknown", sdkCode: error.code, message: error.message };
     }
     // A rejected fetch (no response) surfaces as a TypeError; treat as transient network failure.
     if (error instanceof TypeError && FETCH_FAILURE_MESSAGE.test(error.message)) {
