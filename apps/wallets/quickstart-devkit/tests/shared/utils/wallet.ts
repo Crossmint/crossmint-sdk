@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { handleSignerConfirmation } from "./auth";
 import { recentPageDiagnostics } from "./page-diagnostics";
-import { AUTH_CONFIG } from "../constants/globalConstants";
+import { AUTH_CONFIG, validateFaucetConfig } from "../constants/globalConstants";
 
 const FAUCET_SETTLEMENT_TIMEOUT_MS = 120000;
 const FAUCET_POLL_INTERVAL_MS = 2000;
@@ -84,9 +84,7 @@ export async function fundWalletWithCrossmintFaucet(
 ): Promise<void> {
     const apiUrl = `https://staging.crossmint.com/api/v1-alpha2/wallets/${walletAddress}/balances`;
 
-    if (!AUTH_CONFIG.crossmintServerApiKey) {
-        throw new Error("TESTS_CROSSMINT_SERVER_API_KEY environment variable must be set to fund wallets");
-    }
+    validateFaucetConfig();
 
     console.log(`💰 Funding wallet ${walletAddress} on ${chainId} with ${amount} ${token}...`);
 
