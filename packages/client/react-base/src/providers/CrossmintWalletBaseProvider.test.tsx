@@ -412,7 +412,7 @@ describe("CrossmintWalletBaseProvider — createWallet", () => {
         expect(initializeWebView).toHaveBeenCalledTimes(1);
     });
 
-    test("does not start the WebView for delegated signers with no email or phone key", async () => {
+    test("skips the WebView for delegated signers with no email or phone key", async () => {
         const initializeWebView = vi.fn().mockResolvedValue(undefined);
         const createWallet = vi.fn().mockResolvedValue({ chain: "stellar", alias: undefined });
         const { getByTestId, getByText } = renderCreateWallet(
