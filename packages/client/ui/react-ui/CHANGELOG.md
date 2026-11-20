@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-react-ui
 
+## 5.4.1
+
+### Patch Changes
+
+- c48cac6: The OAuth login popup accepts its sign-in result only from the Crossmint origin of the configured environment (or `overrideBaseUrl`). Before, it also accepted a result from any other page that was loaded into the popup.
+- Updated dependencies [bc9a07f]
+- Updated dependencies [bc9a07f]
+- Updated dependencies [46adb45]
+  - @crossmint/wallets-sdk@1.24.2
+  - @crossmint/client-sdk-react-base@2.6.3
+
 ## 5.4.0
 
 ### Minor Changes

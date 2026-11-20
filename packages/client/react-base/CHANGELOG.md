@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-react-base
 
+## 2.6.3
+
+### Patch Changes
+
+- bc9a07f: Quorum signer QA fixes: a quorum with a missing `members` list or an unsupported member type throws `InvalidRecoveryConfigError` instead of a `TypeError` or a `null` member; a server member the API lists as `external-wallet` matches its quorum, so `createWallet` no longer throws for a wallet it just created; `useRecoveryMethod` rereads the wallet's recovery quorums when it does not find a member locally; a key that does not sign an approval within 5 minutes throws `ApprovalSigningTimeoutError` instead of blocking later approvals. In the React and React Native providers, an SDK error keeps `code: "unknown"` and carries its own code in the new `sdkCode` field, only fetch failures count as `network`, two `createWallet` calls in the same tick send one request, and an email, phone or passkey member of a recovery quorum starts the WebView or passkey setup like a top-level recovery method does.
+- 46adb45: React Native: `createOnLogin` and `createWallet` start the signer WebView when a delegated email or phone signer (or an email or phone member of a delegated quorum) needs it, not only for recovery methods.
+- Updated dependencies [bc9a07f]
+- Updated dependencies [bc9a07f]
+  - @crossmint/wallets-sdk@1.24.2
+
 ## 2.6.2
 
 ### Patch Changes
