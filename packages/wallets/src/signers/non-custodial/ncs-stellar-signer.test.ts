@@ -62,10 +62,13 @@ function makeSigner({
 }
 
 /**
- * Mirrors the signer frame's transport: every request is answered asynchronously with a bare
- * response event that carries no reference to the request it answers.
+ * Mirrors the signer frame's transport. Older frames answer every request with a bare response
+ * event that carries no reference to the request it answers; newer ones echo the `requestId`
+ * (`frame.echoRequestId`).
+ * `frame.holdSignResponsesUntil` keeps sign responses back until that many requests are in flight,
+ * then answers them newest first, so only a client that correlates responses gets the right signature.
  */
-function frameConnection() {
+function frameConnection({ frame = { echoRequestId: false, holdSignResponsesUntil: 1 } } = {}) {
     const listeners = new Map<string, (event: SimpleMessageEvent) => void>();
     const reply = (event: string, data: object) => {
         setTimeout(() => {
@@ -74,6 +77,7 @@ function frameConnection() {
             }
         }, 0);
     };
+    const pendingSignResponses: object[] = [];
     const transport: Transport<typeof signerInboundEvents> = {
         send: ({ event, data }) => {
             if (event === "request:get-status") {
@@ -84,11 +88,17 @@ function frameConnection() {
                 });
             }
             if (event === "request:sign") {
-                reply("response:sign", {
+                pendingSignResponses.push({
                     status: "success",
                     signature: { bytes: `signed:${data.data.bytes}`, encoding: "base64" },
                     publicKey: PUBLIC_KEY,
+                    ...(frame.echoRequestId ? { requestId: data.requestId } : {}),
                 });
+                if (pendingSignResponses.length >= frame.holdSignResponsesUntil) {
+                    for (const response of pendingSignResponses.splice(0).reverse()) {
+                        reply("response:sign", response);
+                    }
+                }
             }
         },
         addMessageListener: (listener) => {
@@ -118,6 +128,42 @@ describe("StellarNonCustodialSigner.signTransaction", () => {
     describe("when several payloads are signed at the same time", () => {
         test("each caller receives the signature of its own payload", async () => {
             const { signer } = makeSigner({ statusOnGetStatus: "ready", clientTEEConnection: frameConnection() });
+
+            const [first, second] = await Promise.all([
+                signer.signTransaction("Zmlyc3Q="),
+                signer.signTransaction("c2Vjb25k"),
+            ]);
+
+            expect(first).toEqual({ signature: "signed:Zmlyc3Q=" });
+            expect(second).toEqual({ signature: "signed:c2Vjb25k" });
+        });
+
+        test("signs in parallel once the frame has shown it echoes the request id", async () => {
+            const frame = { echoRequestId: true, holdSignResponsesUntil: 1 };
+            const clientTEEConnection = frameConnection({ frame });
+            const { signer } = makeSigner({ statusOnGetStatus: "ready", clientTEEConnection });
+            // The first request of a session is sent alone; its echoed id is what unlocks parallel sends.
+            await signer.signTransaction("d2FybS11cA==");
+            frame.holdSignResponsesUntil = 2;
+
+            const [first, second] = await Promise.all([
+                signer.signTransaction("Zmlyc3Q="),
+                signer.signTransaction("c2Vjb25k"),
+            ]);
+
+            expect(first).toEqual({ signature: "signed:Zmlyc3Q=" });
+            expect(second).toEqual({ signature: "signed:c2Vjb25k" });
+        });
+
+        test("goes back to one request at a time when a reconnected frame stops echoing the request id", async () => {
+            const frame = { echoRequestId: true, holdSignResponsesUntil: 1 };
+            const clientTEEConnection = frameConnection({ frame });
+            const { signer } = makeSigner({ statusOnGetStatus: "ready", clientTEEConnection });
+            await signer.signTransaction("d2FybS11cA==");
+
+            // The frame reloads (new handshake on the same connection) as an older build without the echo.
+            clientTEEConnection.connectionGeneration++;
+            frame.echoRequestId = false;
 
             const [first, second] = await Promise.all([
                 signer.signTransaction("Zmlyc3Q="),

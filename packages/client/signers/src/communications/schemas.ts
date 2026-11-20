@@ -27,6 +27,10 @@ const NewDeviceSignerResponseSchema = z.object({
     signerStatus: z.enum(["new-device"]).describe("Current status of the signer"),
 });
 
+const RequestIdSchema = z
+    .string()
+    .describe("Caller-chosen id echoed back in the response so concurrent requests can be told apart");
+
 const AuthenticatedEventRequest = z.object({
     authData: z
         .object({
@@ -34,6 +38,7 @@ const AuthenticatedEventRequest = z.object({
             apiKey: z.string().describe("API key for authorization"),
         })
         .describe("Authentication data for the request"),
+    requestId: RequestIdSchema.optional(),
 });
 
 const OnboardingAuthenticationDataSchema = z.object({
@@ -45,6 +50,7 @@ const ErrorResponse = z.object({
     error: z.string(),
     code: z.string().optional(),
     data: z.any().optional().describe("Optional additional error data"),
+    requestId: RequestIdSchema.optional(),
 });
 
 const ResultResponse = <T extends z.ZodTypeAny>(schema: T) =>
@@ -119,6 +125,7 @@ export const SignPayloadSchema = {
         z.object({
             signature: SignatureSchema.describe("The generated signature"),
             publicKey: UserPublicKeySchema.describe("The public key that signed the data"),
+            requestId: RequestIdSchema.optional(),
         })
     ),
 };
