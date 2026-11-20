@@ -9,13 +9,13 @@ export const arc = defineChain({
         symbol: "USDC",
     },
     rpcUrls: {
-        default: { http: ["https://rpc.arc-scan.org"] },
+        default: { http: ["https://rpc.mainnet.arc.io"] },
     },
     blockExplorers: {
         default: {
-            name: "Arcscan",
-            url: "https://arc-scan.org",
-            apiUrl: "https://api.arc-scan.org/api",
+            name: "Arc Explorer",
+            url: "https://explorer.arc.io",
+            apiUrl: "https://explorer.arc.io/api/v2",
         },
     },
     testnet: false,
