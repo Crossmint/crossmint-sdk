@@ -690,6 +690,39 @@ describe("approve() on a Solana transaction with a pending quorum entry", () => 
         expect(notDesignatedSigner.signMessage).not.toHaveBeenCalled();
         expect(api.approveTransaction).not.toHaveBeenCalled();
     });
+
+    it("returns the transaction id without a hash, with its validUntil, while the other member must still sign", async () => {
+        const [first, second] = designated;
+        const validUntil = "2026-11-24T10:00:00.000Z";
+        api.getTransaction.mockResolvedValueOnce({ ...awaiting("txn-1", [entry()], "solana"), validUntil } as never);
+        api.getTransaction.mockResolvedValue({
+            ...awaiting(
+                "txn-1",
+                [
+                    createQuorumPendingApproval({
+                        quorum,
+                        pending: [second],
+                        submitted: [first],
+                        remaining: 1,
+                        createMessage: randomSolanaMessage,
+                    }),
+                ],
+                "solana"
+            ),
+            validUntil,
+        } as never);
+
+        const { value, error } = await settle(
+            wallet.approve({
+                transactionId: "txn-1",
+                options: { additionalSigners: [createHeldSigner(first.locator)] },
+            })
+        );
+
+        expect(error).toBeUndefined();
+        expect(sentApprovals(api)).toHaveLength(1);
+        expect(value).toStrictEqual({ ...AWAITING_TRANSACTION, validUntil });
+    });
 });
 
 describe("approve() on a Stellar transaction with pending quorum entries", () => {

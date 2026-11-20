@@ -21,6 +21,7 @@ import {
     RecoverySignerLimitExceededError,
     RecoveryMethodRequiredError,
     SignerRequiredError,
+    TransactionCancelledError,
     TransactionExpiredError,
     TransactionFailedError,
     throwIfCrossmintApiAuthError,
@@ -230,11 +231,30 @@ describe("throwIfQuorumApiError", () => {
         });
     });
 
+    describe("when the code is TRANSACTION_CANCELLED", () => {
+        test("throws TransactionCancelledError, a TransactionFailedError, with the transaction id the call site passed", () => {
+            const body = { code: "TRANSACTION_CANCELLED", message: "The transaction was cancelled." };
+
+            const error = (() => {
+                try {
+                    throwIfQuorumApiError(body, { transactionId: "tx-1" });
+                } catch (thrown) {
+                    return thrown;
+                }
+            })();
+
+            expect(error).toBeInstanceOf(TransactionCancelledError);
+            expect(error).toBeInstanceOf(TransactionFailedError);
+            expect((error as TransactionCancelledError).transactionId).toBe("tx-1");
+            expect((error as TransactionCancelledError).message).toBe(body.message);
+        });
+    });
+
     describe("when the body has no code or an unrelated code", () => {
         test("returns without throwing", () => {
             expect(() => throwIfQuorumApiError({ error: true, message: "Wallet not found" })).not.toThrow();
             expect(() => throwIfQuorumApiError({ error: true, code: "SIGNER_LIMIT_EXCEEDED" })).not.toThrow();
-            expect(() => throwIfQuorumApiError({ code: "QUORUM_MEMBER_NOT_DESIGNATED" })).not.toThrow();
+            expect(() => throwIfQuorumApiError({ code: "TRANSACTION_NOT_FOUND" })).not.toThrow();
             expect(() => throwIfQuorumApiError(null)).not.toThrow();
         });
     });
