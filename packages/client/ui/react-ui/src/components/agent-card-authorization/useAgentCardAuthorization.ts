@@ -349,7 +349,7 @@ function useRailSettlement(
             log("info", "rail.selected", {
                 orderIntentId: orderIntent.orderIntentId,
                 ...selection,
-                status: rail.status,
+                railStatus: rail.status,
                 rails: summarizeRails(orderIntent.rails),
             });
             if (rail.status === "active") {
