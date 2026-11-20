@@ -106,7 +106,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
 
     private async createTransaction(
         params: SolanaTransactionInput,
-        signerParams: { signer: string }
+        signerParams: { signer: string; approvingMembers?: string[] }
     ): Promise<CreateTransactionSuccessResponse> {
         let serializedTransaction: string;
 

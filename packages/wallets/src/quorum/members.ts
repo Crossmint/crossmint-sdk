@@ -44,3 +44,11 @@ function memberKey(locator: string): string {
 }
 
 const SERVER_PREFIX = "server:";
+
+/** True when a pending request's designated members are known and differ from the ones the caller now gives. */
+export function designatesOtherMembers(
+    designated: string[] | null | undefined,
+    requested: string[] | undefined
+): boolean {
+    return designated != null && requested != null && !isSameLocatorSet(designated, requested);
+}

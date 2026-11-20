@@ -45,6 +45,9 @@ const LANDED = { id: "txn-change", status: "success", onChain: { txId: "0xhash",
 describe.each(CHAINS)("managing quorums on $chain", ({ chain }) => {
     let api: MockedApiClient;
     let wallet: Wallet<Chain>;
+    // Solana takes the members that approve a quorum's change when it is created (EDD 008).
+    const approving = (quorum: { threshold: number; members: Array<{ locator: string }> }) =>
+        chain === "solana" ? { approvingMembers: quorum.members.slice(0, quorum.threshold).map((m) => m.locator) } : {};
 
     beforeEach(async () => {
         vi.clearAllMocks();
@@ -97,7 +100,7 @@ describe.each(CHAINS)("managing quorums on $chain", ({ chain }) => {
 
             const result = await wallet.addRecoveryMethod(
                 quorum.config as never,
-                { signer: approver.locator } as never
+                { signer: approver.locator, ...approving(approver) } as never
             );
 
             expect(result).toEqual({ transactionId: "txn-change", status: undefined, locator: quorum.entry.locator });
@@ -116,7 +119,7 @@ describe.each(CHAINS)("managing quorums on $chain", ({ chain }) => {
             );
 
             await wallet.useRecoveryMethod({ ...externalMember, onSign: vi.fn() } as never);
-            await wallet.addSigner(NEW_SIGNER as never, { prepareOnly: true });
+            await wallet.addSigner(NEW_SIGNER as never, { prepareOnly: true, ...approving(quorum.entry) } as never);
 
             expect(api.registerSigner.mock.calls.at(-1)?.[1].approver).toBe(quorum.entry.locator);
         });
@@ -174,6 +177,7 @@ describe.each(CHAINS)("managing quorums on $chain", ({ chain }) => {
             const result = await wallet.addSigner(quorum.config as never, {
                 signer: approver.locator,
                 prepareOnly: true,
+                ...approving(approver),
             });
 
             expect(result.locator).toBe(quorum.entry.locator);

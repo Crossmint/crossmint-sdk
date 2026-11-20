@@ -140,6 +140,8 @@ const LANDED = {
 describe.each(CHAINS)("signer changes approved by a recovery quorum on $chain", ({ chain, paths, registered }) => {
     let api: MockedApiClient;
     const alice = memberKey(ALICE[chain]);
+    // Solana takes the members that approve a quorum's request when it is created (EDD 008).
+    const members = chain === "solana" ? { approvingMembers: [alice.member.locator] } : {};
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -158,7 +160,7 @@ describe.each(CHAINS)("signer changes approved by a recovery quorum on $chain", 
                 const wallet = await walletWithRecovery(chain, api, [{ type: "api-key" }, recoveryQuorum]);
                 const activeBefore = wallet.signer?.locator();
 
-                await run(wallet, { prepareOnly: true, signer: recoveryQuorum.locator });
+                await run(wallet, { prepareOnly: true, signer: recoveryQuorum.locator, ...members });
 
                 expect(approver(api)).toBe(recoveryQuorum.locator);
                 expect(wallet.signer?.locator()).toBe(activeBefore);
@@ -171,7 +173,7 @@ describe.each(CHAINS)("signer changes approved by a recovery quorum on $chain", 
                 const wallet = await walletWithRecovery(chain, api, [{ type: "api-key" }, recoveryQuorum]);
                 await wallet.useRecoveryMethod(alice.config);
 
-                await run(wallet, { prepareOnly: true });
+                await run(wallet, { prepareOnly: true, ...members });
 
                 expect(approver(api)).toBe(recoveryQuorum.locator);
             });
@@ -181,7 +183,7 @@ describe.each(CHAINS)("signer changes approved by a recovery quorum on $chain", 
                 const wallet = await walletWithRecovery(chain, api, [{ type: "api-key" }, recoveryQuorum]);
                 await wallet.useRecoveryMethod(alice.config);
 
-                await run(wallet, { prepareOnly: true });
+                await run(wallet, { prepareOnly: true, ...members });
 
                 expect(api.approveTransaction).not.toHaveBeenCalled();
                 expect((alice.config as unknown as { onSign: ReturnType<typeof vi.fn> }).onSign).not.toHaveBeenCalled();
@@ -218,7 +220,7 @@ describe.each(CHAINS)("signer changes approved by a recovery quorum on $chain", 
                 const wallet = await walletWithRecovery(chain, api, [{ type: "api-key" }, first, second]);
                 await wallet.useRecoveryMethod(alice.config);
 
-                await run(wallet, { prepareOnly: true, signer: first.locator });
+                await run(wallet, { prepareOnly: true, signer: first.locator, ...members });
 
                 expect(approver(api)).toBe(first.locator);
             });
@@ -249,7 +251,7 @@ describe.each(CHAINS)("signer changes approved by a recovery quorum on $chain", 
                 const delegated = createQuorumApiEntry();
                 const wallet = await walletWithRecovery(chain, api, [{ type: "api-key" }, createQuorumApiEntry()]);
 
-                await run(wallet, { prepareOnly: true, signer: delegated.locator });
+                await run(wallet, { prepareOnly: true, signer: delegated.locator, ...members });
 
                 expect(approver(api)).toBe(delegated.locator);
             });
@@ -272,7 +274,7 @@ describe.each(CHAINS)("signer changes approved by a recovery quorum on $chain", 
                     recoveryQuorum,
                 ] as unknown as RecoverySignerConfigForChain<Chain>[]);
 
-                const result = await run(wallet, { signer: recoveryQuorum.locator });
+                const result = await run(wallet, { signer: recoveryQuorum.locator, ...members });
 
                 expect(approver(api)).toBe(recoveryQuorum.locator);
                 expect(result).toMatchObject({ transactionId: "txn-change" });
@@ -310,7 +312,10 @@ describe.each(CHAINS)("signer changes approved by a recovery quorum on $chain", 
                     await wallet.useRecoveryMethod(alice.config);
                     const recoveryBefore = [...wallet.recoveryMethods];
 
-                    const result = await run(wallet, signer == null ? {} : { signer: recoveryQuorum.locator });
+                    const result = await run(
+                        wallet,
+                        signer == null ? members : { signer: recoveryQuorum.locator, ...members }
+                    );
 
                     expect(approver(api)).toBe(recoveryQuorum.locator);
                     expect(result).toMatchObject({ transactionId: "txn-change" });
@@ -919,6 +924,7 @@ describe.each([
 
         await from(wallet).removeSigner({ type: "external-wallet", address: "Delegated333" } as never, {
             prepareOnly: true,
+            approvingMembers: [alice.member.locator],
         });
 
         expect(api.removeSigner.mock.calls[0][2].approver).toBe(recoveryQuorum.locator);

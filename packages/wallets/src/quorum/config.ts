@@ -68,6 +68,14 @@ function serverMemberAddress(member: ServerSignerConfig, { chain, projectId, env
     return derivedAddress;
 }
 
+/** A member's locator: a server member given by its secret is named by its derived address. */
+export function quorumMemberLocator(
+    member: QuorumMemberConfig<Chain>,
+    derivation: ServerMemberDerivation
+): SignerLocator {
+    return memberInputLocator(toQuorumMemberInput(member, derivation));
+}
+
 /** The quorums with the input's threshold and member set, members in any order. */
 export function quorumsMatchingInput(quorums: QuorumSigner[], input: QuorumSignerInput): QuorumSigner[] {
     return quorumsWithComposition(quorums, input.threshold, input.members.map(memberInputLocator));

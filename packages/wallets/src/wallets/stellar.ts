@@ -214,7 +214,7 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     private async createTransaction(
         params: StellarTransactionInput,
-        signerParams: { signer: string }
+        signerParams: { signer: string; approvingMembers?: string[] }
     ): Promise<CreateTransactionSuccessResponse> {
         const { contractId } = params;
 

@@ -20,6 +20,7 @@ import type { DeviceSignerKeyStorage } from "@/utils/device-signers/DeviceSigner
 import { walletsLogger } from "../../logger";
 import type { Signer as APISigner } from "../../api";
 import { mapApiSignerToSigner, pendingOperationId } from "../../utils/signer-mapping";
+import { designatesOtherMembers } from "../../quorum/members";
 import type { PendingSignerOperation, RecoverResult, Signer as WalletSigner, WalletOptions } from "../types";
 import type { SignerManager } from "./signer-manager";
 
@@ -43,9 +44,18 @@ export type DeviceRecoveryServiceParams<C extends Chain> = {
     signerManager: SignerManager<C>;
     serverSignerResolver: ServerSignerResolver;
     signers: () => Promise<WalletSigner[]>;
-    addSigner: (signer: SignerConfigForChain<C>) => Promise<SignerChange>;
+    /** `approvingMembers`: the members that approve the change when a quorum approves it. */
+    addSigner: (signer: SignerConfigForChain<C>, approvingMembers?: string[]) => Promise<SignerChange>;
     /** `approver` names the quorum that approves the removal; without it the removal's approver is resolved as usual. */
-    removeSigner: (signerLocator: string, approver?: QuorumLocator) => Promise<SignerChange>;
+    removeSigner: (
+        signerLocator: string,
+        approver?: QuorumLocator,
+        approvingMembers?: string[]
+    ) => Promise<SignerChange>;
+    /** Throws when the approving quorum needs approving members and none are given. */
+    requireApprovingMembers: (approvingMembers: string[] | undefined) => void;
+    /** Whether the chain's quorum requests name their approving members (Solana): recovery then saves them. */
+    approvingMembersRequired: boolean;
     approveSignature: (signatureId: string, walletSigner: SignerAdapter) => Promise<unknown>;
     approveTransaction: (transactionId: string, walletSigner: SignerAdapter) => Promise<unknown>;
     deviceSignerActivity: () => Promise<Map<string, number>>;
@@ -64,8 +74,10 @@ export class DeviceRecoveryService<C extends Chain> {
     #signerManager: SignerManager<C>;
     #serverSignerResolver: ServerSignerResolver;
     #signers: () => Promise<WalletSigner[]>;
-    #addSigner: (signer: SignerConfigForChain<C>) => Promise<SignerChange>;
-    #removeSigner: (signerLocator: string, approver?: QuorumLocator) => Promise<SignerChange>;
+    #addSigner: DeviceRecoveryServiceParams<C>["addSigner"];
+    #removeSigner: DeviceRecoveryServiceParams<C>["removeSigner"];
+    #requireApprovingMembers: DeviceRecoveryServiceParams<C>["requireApprovingMembers"];
+    #approvingMembersRequired: boolean;
     #approveSignature: (signatureId: string, walletSigner: SignerAdapter) => Promise<unknown>;
     #approveTransaction: (transactionId: string, walletSigner: SignerAdapter) => Promise<unknown>;
     #deviceSignerActivity: () => Promise<Map<string, number>>;
@@ -79,6 +91,8 @@ export class DeviceRecoveryService<C extends Chain> {
         this.#signers = params.signers;
         this.#addSigner = params.addSigner;
         this.#removeSigner = params.removeSigner;
+        this.#requireApprovingMembers = params.requireApprovingMembers;
+        this.#approvingMembersRequired = params.approvingMembersRequired;
         this.#approveSignature = params.approveSignature;
         this.#approveTransaction = params.approveTransaction;
         this.#deviceSignerActivity = params.deviceSignerActivity;
@@ -154,10 +168,22 @@ export class DeviceRecoveryService<C extends Chain> {
         return approvingQuorum != null;
     }
 
-    async recover(): Promise<RecoverResult> {
+    /**
+     * `approvingMembers`: the locators of the members that approve the changes when the recovery quorum approves them.
+     * Where the chain needs them, they are saved for this wallet, so a later recovery removes the old device with them.
+     */
+    async recover(approvingMembers?: string[]): Promise<RecoverResult> {
         walletsLogger.info("wallet.recover.start");
 
+        const membersGiven = this.#approvingMembersRequired && approvingMembers != null;
+        if (membersGiven && this.#approvesAsQuorum()) {
+            await this.#saveApprovingMembers(approvingMembers);
+        }
+
         if (this.#status === "resolved") {
+            if (membersGiven) {
+                return await this.#retryStaleRemoval(approvingMembers);
+            }
             walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved (cached)" });
             return;
         }
@@ -170,10 +196,10 @@ export class DeviceRecoveryService<C extends Chain> {
 
         const activeSigner = this.#signerManager.activeSigner;
         if (activeSigner?.type === "device") {
-            const registration = await this.#checkAndResumeDeviceSigner(activeSigner);
+            const registration = await this.#checkAndResumeDeviceSigner(activeSigner, approvingMembers);
             if (registration.state === "approved") {
                 this.#status = "resolved";
-                return await this.#replaceSavedSignerLocator(activeSigner.locator());
+                return await this.#replaceSavedSignerLocator(activeSigner.locator(), approvingMembers);
             }
             if (registration.state === "awaiting") {
                 this.#status = "needs-recovery";
@@ -198,11 +224,11 @@ export class DeviceRecoveryService<C extends Chain> {
         const existingSigners = await this.#signers();
         const matchedSigner = await this.#findLocalDeviceSigner(deviceSignerKeyStorage, existingSigners);
         if (matchedSigner != null) {
-            const registration = await this.#checkAndResumeDeviceSigner(matchedSigner);
+            const registration = await this.#checkAndResumeDeviceSigner(matchedSigner, approvingMembers);
             if (registration.state === "approved") {
                 this.#signerManager.setActiveSigner(matchedSigner);
                 this.#status = "resolved";
-                const staleRemoval = await this.#replaceSavedSignerLocator(matchedSigner.locator());
+                const staleRemoval = await this.#replaceSavedSignerLocator(matchedSigner.locator(), approvingMembers);
                 const publicKeyBase64 = matchedSigner.locator().replace("device:", "");
                 try {
                     await deviceSignerKeyStorage.mapAddressToKey(this.#walletAddress, publicKeyBase64);
@@ -222,6 +248,9 @@ export class DeviceRecoveryService<C extends Chain> {
         // Resolves the approver as resolveApprover will, so no key is created when none can be resolved. The answer is
         // kept: a selection made while the registration is in flight must not decide what happens to this key.
         const approvedByQuorum = this.#signerManager.approvesAsQuorum();
+        if (approvedByQuorum) {
+            this.#requireApprovingMembers(approvingMembers);
+        }
         const newDeviceSigner = await createDeviceSigner(deviceSignerKeyStorage, this.#walletAddress);
         let staleDeviceSignerLocator = await this.#findSavedStaleSignerLocator(
             deviceSignerKeyStorage,
@@ -235,7 +264,8 @@ export class DeviceRecoveryService<C extends Chain> {
                 newDeviceSigner,
                 existingDeviceSigners,
                 staleDeviceSignerLocator,
-                approvedByQuorum
+                approvedByQuorum,
+                approvingMembers
             ));
         } catch (error) {
             if (error instanceof DeviceSignerNotSupportedError) {
@@ -316,7 +346,7 @@ export class DeviceRecoveryService<C extends Chain> {
         await this.#saveSignerLocator(deviceSignerKeyStorage, newDeviceSigner.locator as SignerLocator);
 
         if (staleDeviceSignerLocator != null) {
-            return await this.#removeStaleSigner(staleDeviceSignerLocator, null);
+            return (await this.#removeStaleSigner(staleDeviceSignerLocator, null, approvingMembers)).removal;
         }
         return undefined;
     }
@@ -335,10 +365,11 @@ export class DeviceRecoveryService<C extends Chain> {
         newDeviceSigner: DeviceSignerConfig,
         existingDeviceSigners: DeviceWalletSigner[],
         staleDeviceSignerLocator: string | undefined,
-        approvedByQuorum: boolean
+        approvedByQuorum: boolean,
+        approvingMembers: string[] | undefined
     ): Promise<{ staleDeviceSignerLocator: string | undefined; awaitedRegistration: RecoverResult }> {
         try {
-            const change = await this.#addSigner(newDeviceSigner as SignerConfigForChain<C>);
+            const change = await this.#addSigner(newDeviceSigner as SignerConfigForChain<C>, approvingMembers);
             return { staleDeviceSignerLocator, awaitedRegistration: awaitedRequest(change) };
         } catch (error) {
             // Through a quorum, the removal would wait on its members and the next add would hit the limit again.
@@ -360,7 +391,7 @@ export class DeviceRecoveryService<C extends Chain> {
                 throw error;
             });
             walletsLogger.info("wallet.recover.staleSignerRemoved", { signerLocator: signerLocatorToRemove });
-            const change = await this.#addSigner(newDeviceSigner as SignerConfigForChain<C>);
+            const change = await this.#addSigner(newDeviceSigner as SignerConfigForChain<C>, approvingMembers);
             return { staleDeviceSignerLocator: undefined, awaitedRegistration: awaitedRequest(change) };
         }
     }
@@ -399,7 +430,20 @@ export class DeviceRecoveryService<C extends Chain> {
 
     // Saves the active device's locator and removes the previously saved device; returns that removal when quorum
     // members still have to approve it.
-    async #replaceSavedSignerLocator(signerLocator: string): Promise<RecoverResult> {
+    async #retryStaleRemoval(approvingMembers: string[]): Promise<RecoverResult> {
+        const activeSigner = this.#signerManager.activeSigner;
+        if (activeSigner?.type !== "device") {
+            return undefined;
+        }
+        return await this.#replaceSavedSignerLocator(activeSigner.locator(), approvingMembers);
+    }
+
+    // Where the chain needs approving members, the old locator and the members stay saved until the removal is created,
+    // so a later visit retries it.
+    async #replaceSavedSignerLocator(
+        signerLocator: string,
+        approvingMembers: string[] | undefined
+    ): Promise<RecoverResult> {
         const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
         if (deviceSignerKeyStorage == null) {
             return undefined;
@@ -416,34 +460,95 @@ export class DeviceRecoveryService<C extends Chain> {
             }
             if (existingSigners.some((s) => s.type === "device" && s.locator === savedLocator)) {
                 const { approvingQuorum } = await this.#signerManager.getSignerState(signerLocator as SignerLocator);
-                staleRemoval = await this.#removeStaleSigner(savedLocator, approvingQuorum);
+                const members = approvingMembers ?? (await this.#getSavedApprovingMembers(deviceSignerKeyStorage));
+                const { started, removal } = await this.#removeStaleSigner(savedLocator, approvingQuorum, members);
+                if (!started && this.#approvingMembersRequired) {
+                    return undefined;
+                }
+                staleRemoval = removal;
             }
         }
         await this.#saveSignerLocator(deviceSignerKeyStorage, signerLocator);
+        if (this.#approvingMembersRequired) {
+            await this.#clearApprovingMembers(deviceSignerKeyStorage);
+        }
         return staleRemoval;
     }
 
     // The removal goes through the quorum that approved the new device signer, when known, so it needs no selection.
-    async #removeStaleSigner(signerLocator: string, approvingQuorum: QuorumLocator | null): Promise<RecoverResult> {
+    async #removeStaleSigner(
+        signerLocator: string,
+        approvingQuorum: QuorumLocator | null,
+        approvingMembers: string[] | undefined
+    ): Promise<{ started: boolean; removal: RecoverResult }> {
         try {
-            const removal = awaitedRequest(await this.#removeStaleSignerChange(signerLocator, approvingQuorum));
+            const change = await this.#removeStaleSignerChange(signerLocator, approvingQuorum, approvingMembers);
+            const removal = awaitedRequest(change);
             if (removal == null) {
                 walletsLogger.info("wallet.recover.staleSignerRemoved", { signerLocator });
-                return undefined;
+                return { started: true, removal: undefined };
             }
             walletsLogger.info("wallet.recover.staleSignerRemovalPending", { signerLocator, ...removal });
-            return removal;
+            return { started: true, removal };
         } catch (error) {
             walletsLogger.warn("wallet.recover.staleSignerRemovalFailed", { signerLocator, error });
-            return undefined;
+            return { started: false, removal: undefined };
         }
     }
 
-    #removeStaleSignerChange(signerLocator: string, approvingQuorum: QuorumLocator | null): Promise<SignerChange> {
+    #removeStaleSignerChange(
+        signerLocator: string,
+        approvingQuorum: QuorumLocator | null,
+        approvingMembers: string[] | undefined
+    ): Promise<SignerChange> {
+        const quorumApproves = approvingQuorum != null || this.#approvesAsQuorum();
+        if (approvingMembers != null && quorumApproves) {
+            return this.#removeSigner(signerLocator, approvingQuorum ?? undefined, approvingMembers);
+        }
         if (approvingQuorum == null) {
             return this.#removeSigner(signerLocator);
         }
         return this.#removeSigner(signerLocator, approvingQuorum);
+    }
+
+    #approvesAsQuorum(): boolean {
+        try {
+            return this.#signerManager.approvesAsQuorum();
+        } catch {
+            return false;
+        }
+    }
+
+    async #saveApprovingMembers(approvingMembers: string[]): Promise<void> {
+        const deviceSignerKeyStorage = this.#options?.deviceSignerKeyStorage;
+        if (deviceSignerKeyStorage == null) {
+            return;
+        }
+        try {
+            await deviceSignerKeyStorage.saveApprovingMembers(this.#walletAddress, approvingMembers);
+        } catch (error) {
+            walletsLogger.warn("wallet.recover.saveApprovingMembers.error", { error });
+        }
+    }
+
+    async #clearApprovingMembers(deviceSignerKeyStorage: DeviceSignerKeyStorage): Promise<void> {
+        try {
+            await deviceSignerKeyStorage.saveApprovingMembers(this.#walletAddress, null);
+        } catch (error) {
+            walletsLogger.warn("wallet.recover.clearApprovingMembers.error", { error });
+        }
+    }
+
+    async #getSavedApprovingMembers(deviceSignerKeyStorage: DeviceSignerKeyStorage): Promise<string[] | undefined> {
+        if (!this.#approvingMembersRequired) {
+            return undefined;
+        }
+        try {
+            return (await deviceSignerKeyStorage.getSavedApprovingMembers(this.#walletAddress)) ?? undefined;
+        } catch (error) {
+            walletsLogger.warn("wallet.recover.getSavedApprovingMembers.error", { error });
+            return undefined;
+        }
     }
 
     async #getSavedSignerLocator(deviceSignerKeyStorage: DeviceSignerKeyStorage): Promise<string | null> {
@@ -496,7 +601,10 @@ export class DeviceRecoveryService<C extends Chain> {
         this.#status = "needs-recovery";
     }
 
-    async #checkAndResumeDeviceSigner(deviceSigner: SignerAdapter): Promise<DeviceRegistration> {
+    async #checkAndResumeDeviceSigner(
+        deviceSigner: SignerAdapter,
+        approvingMembers?: string[]
+    ): Promise<DeviceRegistration> {
         if (this.#signerManager.isApprovedSignerStatus(deviceSigner.status)) {
             walletsLogger.info("wallet.recover.skipped", { reason: "Device signer already approved" });
             return { state: "approved" };
@@ -513,6 +621,9 @@ export class DeviceRecoveryService<C extends Chain> {
         if (signerState.pendingOperation != null) {
             // Quorum members approve it with approve(), as with prepareOnly (EDD 007 §7): nothing is signed here.
             if (signerState.approvingQuorum != null) {
+                if (designatesOtherMembers(signerState.designatedMembers, approvingMembers)) {
+                    return await this.#registerAgain(deviceSigner, signerState.signer, approvingMembers);
+                }
                 return { state: "awaiting", request: pendingOperationId(signerState.pendingOperation) };
             }
             await this.#resumePendingDeviceSignerApproval(deviceSigner, signerState.pendingOperation);
@@ -525,6 +636,25 @@ export class DeviceRecoveryService<C extends Chain> {
         }
 
         return { state: "none" };
+    }
+
+    async #registerAgain(
+        deviceSigner: SignerAdapter,
+        registered: WalletSigner | null,
+        approvingMembers: string[] | undefined
+    ): Promise<DeviceRegistration> {
+        const device = (registered ?? {}) as Partial<DeviceSignerConfig>;
+        const change = await this.#addSigner(
+            {
+                type: "device",
+                locator: deviceSigner.locator(),
+                publicKey: device.publicKey,
+                name: device.name,
+            } as SignerConfigForChain<C>,
+            approvingMembers
+        );
+        const request = awaitedRequest(change);
+        return request == null ? { state: "approved" } : { state: "awaiting", request };
     }
 
     async #resumePendingDeviceSignerApproval(

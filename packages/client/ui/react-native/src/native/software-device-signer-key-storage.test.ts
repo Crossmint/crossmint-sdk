@@ -117,6 +117,20 @@ describe("SoftwareDeviceSignerKeyStorage", () => {
         });
     });
 
+    describe("when a device recovery's approving members are saved", () => {
+        test("reads them back for the wallet, and none once cleared", async () => {
+            const members = ["external-wallet:Alice111", "email:bob@example.com"];
+
+            await storage.saveApprovingMembers(ADDRESS, members);
+            const saved = await new SoftwareDeviceSignerKeyStorage().getSavedApprovingMembers(ADDRESS);
+            await storage.saveApprovingMembers(ADDRESS, null);
+
+            expect(saved).toEqual(members);
+            expect(await storage.getSavedApprovingMembers(ADDRESS)).toBeNull();
+            expect(await storage.getSavedApprovingMembers("0xother")).toBeNull();
+        });
+    });
+
     describe("getDeviceName", () => {
         test("combines the device name and the OS", () => {
             expect(storage.getDeviceName()).toBe("Test iPhone (iOS)");

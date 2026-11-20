@@ -31,7 +31,7 @@ const LANDED_EXPLORER_LINK = "https://explorer.example.com/tx/0xlanded";
 const CREATION_ERROR = { error: true, statusCode: 400, message: "Invalid signer" };
 
 // `prepareOnly` may be omitted here: an untyped caller can leave it out.
-type CallOptions = { prepareOnly?: boolean; signer?: SignerOption };
+type CallOptions = { prepareOnly?: boolean; signer?: SignerOption; approvingMembers?: string[] };
 
 type CreatingCall = {
     name: string;
@@ -60,6 +60,19 @@ const CREATING_CALLS: CreatingCall[] = [
         chain: "stellar",
         chainType: "stellar",
         call: (wallet, options) => wallet.send(STELLAR_RECIPIENT, "usdc", "1", options as SendTokenTransactionOptions),
+        created: (api) => ({ calls: api.send.mock.calls.length, signer: api.send.mock.calls[0]?.[2].signer }),
+    },
+    {
+        name: "send on a Solana wallet",
+        chain: "solana",
+        chainType: "solana",
+        call: (wallet, options) =>
+            wallet.send(
+                "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+                "usdc",
+                "1",
+                options as SendTokenTransactionOptions
+            ),
         created: (api) => ({ calls: api.send.mock.calls.length, signer: api.send.mock.calls[0]?.[2].signer }),
     },
     {
@@ -119,6 +132,11 @@ describe("creating calls with a quorum as the acting signer", () => {
     });
 
     describe.each(CREATING_CALLS)("$name", ({ chain, chainType, call, created }) => {
+        // Solana takes the members that approve a quorum's request when it is created (EDD 008).
+        const members = (quorum: QuorumSigner = QUORUM) =>
+            chain === "solana"
+                ? { approvingMembers: quorum.members.slice(0, quorum.threshold).map((m) => m.locator) }
+                : {};
         // The request as the API would report it: only the quorum's members can approve it.
         const arrangeQuorumAwaitingApproval = (quorum: QuorumSigner = QUORUM) =>
             api.getTransaction.mockResolvedValue({
@@ -138,7 +156,7 @@ describe("creating calls with a quorum as the acting signer", () => {
 
             describe.each([true, false, undefined])("and prepareOnly %s", (prepareOnly) => {
                 it("creates the request as the quorum and returns it unsigned, without waiting", async () => {
-                    const outcome = await settle(call(wallet, { prepareOnly, signer: QUORUM.locator }));
+                    const outcome = await settle(call(wallet, { prepareOnly, signer: QUORUM.locator, ...members() }));
 
                     expect(outcome).toStrictEqual({ value: createdRequest("txn-1") });
                     expect(created(api)).toEqual({ calls: 1, signer: QUORUM.locator });
@@ -161,8 +179,8 @@ describe("creating calls with a quorum as the acting signer", () => {
                     id: "txn-2",
                 } as unknown as CreateTransactionSuccessResponse);
 
-                const first = await settle(call(wallet, { prepareOnly: false, signer: QUORUM.locator }));
-                const second = await settle(call(wallet, { prepareOnly: false, signer: QUORUM.locator }));
+                const first = await settle(call(wallet, { prepareOnly: false, signer: QUORUM.locator, ...members() }));
+                const second = await settle(call(wallet, { prepareOnly: false, signer: QUORUM.locator, ...members() }));
 
                 expect([first, second]).toStrictEqual([
                     { value: createdRequest("txn-1") },
@@ -186,7 +204,9 @@ describe("creating calls with a quorum as the acting signer", () => {
                 const memberQuorum: QuorumSigner = { ...QUORUM, members: [memberEntry, ...QUORUM.members.slice(1)] };
                 arrangeQuorumAwaitingApproval(memberQuorum);
 
-                const outcome = await settle(call(wallet, { prepareOnly: false, signer: memberQuorum.locator }));
+                const outcome = await settle(
+                    call(wallet, { prepareOnly: false, signer: memberQuorum.locator, ...members(memberQuorum) })
+                );
 
                 expect(outcome).toStrictEqual({ value: createdRequest("txn-1") });
                 expect(member.onSign).not.toHaveBeenCalled();
@@ -200,9 +220,9 @@ describe("creating calls with a quorum as the acting signer", () => {
                 api.send.mockResolvedValue(CREATION_ERROR as never);
                 api.createTransaction.mockResolvedValue(CREATION_ERROR as never);
 
-                await expect(call(wallet, { prepareOnly: false, signer: QUORUM.locator })).rejects.toThrow(
-                    TransactionNotCreatedError
-                );
+                await expect(
+                    call(wallet, { prepareOnly: false, signer: QUORUM.locator, ...members() })
+                ).rejects.toThrow(TransactionNotCreatedError);
                 expect(api.getTransaction).not.toHaveBeenCalled();
             });
         });
