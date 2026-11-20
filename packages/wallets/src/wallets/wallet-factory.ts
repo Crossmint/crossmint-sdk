@@ -225,7 +225,11 @@ export class WalletFactory {
             });
             throwIfRecoverySignerApiError(walletResponse);
             throwIfQuorumApiError(walletResponse);
-            throw new WalletCreationError(JSON.stringify(walletResponse));
+            throw new WalletCreationError(
+                walletResponse.message ?? JSON.stringify(walletResponse),
+                JSON.stringify(walletResponse),
+                walletResponse.code
+            );
         }
 
         walletsLogger.info("walletFactory.createWallet.success", {

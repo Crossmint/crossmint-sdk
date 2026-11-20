@@ -6,7 +6,7 @@ import {
     type PlannedMemberApproval,
 } from "../../quorum/approvals";
 import type { SignerAdapter } from "../../signers/types";
-import { InvalidSignerError } from "../../utils/errors";
+import { ApprovalSigningTimeoutError, InvalidSignerError } from "../../utils/errors";
 import { isSameSignerLocator } from "../../utils/signer-locator";
 import type { Approval, PendingApproval } from "../types";
 
@@ -64,5 +64,24 @@ async function signAs(
     if (signer == null) {
         throw new InvalidSignerError(`Signer ${locator} not found in pending approvals`);
     }
-    return { ...(await signing.sign(signer, message)), signer: locator };
+    return { ...(await withSigningTimeout(signing.sign(signer, message), locator)), signer: locator };
+}
+
+/** How long a key may take to sign one approval, e.g. while a wallet popup waits on the user. */
+export const APPROVAL_SIGNING_TIMEOUT_MS = 5 * 60_000;
+
+// A callback that never settles (closed popup, dropped hardware wallet) would block later approvals of the request.
+async function withSigningTimeout<T>(signature: Promise<T>, locator: string): Promise<T> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(
+            () => reject(new ApprovalSigningTimeoutError(locator, APPROVAL_SIGNING_TIMEOUT_MS)),
+            APPROVAL_SIGNING_TIMEOUT_MS
+        );
+    });
+    try {
+        return await Promise.race([signature, timeout]);
+    } finally {
+        clearTimeout(timer);
+    }
 }

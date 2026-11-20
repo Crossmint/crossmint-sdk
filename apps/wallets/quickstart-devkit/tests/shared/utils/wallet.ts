@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { handleSignerConfirmation } from "./auth";
 import { recentPageDiagnostics } from "./page-diagnostics";
-import { AUTH_CONFIG } from "../constants/globalConstants";
+import { AUTH_CONFIG, validateFaucetConfig } from "../constants/globalConstants";
 
 const FAUCET_SETTLEMENT_TIMEOUT_MS = 120000;
 const FAUCET_POLL_INTERVAL_MS = 2000;
@@ -51,7 +51,7 @@ async function readSolanaUsdxmBalance(walletAddress: string): Promise<number | n
 
 async function readTokenBalance(walletAddress: string, chainId: string, token: string): Promise<number> {
     const url = `https://staging.crossmint.com/api/v1-alpha2/wallets/${walletAddress}/balances?tokens=${token}&chains=${chainId}`;
-    const response = await fetch(url, { headers: { "x-api-key": AUTH_CONFIG.crossmintApiKey } });
+    const response = await fetch(url, { headers: { "x-api-key": AUTH_CONFIG.crossmintServerApiKey } });
     if (!response.ok) {
         return 0;
     }
@@ -84,6 +84,8 @@ export async function fundWalletWithCrossmintFaucet(
 ): Promise<void> {
     const apiUrl = `https://staging.crossmint.com/api/v1-alpha2/wallets/${walletAddress}/balances`;
 
+    validateFaucetConfig();
+
     console.log(`💰 Funding wallet ${walletAddress} on ${chainId} with ${amount} ${token}...`);
 
     try {
@@ -91,7 +93,7 @@ export async function fundWalletWithCrossmintFaucet(
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-api-key": AUTH_CONFIG.crossmintApiKey,
+                "x-api-key": AUTH_CONFIG.crossmintServerApiKey,
             },
             body: JSON.stringify({
                 amount,
