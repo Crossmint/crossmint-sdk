@@ -363,12 +363,15 @@ export function CrossmintWalletBaseProvider({
     );
 
     const initializeWebViewIfNeeded = useCallback(
-        async (signers: Array<{ type: string; members?: unknown }>) => {
+        async <C extends Chain>(args: Pick<WalletCreateArgs<C>, "recovery" | "recoveryMethods" | "signers">) => {
+            const signers = [...recoveryMethodsFromCreateArgs(args), ...(args.signers ?? [])];
             // Members are scanned leniently: a malformed list is left for the wallet SDK to reject with its own code.
             const needsTEE = (signer: { type?: unknown } | null | undefined) =>
                 signer?.type === "email" || signer?.type === "phone";
             const memberNeedsTEE = (members: unknown) => Array.isArray(members) && members.some(needsTEE);
-            if (signers.some((signer) => needsTEE(signer) || memberNeedsTEE(signer.members))) {
+            if (
+                signers.some((signer) => needsTEE(signer) || memberNeedsTEE((signer as { members?: unknown }).members))
+            ) {
                 await initializeWebView?.();
             }
         },
@@ -427,7 +430,7 @@ export function CrossmintWalletBaseProvider({
                 setWalletError(null);
                 const wallets = CrossmintWallets.from(crossmint);
 
-                await initializeWebViewIfNeeded(recoveryMethodsFromCreateArgs(args));
+                await initializeWebViewIfNeeded(args);
 
                 const walletOptions = buildWalletOptions(args.options);
 
@@ -531,7 +534,7 @@ export function CrossmintWalletBaseProvider({
                 setWalletError(null);
                 const wallets = CrossmintWallets.from(crossmint);
 
-                await initializeWebViewIfNeeded(recoveryMethodsFromCreateArgs(args));
+                await initializeWebViewIfNeeded(args);
 
                 const wallet = await wallets.createWallet<C>({
                     ...args,

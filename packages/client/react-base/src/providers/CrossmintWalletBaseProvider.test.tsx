@@ -385,4 +385,48 @@ describe("CrossmintWalletBaseProvider — createWallet", () => {
         await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
         expect(createWallet.mock.calls[0][0].options.clientTEEConnection).toBeUndefined();
     });
+
+    test.each([
+        ["a delegated email signer", { type: "email", email: "alice@example.com" }],
+        ["a delegated phone signer", { type: "phone", phone: "+15555550100" }],
+        [
+            "a delegated quorum with an email member",
+            {
+                type: "quorum",
+                threshold: 1,
+                members: [{ type: "email", email: "member@example.com" }],
+            },
+        ],
+    ])("starts the WebView for %s", async (_label, signer) => {
+        const initializeWebView = vi.fn().mockResolvedValue(undefined);
+        const createWallet = vi.fn().mockResolvedValue({ chain: "stellar", alias: undefined });
+        const { getByTestId, getByText } = renderCreateWallet(
+            { createWallet },
+            { chain: "stellar", signers: [signer] } as never,
+            { initializeWebView }
+        );
+
+        fireEvent.click(getByText("create twice"));
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+        expect(initializeWebView).toHaveBeenCalledTimes(1);
+    });
+
+    test("skips the WebView for delegated signers with no email or phone key", async () => {
+        const initializeWebView = vi.fn().mockResolvedValue(undefined);
+        const createWallet = vi.fn().mockResolvedValue({ chain: "stellar", alias: undefined });
+        const { getByTestId, getByText } = renderCreateWallet(
+            { createWallet },
+            {
+                chain: "stellar",
+                signers: [{ type: "external-wallet", address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }],
+            } as never,
+            { initializeWebView }
+        );
+
+        fireEvent.click(getByText("create twice"));
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+        expect(initializeWebView).not.toHaveBeenCalled();
+    });
 });
