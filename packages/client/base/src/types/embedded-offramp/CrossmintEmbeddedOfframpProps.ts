@@ -34,6 +34,15 @@ export type EmbeddedOfframpPayer = {
      * Throw `OfframpSignatureRejectedError` only when the user declined.
      */
     signAndSendTransaction(tx: { serializedTransaction: string; chain: string; payerAddress: string }): Promise<string>;
+    /**
+     * Optional. Sign `message` with the payer wallet and resolve with the signature: the EIP-191 personal_sign hex string
+     * (0x-prefixed) on EVM chains, or the base64 encoding of the 64-byte ed25519 signature over the UTF-8 message on
+     * Solana (not base58). The offramp asks only when the user must prove they own the wallet; the message is a
+     * Crossmint sign-in challenge for payerAddress. Refuse if your wallet is not payerAddress on chain. Without it such
+     * a user is told the wallet needs verifying by your app. Throw OfframpSignatureRejectedError only when the user
+     * declined. Adding or removing it reloads the offramp.
+     */
+    signMessage?(request: { message: string; chain: string; payerAddress: string }): Promise<string>;
 };
 
 export interface CrossmintEmbeddedOfframpProps {

@@ -30,3 +30,17 @@ export function sendTransactionReply(
         });
     }
 }
+
+export type SignMessageOutcome = { signature: unknown } | { error: unknown };
+
+/** Sends exactly one reply event for the message signature request. */
+export function signMessageReply(emitter: Pick<EmbeddedOfframpIFrameEmitter, "send">, outcome: SignMessageOutcome) {
+    if ("error" in outcome) {
+        const { message, rejected } = (outcome.error ?? {}) as { message?: unknown; rejected?: unknown };
+        emitter.send("crypto:sign-message:failed", { error: describe(message), rejected: rejected === true });
+    } else if (typeof outcome.signature === "string" && outcome.signature !== "") {
+        emitter.send("crypto:sign-message:success", { signature: outcome.signature });
+    } else {
+        emitter.send("crypto:sign-message:failed", { error: "The wallet returned no signature", rejected: false });
+    }
+}

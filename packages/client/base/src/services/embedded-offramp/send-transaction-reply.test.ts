@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { sendTransactionReply } from "./sendTransactionReply";
+import { sendTransactionReply, signMessageReply } from "./sendTransactionReply";
 
 function reply(outcome: Parameters<typeof sendTransactionReply>[1]) {
     const send = vi.fn();
@@ -42,5 +42,38 @@ describe("sendTransactionReply", () => {
             error: "The wallet failed",
             rejected: false,
         });
+    });
+});
+
+function signReply(outcome: Parameters<typeof signMessageReply>[1]) {
+    const send = vi.fn();
+    signMessageReply({ send }, outcome);
+    return send;
+}
+
+describe("signMessageReply", () => {
+    test("sends success for a non-empty string signature", () => {
+        expect(signReply({ signature: "0xsig" }).mock.calls).toEqual([
+            ["crypto:sign-message:success", { signature: "0xsig" }],
+        ]);
+    });
+
+    test.each([[undefined], [""], [42], [null], [new Uint8Array(64)]])(
+        "sends failed, not rejected, for signature %s",
+        (signature) => {
+            expect(signReply({ signature }).mock.calls).toEqual([
+                ["crypto:sign-message:failed", { error: "The wallet returned no signature", rejected: false }],
+            ]);
+        }
+    );
+
+    test.each([
+        [Object.assign(new Error("declined"), { rejected: true }), { error: "declined", rejected: true }],
+        [Object.assign(new Error("x"), { rejected: "yes" }), { error: "x", rejected: false }],
+        [new Error("boom"), { error: "boom", rejected: false }],
+        [undefined, { error: "The wallet failed", rejected: false }],
+        [{ message: Object.create(null) }, { error: "The wallet failed", rejected: false }],
+    ])("sends one failed reply for error %s", (error, expected) => {
+        expect(signReply({ error }).mock.calls).toEqual([["crypto:sign-message:failed", expected]]);
     });
 });

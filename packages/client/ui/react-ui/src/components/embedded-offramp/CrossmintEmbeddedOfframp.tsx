@@ -2,8 +2,10 @@ import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import {
     type CrossmintEmbeddedOfframpProps,
     type EmbeddedOfframpIFrameEmitter,
+    type SignMessageOutcome,
     createEmbeddedOfframpService,
     sendTransactionReply,
+    signMessageReply,
 } from "@crossmint/client-sdk-base";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { useEffect, useRef, useState } from "react";
@@ -35,7 +37,7 @@ function EmbeddedOfframpDocument({
     const [height, setHeight] = useState(0);
     const ref = useRef<HTMLIFrameElement>(null);
     const sendPending = useRef<object | null>(null);
-    const hasLoaded = useRef(false);
+    const signPending = useRef<object | null>(null);
     const latestProps = useRef(props);
     useEffect(() => {
         latestProps.current = props;
@@ -54,7 +56,12 @@ function EmbeddedOfframpDocument({
         }
         const ids = [
             iframeClient.on("ui:height.changed", (data) => setHeight(data.height)),
-            iframeClient.on("offramp:ready", () => latestProps.current.onReady?.()),
+            iframeClient.on("offramp:ready", () => {
+                // Each offramp document sends ready once, before any wallet request, so it marks a reload.
+                sendPending.current = null;
+                signPending.current = null;
+                latestProps.current.onReady?.();
+            }),
             iframeClient.on("offramp:status", (data) => latestProps.current.onStatusChange?.(data)),
             iframeClient.on("offramp:completed", (data) => latestProps.current.onComplete?.(data)),
             iframeClient.on("offramp:cancelled", () => latestProps.current.onCancel?.()),
@@ -78,9 +85,32 @@ function EmbeddedOfframpDocument({
                 sendPending.current = null;
                 sendTransactionReply(iframeClient, outcome);
             }),
+            iframeClient.on("crypto:sign-message", async (request) => {
+                if (signPending.current) {
+                    return;
+                }
+                const pending = {};
+                signPending.current = pending;
+                let outcome: SignMessageOutcome;
+                try {
+                    const { payer } = latestProps.current;
+                    if (payer.signMessage == null) {
+                        throw new Error("This payer cannot sign messages");
+                    }
+                    outcome = { signature: await payer.signMessage(request) };
+                } catch (error) {
+                    outcome = { error };
+                }
+                if (signPending.current !== pending) {
+                    return;
+                }
+                signPending.current = null;
+                signMessageReply(iframeClient, outcome);
+            }),
         ];
         return () => {
             sendPending.current = null;
+            signPending.current = null;
             for (const id of ids) {
                 iframeClient.off(id);
             }
@@ -91,13 +121,6 @@ function EmbeddedOfframpDocument({
         <iframe
             ref={ref}
             src={url}
-            onLoad={() => {
-                // The first load may finish after the document has already requested signing.
-                if (hasLoaded.current) {
-                    sendPending.current = null;
-                }
-                hasLoaded.current = true;
-            }}
             id="crossmint-embedded-offramp.iframe"
             title="Withdraw"
             allow="camera"
