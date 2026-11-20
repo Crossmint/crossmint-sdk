@@ -10,8 +10,10 @@ import { useCrossmint } from "@/hooks/useCrossmint";
 import { useWallet } from "@/hooks/useWallet";
 import type { CreateOnLogin } from "@/types";
 
-const MOCK_API_KEY =
-    "sk_development_5ZUNkuhjP8aYZEgUTDfWToqFpo5zakEqte1db4pHZgPAVKZ9JuSvnKeGiqY654DoBuuZEzYz4Eb8gRV2ePqQ1fxTjEP8tTaUQdzbGfyG9RgyeN5YbqViXinqxk8EayEkAGtvSSgjpjEr6iaBptJtUFwPW59DjQzTQP6P8uZdiajenVg7bARGKjzFyByNuVEoz41DpRB4hDZNFdwCTuf5joFv";
+if (process.env.PREVIEW_SK_KEY == null) {
+    throw new Error("PREVIEW_SK_KEY must be set to run this test suite.");
+}
+const MOCK_API_KEY = process.env.PREVIEW_SK_KEY;
 
 vi.mock("@crossmint/common-sdk-base", async () => {
     const actual = await vi.importActual("@crossmint/common-sdk-base");
