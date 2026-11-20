@@ -1,5 +1,12 @@
 # @crossmint/wallets-sdk
 
+## 1.24.2
+
+### Patch Changes
+
+- bc9a07f: API rejections in the quorum flows now surface as typed errors that keep the API's message and `code` instead of the raw response body: `removeSigner`/`removeRecoveryMethod` throw `SignerOperationRejectedError` (and `QuorumRequestError` for `LAST_RECOVERY_SIGNER` and the other quorum codes), `approve()` throws the new `QuorumApprovalRejectedError` — carrying the rejected member's `signerLocator` — when the API rejects the approval of a member of a pending quorum while the request still awaits the others (other rejected approvals still throw `TransactionFailedError` / `SignatureFailedError`), and `WalletCreationError` exposes the API message plus `apiErrorCode`. `TransactionFailedError` is now exported from the package.
+- bc9a07f: Quorum signer QA fixes: a quorum with a missing `members` list or an unsupported member type throws `InvalidRecoveryConfigError` instead of a `TypeError` or a `null` member; a server member the API lists as `external-wallet` matches its quorum, so `createWallet` no longer throws for a wallet it just created; `useRecoveryMethod` rereads the wallet's recovery quorums when it does not find a member locally; a key that does not sign an approval within 5 minutes throws `ApprovalSigningTimeoutError` instead of blocking later approvals. In the React and React Native providers, an SDK error keeps `code: "unknown"` and carries its own code in the new `sdkCode` field, only fetch failures count as `network`, two `createWallet` calls in the same tick send one request, and an email, phone or passkey member of a recovery quorum starts the WebView or passkey setup like a top-level recovery method does.
+
 ## 1.24.1
 
 ### Patch Changes
