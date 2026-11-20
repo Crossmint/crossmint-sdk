@@ -9,6 +9,7 @@ import {
     type ServerSignerConfig,
     type SignerLocator,
 } from "../signers/types";
+import { InvalidRecoveryConfigError } from "../utils/errors";
 import { secureWipe } from "../utils/secure-wipe";
 import { getSignerLocator } from "../utils/signer-locator";
 import { quorumsWithComposition } from "./members";
@@ -23,6 +24,10 @@ export function toQuorumSignerInput(
     config: QuorumSignerConfig<Chain>,
     derivation: ServerMemberDerivation
 ): QuorumSignerInput {
+    // Plain JavaScript callers can pass anything, so the members list is checked before it is mapped.
+    if (!Array.isArray(config.members)) {
+        throw new InvalidRecoveryConfigError("A quorum needs a `members` list.");
+    }
     return {
         type: "quorum",
         threshold: config.threshold,
@@ -31,7 +36,7 @@ export function toQuorumSignerInput(
 }
 
 function toQuorumMemberInput(member: QuorumMemberConfig<Chain>, derivation: ServerMemberDerivation): QuorumMemberInput {
-    switch (member.type) {
+    switch (member?.type) {
         case "email":
             return { type: "email", email: member.email };
         case "phone":
@@ -45,7 +50,15 @@ function toQuorumMemberInput(member: QuorumMemberConfig<Chain>, derivation: Serv
             return { type: "server", address: serverMemberAddress(member, derivation) };
         case "passkey":
             return { type: "passkey", id: member.id, name: member.name, publicKey: member.publicKey };
+        default:
+            throw unsupportedMemberError(member);
     }
+}
+
+function unsupportedMemberError(member: { type?: unknown } | null | undefined): InvalidRecoveryConfigError {
+    return new InvalidRecoveryConfigError(
+        `A quorum member of type "${String(member?.type)}" is not supported. Use email, phone, external-wallet, server or passkey.`
+    );
 }
 
 // Members sign approvals with the primary derivation only (E1), so a member's address is always that one.

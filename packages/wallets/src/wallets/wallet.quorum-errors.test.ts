@@ -4,10 +4,12 @@ import type { ApiClient } from "../api";
 import type { Chain } from "../chains/chains";
 import {
     InvalidSignerError,
+    QuorumApprovalRejectedError,
     QuorumRequestError,
     RecoverySignerLimitExceededError,
     SignatureFailedError,
     SignatureNotCreatedError,
+    SignerOperationRejectedError,
     TransactionExpiredError,
     TransactionFailedError,
     TransactionNotCreatedError,
@@ -23,6 +25,8 @@ import {
     createMockApiClient,
     createMockSolanaSerializedTransaction,
     createMockWallet,
+    createQuorumApiEntryWith,
+    createQuorumPendingApproval,
     type MockedApiClient,
     EVM_TYPED_DATA,
 } from "./__tests__/test-helpers";
@@ -158,7 +162,7 @@ const ERROR_SITES: ErrorSite[] = [
         signerType: "api-key",
         arrange: (api, body) => api.removeSigner.mockResolvedValue(body as never),
         act: (wallet) => wallet.removeSigner({ type: "external-wallet", address: NEW_SIGNER } as never),
-        todayError: /Failed to remove signer/,
+        todayError: SignerOperationRejectedError,
     },
     {
         name: "addRecoveryMethod",
@@ -175,7 +179,7 @@ const ERROR_SITES: ErrorSite[] = [
         arrange: (api, body) => api.removeRecoveryMethod.mockResolvedValue(body as never),
         act: (wallet) =>
             wallet.removeRecoveryMethod({ type: "external-wallet", address: "RecoveryAddress123" } as never),
-        todayError: /Failed to remove recovery method/,
+        todayError: SignerOperationRejectedError,
     },
 ];
 
@@ -215,6 +219,54 @@ describe("quorum API errors at wallet call sites", () => {
 
                 await expect(act(wallet)).rejects.toThrow(todayError);
             });
+        });
+    });
+
+    describe.each([
+        {
+            name: "removeSigner",
+            arrange: (api: MockedApiClient, body: object) => api.removeSigner.mockResolvedValue(body as never),
+            act: (wallet: Wallet<Chain>) =>
+                wallet.removeSigner({ type: "external-wallet", address: NEW_SIGNER } as never),
+        },
+        {
+            name: "removeRecoveryMethod",
+            arrange: (api: MockedApiClient, body: object) => api.removeRecoveryMethod.mockResolvedValue(body as never),
+            act: (wallet: Wallet<Chain>) =>
+                wallet.removeRecoveryMethod({ type: "external-wallet", address: "RecoveryAddress123" } as never),
+        },
+    ])("$name", ({ arrange, act }) => {
+        it("throws a typed error with the API message for an uncoded rejection", async () => {
+            const wallet = await createMockWallet("solana", api, "api-key");
+            arrange(api, { error: true, statusCode: 400, message: "Rejected for some reason" });
+
+            const error = await act(wallet).then(
+                () => expect.fail("Expected the call to throw"),
+                (thrown: unknown) => thrown
+            );
+
+            expect(error).toBeInstanceOf(SignerOperationRejectedError);
+            expect((error as Error).message).toBe("Rejected for some reason");
+            expect((error as SignerOperationRejectedError).apiErrorCode).toBeUndefined();
+        });
+
+        it("throws QuorumRequestError with LAST_RECOVERY_SIGNER as reason", async () => {
+            const wallet = await createMockWallet("solana", api, "api-key");
+            arrange(api, {
+                error: true,
+                statusCode: 400,
+                code: "LAST_RECOVERY_SIGNER",
+                message: "The wallet's only recovery method cannot be removed",
+            });
+
+            const error = await act(wallet).then(
+                () => expect.fail("Expected the call to throw"),
+                (thrown: unknown) => thrown
+            );
+
+            expect(error).toBeInstanceOf(QuorumRequestError);
+            expect((error as QuorumRequestError).reason).toBe("LAST_RECOVERY_SIGNER");
+            expect((error as QuorumRequestError).message).toBe("The wallet's only recovery method cannot be removed");
         });
     });
 
@@ -300,6 +352,92 @@ describe("quorum API errors at wallet call sites", () => {
         });
     });
 
+    describe("approve, when the API rejects one member's approval signature", () => {
+        const MEMBER = "external-wallet:0x123";
+        const REJECTED = {
+            error: true,
+            statusCode: 400,
+            message: `Invalid signature for signer ${MEMBER}`,
+        };
+        const quorumEntry = () =>
+            createQuorumPendingApproval({
+                quorum: createQuorumApiEntryWith([{ type: "external-wallet", address: "0x123", locator: MEMBER }]),
+            });
+        const QUORUM_TRANSACTION = { ...AWAITING_TRANSACTION, approvals: { pending: [quorumEntry()], submitted: [] } };
+        const QUORUM_SIGNATURE = { ...AWAITING_SIGNATURE, approvals: { pending: [quorumEntry()], submitted: [] } };
+
+        it("throws QuorumApprovalRejectedError, not TransactionFailedError, for a transaction", async () => {
+            const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
+            api.getTransaction.mockResolvedValue(QUORUM_TRANSACTION as never);
+            api.approveTransaction.mockResolvedValue(REJECTED as never);
+
+            const error = await wallet.approve({ transactionId: "txn-1", options: { approval: APPROVAL } }).then(
+                () => expect.fail("Expected approve to throw"),
+                (thrown: unknown) => thrown
+            );
+
+            expect(error).toBeInstanceOf(QuorumApprovalRejectedError);
+            expect(error).not.toBeInstanceOf(TransactionFailedError);
+            expect(error).toMatchObject({ signerLocator: MEMBER, transactionId: "txn-1" });
+            expect((error as Error).message).toBe(REJECTED.message);
+        });
+
+        it("throws QuorumApprovalRejectedError, not SignatureFailedError, for a signature", async () => {
+            const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
+            api.getSignature.mockResolvedValue(QUORUM_SIGNATURE as never);
+            api.approveSignature.mockResolvedValue(REJECTED as never);
+
+            const error = await wallet.approve({ signatureId: "sig-1", options: { approval: APPROVAL } }).then(
+                () => expect.fail("Expected approve to throw"),
+                (thrown: unknown) => thrown
+            );
+
+            expect(error).toBeInstanceOf(QuorumApprovalRejectedError);
+            expect(error).not.toBeInstanceOf(SignatureFailedError);
+            expect(error).toMatchObject({ signerLocator: MEMBER, signatureId: "sig-1" });
+        });
+
+        it("throws QuorumApprovalRejectedError for a malformed member signature too", async () => {
+            const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
+            api.getTransaction.mockResolvedValue(QUORUM_TRANSACTION as never);
+            api.approveTransaction.mockResolvedValue({
+                error: true,
+                statusCode: 400,
+                message: `Signature '0xdeadbeef...' on the approval for signer '${MEMBER}' is invalid. Please ensure you're providing a valid hex-encoded ECDSA signature and the signer is correct.`,
+            } as never);
+
+            const error = await wallet.approve({ transactionId: "txn-1", options: { approval: APPROVAL } }).then(
+                () => expect.fail("Expected approve to throw"),
+                (thrown: unknown) => thrown
+            );
+
+            expect(error).toBeInstanceOf(QuorumApprovalRejectedError);
+            expect(error).toMatchObject({ signerLocator: MEMBER, transactionId: "txn-1" });
+        });
+
+        describe("when the rejected signer is not a member of a pending quorum", () => {
+            it("still throws TransactionFailedError for a transaction", async () => {
+                const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
+                api.getTransaction.mockResolvedValue(AWAITING_TRANSACTION as never);
+                api.approveTransaction.mockResolvedValue(REJECTED as never);
+
+                await expect(
+                    wallet.approve({ transactionId: "txn-1", options: { approval: APPROVAL } })
+                ).rejects.toBeInstanceOf(TransactionFailedError);
+            });
+
+            it("still throws SignatureFailedError for a signature", async () => {
+                const wallet = await createMockWallet("base-sepolia", api, "external-wallet");
+                api.getSignature.mockResolvedValue(AWAITING_SIGNATURE as never);
+                api.approveSignature.mockResolvedValue(REJECTED as never);
+
+                await expect(
+                    wallet.approve({ signatureId: "sig-1", options: { approval: APPROVAL } })
+                ).rejects.toBeInstanceOf(SignatureFailedError);
+            });
+        });
+    });
+
     describe("Stellar upgrade, when the wallet is already locked", () => {
         it("skips the upgrade phase and prepares the migration, as before", async () => {
             const stellarWallet = StellarWallet.from(await createMockWallet("stellar", api, "api-key"));
@@ -349,10 +487,50 @@ describe("quorum API errors at wallet creation", () => {
     });
 
     describe("when the API answers with an unrelated error code", () => {
-        it("throws WalletCreationError", async () => {
+        it("throws WalletCreationError with the API message and the code as apiErrorCode", async () => {
             createWallet.mockResolvedValue(errorBody(UNRELATED_CODE));
 
-            await expect(createSolanaWallet()).rejects.toBeInstanceOf(WalletCreationError);
+            const error = await createSolanaWallet().then(
+                () => expect.fail("Expected createWallet to throw"),
+                (thrown: unknown) => thrown
+            );
+
+            expect(error).toBeInstanceOf(WalletCreationError);
+            expect((error as WalletCreationError).apiErrorCode).toBe(UNRELATED_CODE);
+            expect((error as Error).message).toBe(`rejected: ${UNRELATED_CODE}`);
+        });
+    });
+
+    describe("when the EVM API rejects a quorum-only recovery config without a code", () => {
+        it("throws WalletCreationError with the API message, not the raw body", async () => {
+            createWallet.mockResolvedValue({
+                error: true,
+                statusCode: 400,
+                message: "A wallet created with a recovery quorum also needs a single recovery signer.",
+            });
+
+            const error = await factory
+                .createWallet({
+                    chain: "base-sepolia",
+                    recoveryMethods: [
+                        {
+                            type: "quorum",
+                            threshold: 1,
+                            members: [
+                                { type: "external-wallet", address: "0x4560000000000000000000000000000000000456" },
+                            ],
+                        },
+                    ],
+                })
+                .then(
+                    () => expect.fail("Expected createWallet to throw"),
+                    (thrown: unknown) => thrown
+                );
+
+            expect(error).toBeInstanceOf(WalletCreationError);
+            expect((error as Error).message).toBe(
+                "A wallet created with a recovery quorum also needs a single recovery signer."
+            );
         });
     });
 });

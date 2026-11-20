@@ -1,4 +1,4 @@
-import { ApiClientError } from "@crossmint/common-sdk-base";
+import { ApiClientError, CrossmintSDKError, WalletErrorCode } from "@crossmint/common-sdk-base";
 import { describe, expect, test } from "vitest";
 
 import { mapWalletError } from "./CrossmintWalletBaseProvider";
@@ -62,6 +62,26 @@ describe("mapWalletError", () => {
     describe("when the error is a rejected fetch (TypeError)", () => {
         test("maps to network", () => {
             expect(mapWalletError(new TypeError("Failed to fetch")).code).toBe("network");
+        });
+    });
+
+    describe("when the error is a TypeError that is not a rejected fetch", () => {
+        test("maps to unknown, not network", () => {
+            expect(mapWalletError(new TypeError("Cannot read properties of null (reading 'map')")).code).toBe(
+                "unknown"
+            );
+        });
+    });
+
+    describe("when the error is an SDK error", () => {
+        test("maps to unknown and keeps the SDK code in sdkCode", () => {
+            const error = new CrossmintSDKError("A quorum needs a `members` list.", WalletErrorCode.SIGNER_INVALID);
+
+            expect(mapWalletError(error)).toEqual({
+                code: "unknown",
+                sdkCode: "wallet:signer-invalid",
+                message: error.message,
+            });
         });
     });
 

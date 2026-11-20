@@ -124,6 +124,33 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         });
     });
 
+    // The SDK reads the rejected signer's locator from this message (QuorumApprovalRejectedError). Stellar words it
+    // `Invalid signature for signer <locator>` instead; this heartbeat has no Stellar wallet to check that one.
+    const EVM_APPROVAL_REJECTED = /^Signature '[^']*' on the approval for signer '[^']+' is invalid/;
+
+    it("approveTransaction signed by the wrong key names the rejected signer", async () => {
+        const created = await createdTransaction();
+        const wrongKey = await externalWalletSigner().approval(pendingMessage(created));
+
+        const rejected = await apiClient.approveTransaction(evmWallet, created.id, {
+            approvals: [{ signer: evmAdmin.locator, signature: wrongKey.signature }],
+        });
+
+        expectErrorShape(rejected);
+        expect((rejected as { message: string }).message).toMatch(EVM_APPROVAL_REJECTED);
+    });
+
+    it("approveTransaction with a malformed signature names the rejected signer", async () => {
+        const created = await createdTransaction();
+
+        const rejected = await apiClient.approveTransaction(evmWallet, created.id, {
+            approvals: [{ signer: evmAdmin.locator, signature: "0xdeadbeef" }],
+        });
+
+        expectErrorShape(rejected);
+        expect((rejected as { message: string }).message).toMatch(EVM_APPROVAL_REJECTED);
+    });
+
     it("getTransactions", async () => {
         const result = expectContract<{ transactions: unknown }>(await apiClient.getTransactions(evmWallet), {
             transactions: "object",
@@ -238,6 +265,25 @@ describe("Heartbeat — wallets API contract (Real HTTP)", () => {
         } as Parameters<typeof apiClient.removeRecoveryMethod>[2]);
         expectContract(result, { id: "string" });
     }, 120_000);
+
+    it("removeRecoveryMethod of the wallet's only recovery method returns LAST_RECOVERY_SIGNER", async () => {
+        const only = externalWalletSigner();
+        const created = await apiClient.createWallet({
+            chainType: "evm",
+            type: "smart",
+            owner: `userId:heartbeat-last-recovery-${Date.now()}`,
+            config: { adminSigner: only.signer },
+        } as Parameters<typeof apiClient.createWallet>[0]);
+        const { address } = expectContract<{ address: string }>(created, { address: "string" });
+
+        const rejected = await apiClient.removeRecoveryMethod(address as Locator, only.locator, {
+            chain: EVM_CHAIN,
+            approver: only.locator,
+        } as Parameters<typeof apiClient.removeRecoveryMethod>[2]);
+
+        // The SDK maps this code to QuorumRequestError.
+        expectErrorShape(rejected, "LAST_RECOVERY_SIGNER");
+    });
 
     it.fails("getNfts (known broken: the SDK calls a route the API does not serve)", async () => {
         expectContract(await apiClient.getNfts({ address: evmWallet, chain: EVM_CHAIN, page: 1, perPage: 1 }), {});

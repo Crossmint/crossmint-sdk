@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import type { QuorumMember, SignerAdapter } from "../../signers/types";
-import { InvalidSignerError } from "../../utils/errors";
+import { ApprovalSigningTimeoutError, InvalidSignerError } from "../../utils/errors";
 import type { PendingApproval } from "../types";
 import { createQuorumApiEntry, createQuorumPendingApproval } from "../__tests__/test-helpers";
-import { collectApprovals, type ApprovalSigning } from "./approval-collector";
+import { APPROVAL_SIGNING_TIMEOUT_MS, collectApprovals, type ApprovalSigning } from "./approval-collector";
 
 const FLAT_LOCATOR = "external-wallet:0x1111111111111111111111111111111111111111";
 const DEVICE_LOCATOR = "device:BIPYZpIg4Lg5rkUxuCVy8vg1UcXkPq0bTJnRmuJcK8Vh";
@@ -39,6 +39,29 @@ const approvalsSignedBy = (members: Array<{ locator: string; message: string }>)
     members.map(({ locator, message }) => ({ signature: signatureOf(locator, message), signer: locator }));
 
 describe("collectApprovals", () => {
+    describe("when a held key never answers", () => {
+        it("rejects with the key's locator once the signing timeout passes", async () => {
+            vi.useFakeTimers();
+            try {
+                const signing = createSigning({
+                    held: [heldSigner(FLAT_LOCATOR)],
+                    sign: vi.fn(() => new Promise<never>(() => {})),
+                });
+
+                const collected = collectApprovals([flatApproval()], signing);
+                const assertion = expect(collected).rejects.toMatchObject({
+                    constructor: ApprovalSigningTimeoutError,
+                    signerLocator: FLAT_LOCATOR,
+                });
+                await vi.advanceTimersByTimeAsync(APPROVAL_SIGNING_TIMEOUT_MS);
+
+                await assertion;
+            } finally {
+                vi.useRealTimers();
+            }
+        });
+    });
+
     describe("for a flat entry", () => {
         describe("when a held signer has the entry's locator", () => {
             it("signs the entry's message with that signer", async () => {

@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
     type Chain,
     CrossmintWallets,
@@ -20,6 +20,7 @@ import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import {
     ApiClientError,
+    type CrossmintErrors,
     CrossmintSDKError,
     type SdkLogger,
     type UIConfig,
@@ -43,6 +44,8 @@ import { CrossmintAuthBaseContext } from "./CrossmintAuthBaseProvider";
  */
 export type WalletContextError = {
     code: "region-blocked" | "network" | "unknown";
+    /** The code of an SDK error (`code` is then `unknown`), e.g. `wallet:signer-invalid`. */
+    sdkCode?: CrossmintErrors;
     status?: number;
     message: string;
 };
@@ -226,6 +229,9 @@ export function isSameFailedAttempt<C extends Chain>(
  * A Cloudflare region-ban 403 is treated as a permanent block; fetch rejects/timeouts, 5xx, and
  * 429 are treated as transient network failures; everything else (incl. other 403s) is unknown.
  */
+// The messages fetch rejects with in Chrome, Node, React Native, Firefox and Safari; other TypeErrors are bugs or bad config.
+const FETCH_FAILURE_MESSAGE = /fetch|network|load failed/i;
+
 export function mapWalletError(error: unknown): WalletContextError {
     if (error instanceof ApiClientError) {
         if (error.status === 403 && isCloudflareRegionBlock(error.responseBody)) {
@@ -236,11 +242,23 @@ export function mapWalletError(error: unknown): WalletContextError {
         }
         return { code: "unknown", status: error.status, message: error.message };
     }
+    if (error instanceof CrossmintSDKError) {
+        return { code: "unknown", sdkCode: error.code, message: error.message };
+    }
     // A rejected fetch (no response) surfaces as a TypeError; treat as transient network failure.
-    if (error instanceof TypeError) {
+    if (error instanceof TypeError && FETCH_FAILURE_MESSAGE.test(error.message)) {
         return { code: "network", message: error.message };
     }
     return { code: "unknown", message: error instanceof Error ? error.message : String(error) };
+}
+
+// React Native throws until its WebView is up, and a wallet whose signers need none never starts it.
+function connectionIfReady<T>(getConnection?: () => T): T | undefined {
+    try {
+        return getConnection?.();
+    } catch {
+        return undefined;
+    }
 }
 
 export function CrossmintWalletBaseProvider({
@@ -265,6 +283,8 @@ export function CrossmintWalletBaseProvider({
     const [failedAttempt, setFailedAttempt] = useState<FailedWalletAttempt | undefined>(undefined);
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
     const [walletError, setWalletError] = useState<WalletContextError | null>(null);
+    // walletStatus is read from the render closure, so two calls in the same tick both see "not-loaded".
+    const walletLoadInFlight = useRef(false);
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
     const signerAuth = useSignerAuth();
     const { onAuthRequired: signerOnAuthRequired } = signerAuth;
@@ -343,8 +363,12 @@ export function CrossmintWalletBaseProvider({
     );
 
     const initializeWebViewIfNeeded = useCallback(
-        async (signers: Array<{ type: string }>) => {
-            if (signers.some((signer) => signer.type === "email" || signer.type === "phone")) {
+        async (signers: Array<{ type: string; members?: unknown }>) => {
+            // Members are scanned leniently: a malformed list is left for the wallet SDK to reject with its own code.
+            const needsTEE = (signer: { type?: unknown } | null | undefined) =>
+                signer?.type === "email" || signer?.type === "phone";
+            const memberNeedsTEE = (members: unknown) => Array.isArray(members) && members.some(needsTEE);
+            if (signers.some((signer) => needsTEE(signer) || memberNeedsTEE(signer.members))) {
                 await initializeWebView?.();
             }
         },
@@ -354,7 +378,7 @@ export function CrossmintWalletBaseProvider({
     const buildWalletOptions = useCallback(
         (argsOptions?: WalletOptions): WalletOptions => {
             return {
-                clientTEEConnection: clientTEEConnection?.(),
+                clientTEEConnection: connectionIfReady(clientTEEConnection),
                 resetSignerFrame,
                 callbacks: {
                     onWalletCreationStart:
@@ -381,7 +405,7 @@ export function CrossmintWalletBaseProvider({
         async <C extends Chain>(_args: WalletCreateArgs<C>) => {
             // Deep clone the args object to avoid mutating the original object
             const args = cloneDeep(_args);
-            if (crossmint.jwt == null || walletStatus === "in-progress") {
+            if (crossmint.jwt == null || walletStatus === "in-progress" || walletLoadInFlight.current) {
                 return undefined;
             }
             if (cachedWalletMatchesArgs(wallet, loadedWalletArgs, args)) {
@@ -398,6 +422,7 @@ export function CrossmintWalletBaseProvider({
             }
 
             try {
+                walletLoadInFlight.current = true;
                 setWalletStatus("in-progress");
                 setWalletError(null);
                 const wallets = CrossmintWallets.from(crossmint);
@@ -437,6 +462,8 @@ export function CrossmintWalletBaseProvider({
                 setWalletError(mapWalletError(error));
                 setWalletStatus("error");
                 return undefined;
+            } finally {
+                walletLoadInFlight.current = false;
             }
         },
         [
@@ -494,11 +521,12 @@ export function CrossmintWalletBaseProvider({
 
     const createWallet = useCallback(
         async <C extends Chain>(args: ClientSideWalletCreateArgs<C>) => {
-            if (crossmint.jwt == null || walletStatus === "in-progress") {
+            if (crossmint.jwt == null || walletStatus === "in-progress" || walletLoadInFlight.current) {
                 return undefined;
             }
 
             try {
+                walletLoadInFlight.current = true;
                 setWalletStatus("in-progress");
                 setWalletError(null);
                 const wallets = CrossmintWallets.from(crossmint);
@@ -520,6 +548,8 @@ export function CrossmintWalletBaseProvider({
                 setWalletError(mapWalletError(error));
                 setWalletStatus("error");
                 return undefined;
+            } finally {
+                walletLoadInFlight.current = false;
             }
         },
         [crossmint, walletStatus, initializeWebViewIfNeeded, buildWalletOptions]

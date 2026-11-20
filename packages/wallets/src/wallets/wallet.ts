@@ -59,9 +59,11 @@ import {
     WalletNotAvailableError,
     WalletTypeNotSupportedError,
     quorumSignerNotSupported,
+    throwIfApprovalRejected,
     throwIfCrossmintApiAuthError,
     throwIfQuorumApiError,
     throwIfRequestExpired,
+    signerOperationRejectedError,
     transactionNotCreatedError,
     transactionNotCreatedErrorFromApiClientError,
     RecoveryMethodRequiredError,
@@ -1125,7 +1127,7 @@ export class Wallet<C extends Chain> {
                 error: response,
             });
             throwIfQuorumApiError(response);
-            throw new Error(`Failed to remove signer: ${JSON.stringify(response)}`);
+            throw signerOperationRejectedError(response, `Failed to remove signer: ${JSON.stringify(response)}`);
         }
 
         const transactionId = response.id;
@@ -1256,7 +1258,10 @@ export class Wallet<C extends Chain> {
                 error: response,
             });
             throwIfQuorumApiError(response);
-            throw new Error(`Failed to remove recovery method: ${JSON.stringify(response)}`);
+            throw signerOperationRejectedError(
+                response,
+                `Failed to remove recovery method: ${JSON.stringify(response)}`
+            );
         }
 
         const transactionId = response.id;
@@ -1401,7 +1406,10 @@ export class Wallet<C extends Chain> {
         if (index == null) {
             // A key that is only a member of a recovery quorum selects that quorum as the approver (EDD 007 §7 "Role").
             const memberLocator = this.resolveSignerLocator(recoveryMethod);
-            if (quorumsWithMember(this.recoveryMethods.filter(isQuorumSigner), memberLocator).length > 0) {
+            if (!this.#isRecoveryQuorumMember(memberLocator)) {
+                await this.#syncRecoveryQuorums();
+            }
+            if (this.#isRecoveryQuorumMember(memberLocator)) {
                 this.#signerManager.selectRecoveryMember(this.#withoutServerSecret(recoveryMethod), memberLocator);
                 walletsLogger.info("wallet.useRecoveryMethod.success", { recoveryMemberLocator: memberLocator });
                 return;
@@ -1426,6 +1434,28 @@ export class Wallet<C extends Chain> {
         walletsLogger.info("wallet.useRecoveryMethod.success", {
             recoveryMethodLocator: this.#signerManager.recoveryLocator(selected),
         });
+    }
+
+    #isRecoveryQuorumMember(memberLocator: string): boolean {
+        return quorumsWithMember(this.recoveryMethods.filter(isQuorumSigner), memberLocator).length > 0;
+    }
+
+    // A quorum-approved addRecoveryMethod lands outside this object, so a member miss rereads the wallet's quorums.
+    async #syncRecoveryQuorums(): Promise<void> {
+        try {
+            const walletConfig = await this.#readWalletConfig();
+            // Only quorums whose add landed on this chain: one still awaiting approval would make the member ambiguous.
+            const installedOnChain = (entry: object) => {
+                const onChain = mapApiSignerToSigner(entry as APISigner, this.chain);
+                return onChain != null && this.#signerManager.isApprovedSignerStatus(onChain.status);
+            };
+            const quorums = recoveryMethodsFromWalletConfig<C>(walletConfig).filter(isQuorumSigner);
+            for (const quorum of quorums.filter(installedOnChain)) {
+                this.#signerManager.addRecoverySigner(quorum);
+            }
+        } catch (error) {
+            walletsLogger.warn("wallet.useRecoveryMethod.syncRecoveryQuorums.error", { error });
+        }
     }
 
     /**
@@ -1970,7 +2000,7 @@ export class Wallet<C extends Chain> {
         if (options?.approval != null) {
             const approvals = [options.approval];
 
-            return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
+            return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals, pendingApprovals);
         }
 
         const signing = this.#approvalSigning(walletSigner, options, signable, (signer, message) =>
@@ -1986,7 +2016,7 @@ export class Wallet<C extends Chain> {
             return signature;
         }
 
-        return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
+        return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals, pendingApprovals);
     }
 
     protected async approveTransactionInternal(
@@ -2016,7 +2046,7 @@ export class Wallet<C extends Chain> {
         if (options?.approval != null) {
             const approvals = [options.approval];
 
-            return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
+            return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals, pendingApprovals);
         }
 
         const approvalAdapter = getApprovalAdapter(transaction.chainType, this.chainAdapter);
@@ -2033,10 +2063,14 @@ export class Wallet<C extends Chain> {
             return transaction;
         }
 
-        return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
+        return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals, pendingApprovals);
     }
 
-    private async executeApproveTransactionWithErrorHandling(transactionId: string, approvals: Approval[]) {
+    private async executeApproveTransactionWithErrorHandling(
+        transactionId: string,
+        approvals: Approval[],
+        pendingApprovals: PendingApproval[]
+    ) {
         walletsLogger.info("wallet.approve: submitting approval to API", { transactionId });
         const approvedTransaction = await this.#apiClient.approveTransaction(this.walletLocator, transactionId, {
             approvals,
@@ -2045,13 +2079,20 @@ export class Wallet<C extends Chain> {
         if (approvedTransaction.error) {
             throwIfCrossmintApiAuthError(approvedTransaction);
             throwIfQuorumApiError(approvedTransaction, { transactionId });
+            throwIfApprovalRejected(approvedTransaction, { transactionId }, (locator) =>
+                isPendingQuorumMember(pendingApprovals, locator)
+            );
             throw new TransactionFailedError(JSON.stringify(approvedTransaction));
         }
 
         return approvedTransaction;
     }
 
-    private async executeApproveSignatureWithErrorHandling(signatureId: string, approvals: Approval[]) {
+    private async executeApproveSignatureWithErrorHandling(
+        signatureId: string,
+        approvals: Approval[],
+        pendingApprovals: PendingApproval[]
+    ) {
         const approvedSignature = await this.#apiClient.approveSignature(this.walletLocator, signatureId, {
             approvals,
         });
@@ -2059,6 +2100,9 @@ export class Wallet<C extends Chain> {
         if (approvedSignature.error) {
             throwIfCrossmintApiAuthError(approvedSignature);
             throwIfQuorumApiError(approvedSignature, { signatureId });
+            throwIfApprovalRejected(approvedSignature, { signatureId }, (locator) =>
+                isPendingQuorumMember(pendingApprovals, locator)
+            );
             // The client answers the API's 422 expiry with the stored request, which has no code.
             throwIfRequestExpired(approvedSignature, { signatureId });
             throw new SignatureFailedError(JSON.stringify(approvedSignature));
@@ -2091,4 +2135,15 @@ function isSupportedSmartWallet(
     wallet: GetWalletSuccessResponse
 ): wallet is Extract<GetWalletSuccessResponse, { chainType: ChainType }> {
     return wallet.type === "smart" && isSupportedChainType(wallet.chainType);
+}
+
+// Only a quorum member's rejected approval leaves the request open; any other bad signature still fails it.
+function isPendingQuorumMember(pendingApprovals: PendingApproval[], locator: string): boolean {
+    return pendingApprovals
+        .filter(isQuorumPendingApproval)
+        .some(({ quorumApprovals }) =>
+            [...quorumApprovals.pending, ...quorumApprovals.submitted].some(({ member }) =>
+                isSameSignerLocator(member.locator, locator)
+            )
+        );
 }
