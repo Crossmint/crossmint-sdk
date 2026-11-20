@@ -374,6 +374,29 @@ describe.each(CHAINS)("managing quorums on $chain", ({ chain }) => {
     });
 });
 
+describe("a Solana quorum with a passkey member", () => {
+    const passkeyQuorum = () => {
+        const { config } = createQuorumFixture("solana");
+        const passkey = { type: "passkey", id: "cred-dave", name: "Dave", publicKey: { x: "11", y: "22" } };
+        return { ...config, members: [...config.members, passkey] };
+    };
+
+    it.each([
+        { call: "addSigner", run: (wallet: Wallet<Chain>) => wallet.addSigner(passkeyQuorum() as never) },
+        {
+            call: "addRecoveryMethod",
+            run: (wallet: Wallet<Chain>) => wallet.addRecoveryMethod(passkeyQuorum() as never),
+        },
+    ])("$call throws InvalidSignerError and sends nothing, as Solana takes no passkey members", async ({ run }) => {
+        const api = createMockApiClient({ projectId: QUORUM_TEST_PROJECT_ID } as Partial<MockedApiClient>);
+        const wallet = (await createMockWallet("solana", api)) as Wallet<Chain>;
+
+        await expect(run(wallet)).rejects.toBeInstanceOf(InvalidSignerError);
+        expect(api.registerSigner).not.toHaveBeenCalled();
+        expect(api.registerRecoveryMethod).not.toHaveBeenCalled();
+    });
+});
+
 describe("a Solana quorum the API does not take yet", () => {
     it("surfaces QUORUM_SIGNER_UNSUPPORTED as QuorumRequestError", async () => {
         const api = createMockApiClient({ projectId: QUORUM_TEST_PROJECT_ID } as Partial<MockedApiClient>);

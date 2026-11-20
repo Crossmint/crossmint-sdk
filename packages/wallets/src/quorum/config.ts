@@ -9,7 +9,7 @@ import {
     type ServerSignerConfig,
     type SignerLocator,
 } from "../signers/types";
-import { InvalidRecoveryConfigError } from "../utils/errors";
+import { InvalidRecoveryConfigError, InvalidSignerError } from "../utils/errors";
 import { secureWipe } from "../utils/secure-wipe";
 import { getSignerLocator } from "../utils/signer-locator";
 import { quorumsWithComposition } from "./members";
@@ -27,6 +27,9 @@ export function toQuorumSignerInput(
     // Plain JavaScript callers can pass anything, so the members list is checked before it is mapped.
     if (!Array.isArray(config.members)) {
         throw new InvalidRecoveryConfigError("A quorum needs a `members` list.");
+    }
+    if (derivation.chain === "solana" && config.members.some((member) => member?.type === "passkey")) {
+        throw new InvalidSignerError("A Solana quorum takes no passkey members");
     }
     return {
         type: "quorum",
