@@ -102,17 +102,24 @@ export type Scope = TransferScope;
 /** A quorum as the API takes it: each member's identity fields only. */
 export type QuorumSignerInput = Extract<AddRecoveryMethodsV2025DtoClass["recoveryMethods"], { type: "quorum" }>;
 
+export type ApprovingMembersParam = Extract<
+    CreateSignerV2025InputDtoClass,
+    { approvingMembers?: unknown }
+>["approvingMembers"];
+
 export type RegisterSignerParams = {
     signer: SignerLocator | RegisterSignerPasskeyParams | SignerConfigForChain<Chain> | QuorumSignerInput;
     chain?: RegisterSignerChain;
     scopes?: Scope[];
     deployImmediately?: boolean;
     approver?: CreateSignerV2025InputDtoClass["approver"];
+    approvingMembers?: ApprovingMembersParam;
 };
 export type RegisterSignerResponse = DelegatedSignerV2025DtoClass | WalletsV2025ControllerCreateDelegatedSigner2Error;
 export type RemoveSignerParams = {
     chain?: RegisterSignerChain;
     approver?: CreateSignerV2025InputDtoClass["approver"];
+    approvingMembers?: ApprovingMembersParam;
 };
 export type RemoveSignerResponse =
     | WalletsTransactionV2025ResponseDtoClass
@@ -123,6 +130,7 @@ export type RegisterRecoveryMethodParams = {
     recoveryMethods: AddRecoveryMethodsV2025DtoClass["recoveryMethods"];
     approver: AddRecoveryMethodsV2025DtoClass["approver"];
     chain?: RegisterSignerChain;
+    approvingMembers?: ApprovingMembersParam;
 };
 export type RegisterRecoveryMethodResponse =
     | AddRecoveryMethodsResponseV2025DtoClass
@@ -130,6 +138,7 @@ export type RegisterRecoveryMethodResponse =
 export type RemoveRecoveryMethodParams = {
     approver: AddRecoveryMethodsV2025DtoClass["approver"];
     chain?: RegisterSignerChain;
+    approvingMembers?: ApprovingMembersParam;
 };
 export type RemoveRecoveryMethodResponse =
     | WalletsTransactionV2025ResponseDtoClass
@@ -137,7 +146,7 @@ export type RemoveRecoveryMethodResponse =
 export type GetSignersResponse = Array<DelegatedSignerV2025DtoClass> | WalletsV2025ControllerGetDelegatedSigner2Error;
 export type Signer = DelegatedSignerV2025DtoClass;
 
-export type SendParams = SendTokenDto;
+export type SendParams = SendTokenDto & { approvingMembers?: ApprovingMembersParam };
 export type SendResponse = WalletsSendTokenControllerSendToken2Response;
 
 type WalletType = "smart" | "mpc";

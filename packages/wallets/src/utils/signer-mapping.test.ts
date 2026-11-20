@@ -100,6 +100,20 @@ describe("getPendingSignerOperation", () => {
 });
 
 describe("mapApiSignerToSigner", () => {
+    describe("when a Solana signer's registration was cancelled", () => {
+        it("maps it as failed, so it is registered again like any failed registration", () => {
+            const apiSigner = {
+                type: "device",
+                locator: "device:test-device",
+                publicKey: { x: "1", y: "2" },
+                transaction: { id: "tx-123", status: "cancelled" },
+            } as unknown as APISigner;
+
+            expect(mapApiSignerToSigner(apiSigner, "solana")).toMatchObject({ status: "failed" });
+            expect(getPendingSignerOperation(apiSigner, "solana")).toBeNull();
+        });
+    });
+
     describe("when the signer is a quorum", () => {
         it.each([
             {

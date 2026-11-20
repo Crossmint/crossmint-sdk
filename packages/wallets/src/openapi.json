@@ -1235,6 +1235,30 @@
                             "type": "string"
                         },
                         "example": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
+                    },
+                    {
+                        "description": "When `approver` is a Solana quorum, the members designated to approve: exactly `threshold` distinct member locators. Required for a Solana quorum: only the designated members are asked to approve, and all of them must. Repeat the parameter once per member.",
+                        "in": "query",
+                        "name": "approvingMembers",
+                        "required": false,
+                        "schema": {
+                            "items": {
+                                "description": "A signer locator that can be either a of format '<signerAddress>' for external wallet type signers or '<signerType>:<signerIdentifier>'",
+                                "examples": [
+                                    "passkey:cWtP7gmZbd98HbKUuGXx5Q",
+                                    "api-key:123456789",
+                                    "external-wallet:0x1234567890123456789012345678901234567890",
+                                    "server:0x1234567890123456789012345678901234567890",
+                                    "email:test@example.com",
+                                    "phone:+1234567890",
+                                    "device:BIVmCqMz8QJB+se2kJEpGQ...",
+                                    "quorum:123e4567-e89b-12d3-a456-426614174000"
+                                ],
+                                "title": "Signer Locator",
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
                     }
                 ],
                 "responses": {
@@ -2427,6 +2451,30 @@
                             "type": "string"
                         },
                         "example": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
+                    },
+                    {
+                        "description": "When `approver` is a Solana quorum, the members designated to approve: exactly `threshold` distinct member locators. Required for a Solana quorum: only the designated members are asked to approve, and all of them must. Repeat the parameter once per member.",
+                        "in": "query",
+                        "name": "approvingMembers",
+                        "required": false,
+                        "schema": {
+                            "items": {
+                                "description": "A signer locator that can be either a of format '<signerAddress>' for external wallet type signers or '<signerType>:<signerIdentifier>'",
+                                "examples": [
+                                    "passkey:cWtP7gmZbd98HbKUuGXx5Q",
+                                    "api-key:123456789",
+                                    "external-wallet:0x1234567890123456789012345678901234567890",
+                                    "server:0x1234567890123456789012345678901234567890",
+                                    "email:test@example.com",
+                                    "phone:+1234567890",
+                                    "device:BIVmCqMz8QJB+se2kJEpGQ...",
+                                    "quorum:123e4567-e89b-12d3-a456-426614174000"
+                                ],
+                                "title": "Signer Locator",
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
                     }
                 ],
                 "responses": {
@@ -2676,6 +2724,30 @@
                             "title": "Signer Locator",
                             "type": "string"
                         }
+                    },
+                    {
+                        "description": "When `approver` is a Solana quorum, the members designated to approve: exactly `threshold` distinct member locators. Required for a Solana quorum: only the designated members are asked to approve, and all of them must. Repeat the parameter once per member.",
+                        "in": "query",
+                        "name": "approvingMembers",
+                        "required": false,
+                        "schema": {
+                            "items": {
+                                "description": "A signer locator that can be either a of format '<signerAddress>' for external wallet type signers or '<signerType>:<signerIdentifier>'",
+                                "examples": [
+                                    "passkey:cWtP7gmZbd98HbKUuGXx5Q",
+                                    "api-key:123456789",
+                                    "external-wallet:0x1234567890123456789012345678901234567890",
+                                    "server:0x1234567890123456789012345678901234567890",
+                                    "email:test@example.com",
+                                    "phone:+1234567890",
+                                    "device:BIVmCqMz8QJB+se2kJEpGQ...",
+                                    "quorum:123e4567-e89b-12d3-a456-426614174000"
+                                ],
+                                "title": "Signer Locator",
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
                     }
                 ],
                 "responses": {
@@ -2838,6 +2910,30 @@
                         "schema": {
                             "title": "Signer Locator",
                             "type": "string"
+                        }
+                    },
+                    {
+                        "description": "When `approver` is a Solana quorum, the members designated to approve: exactly `threshold` distinct member locators. Required for a Solana quorum: only the designated members are asked to approve, and all of them must. Repeat the parameter once per member.",
+                        "in": "query",
+                        "name": "approvingMembers",
+                        "required": false,
+                        "schema": {
+                            "items": {
+                                "description": "A signer locator that can be either a of format '<signerAddress>' for external wallet type signers or '<signerType>:<signerIdentifier>'",
+                                "examples": [
+                                    "passkey:cWtP7gmZbd98HbKUuGXx5Q",
+                                    "api-key:123456789",
+                                    "external-wallet:0x1234567890123456789012345678901234567890",
+                                    "server:0x1234567890123456789012345678901234567890",
+                                    "email:test@example.com",
+                                    "phone:+1234567890",
+                                    "device:BIVmCqMz8QJB+se2kJEpGQ...",
+                                    "quorum:123e4567-e89b-12d3-a456-426614174000"
+                                ],
+                                "title": "Signer Locator",
+                                "type": "string"
+                            },
+                            "type": "array"
                         }
                     }
                 ],
@@ -27945,6 +28041,25 @@
                                 "type": "string",
                                 "format": "date-time",
                                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                            },
+                            "approvingMembers": {
+                                "description": "When `approver` is a Solana quorum, the members designated to approve: exactly `threshold` distinct member locators. Required for a Solana quorum: only the designated members are asked to approve, and all of them must.",
+                                "items": {
+                                    "description": "A signer locator that can be either a of format '<signerAddress>' for external wallet type signers or '<signerType>:<signerIdentifier>'",
+                                    "examples": [
+                                        "passkey:cWtP7gmZbd98HbKUuGXx5Q",
+                                        "api-key:123456789",
+                                        "external-wallet:0x1234567890123456789012345678901234567890",
+                                        "server:0x1234567890123456789012345678901234567890",
+                                        "email:test@example.com",
+                                        "phone:+1234567890",
+                                        "device:BIVmCqMz8QJB+se2kJEpGQ...",
+                                        "quorum:123e4567-e89b-12d3-a456-426614174000"
+                                    ],
+                                    "title": "Signer Locator",
+                                    "type": "string"
+                                },
+                                "type": "array"
                             }
                         },
                         "required": ["signer"],
@@ -28405,6 +28520,25 @@
                                         "title": "Signer Locator",
                                         "description": "The locator for the signer",
                                         "example": "external-wallet:0x1234567890123456789012345678901234567890"
+                                    },
+                                    "approvingMembers": {
+                                        "description": "When `signer` is a quorum, the members designated to approve: exactly `threshold` distinct member locators. Required when a Solana quorum acts: only the designated members are asked to approve, and all of them must. Ignored on EVM and Stellar.",
+                                        "items": {
+                                            "description": "A signer locator that can be either a of format '<signerAddress>' for external wallet type signers or '<signerType>:<signerIdentifier>'",
+                                            "examples": [
+                                                "passkey:cWtP7gmZbd98HbKUuGXx5Q",
+                                                "api-key:123456789",
+                                                "external-wallet:0x1234567890123456789012345678901234567890",
+                                                "server:0x1234567890123456789012345678901234567890",
+                                                "email:test@example.com",
+                                                "phone:+1234567890",
+                                                "device:BIVmCqMz8QJB+se2kJEpGQ...",
+                                                "quorum:123e4567-e89b-12d3-a456-426614174000"
+                                            ],
+                                            "title": "Signer Locator",
+                                            "type": "string"
+                                        },
+                                        "type": "array"
                                     }
                                 },
                                 "required": ["transaction"]
@@ -28854,6 +28988,11 @@
                                         "type": "string",
                                         "title": "Signer Locator",
                                         "example": "external-wallet:0x1234567890123456789012345678901234567890"
+                                    },
+                                    "approvingMembers": {
+                                        "description": "Ignored: any `threshold` Stellar quorum members may approve.",
+                                        "items": {},
+                                        "type": "array"
                                     }
                                 },
                                 "required": ["transaction"],
@@ -31876,7 +32015,13 @@
                                             },
                                             "status": {
                                                 "type": "string",
-                                                "enum": ["awaiting-approval", "pending", "failed", "success"],
+                                                "enum": [
+                                                    "awaiting-approval",
+                                                    "pending",
+                                                    "failed",
+                                                    "success",
+                                                    "cancelled"
+                                                ],
                                                 "description": "Current status of the transaction"
                                             },
                                             "approvals": {
@@ -33482,6 +33627,18 @@
                                             "walletType": {
                                                 "type": "string",
                                                 "enum": ["smart"]
+                                            },
+                                            "validUntil": {
+                                                "anyOf": [
+                                                    {
+                                                        "description": "ISO 8601 formatted timestamp",
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "string"
+                                                    }
+                                                ],
+                                                "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                                             }
                                         },
                                         "required": ["chainType", "onChain", "id", "status", "createdAt", "walletType"]
@@ -35812,7 +35969,12 @@
                                                     "properties": {
                                                         "status": {
                                                             "type": "string",
-                                                            "enum": ["pending", "awaiting-approval", "failed"]
+                                                            "enum": [
+                                                                "pending",
+                                                                "awaiting-approval",
+                                                                "failed",
+                                                                "cancelled"
+                                                            ]
                                                         },
                                                         "id": {
                                                             "type": "string",
@@ -37252,6 +37414,18 @@
                                                             },
                                                             "required": ["pending", "submitted"],
                                                             "description": "Complete approval data including requirements, pending and submitted signatures"
+                                                        },
+                                                        "validUntil": {
+                                                            "anyOf": [
+                                                                {
+                                                                    "description": "ISO 8601 formatted timestamp",
+                                                                    "type": "number"
+                                                                },
+                                                                {
+                                                                    "type": "string"
+                                                                }
+                                                            ],
+                                                            "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                                                         }
                                                     },
                                                     "required": ["status", "id"],
@@ -37837,7 +38011,13 @@
                                             },
                                             "status": {
                                                 "type": "string",
-                                                "enum": ["awaiting-approval", "pending", "failed", "success"],
+                                                "enum": [
+                                                    "awaiting-approval",
+                                                    "pending",
+                                                    "failed",
+                                                    "success",
+                                                    "cancelled"
+                                                ],
                                                 "description": "Current status of the transaction"
                                             },
                                             "approvals": {
@@ -39443,6 +39623,18 @@
                                             "walletType": {
                                                 "type": "string",
                                                 "enum": ["smart"]
+                                            },
+                                            "validUntil": {
+                                                "anyOf": [
+                                                    {
+                                                        "description": "ISO 8601 formatted timestamp",
+                                                        "type": "number"
+                                                    },
+                                                    {
+                                                        "type": "string"
+                                                    }
+                                                ],
+                                                "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                                             }
                                         },
                                         "required": ["chainType", "onChain", "id", "status", "createdAt", "walletType"]
@@ -48804,6 +48996,25 @@
                                     }
                                 },
                                 "required": ["mode"]
+                            },
+                            "approvingMembers": {
+                                "description": "Required when a Solana quorum signs; ignored on EVM and Stellar.",
+                                "items": {
+                                    "description": "A signer locator that can be either a of format '<signerAddress>' for external wallet type signers or '<signerType>:<signerIdentifier>'",
+                                    "examples": [
+                                        "passkey:cWtP7gmZbd98HbKUuGXx5Q",
+                                        "api-key:123456789",
+                                        "external-wallet:0x1234567890123456789012345678901234567890",
+                                        "server:0x1234567890123456789012345678901234567890",
+                                        "email:test@example.com",
+                                        "phone:+1234567890",
+                                        "device:BIVmCqMz8QJB+se2kJEpGQ...",
+                                        "quorum:123e4567-e89b-12d3-a456-426614174000"
+                                    ],
+                                    "title": "Signer Locator",
+                                    "type": "string"
+                                },
+                                "type": "array"
                             }
                         },
                         "required": ["recipient"],
@@ -48917,6 +49128,25 @@
                             "recipient": {
                                 "type": "string",
                                 "example": "CROSSMINT"
+                            },
+                            "approvingMembers": {
+                                "description": "Required when a Solana quorum signs; ignored on EVM and Stellar.",
+                                "items": {
+                                    "description": "A signer locator that can be either a of format '<signerAddress>' for external wallet type signers or '<signerType>:<signerIdentifier>'",
+                                    "examples": [
+                                        "passkey:cWtP7gmZbd98HbKUuGXx5Q",
+                                        "api-key:123456789",
+                                        "external-wallet:0x1234567890123456789012345678901234567890",
+                                        "server:0x1234567890123456789012345678901234567890",
+                                        "email:test@example.com",
+                                        "phone:+1234567890",
+                                        "device:BIVmCqMz8QJB+se2kJEpGQ...",
+                                        "quorum:123e4567-e89b-12d3-a456-426614174000"
+                                    ],
+                                    "title": "Signer Locator",
+                                    "type": "string"
+                                },
+                                "type": "array"
                             }
                         },
                         "required": ["amount", "recipient"],
@@ -49074,6 +49304,25 @@
                                 "enum": ["USDC"]
                             }
                         }
+                    },
+                    "approvingMembers": {
+                        "description": "Required when a Solana quorum signs; ignored on EVM and Stellar.",
+                        "items": {
+                            "description": "A signer locator that can be either a of format '<signerAddress>' for external wallet type signers or '<signerType>:<signerIdentifier>'",
+                            "examples": [
+                                "passkey:cWtP7gmZbd98HbKUuGXx5Q",
+                                "api-key:123456789",
+                                "external-wallet:0x1234567890123456789012345678901234567890",
+                                "server:0x1234567890123456789012345678901234567890",
+                                "email:test@example.com",
+                                "phone:+1234567890",
+                                "device:BIVmCqMz8QJB+se2kJEpGQ...",
+                                "quorum:123e4567-e89b-12d3-a456-426614174000"
+                            ],
+                            "title": "Signer Locator",
+                            "type": "string"
+                        },
+                        "type": "array"
                     }
                 },
                 "required": ["recipient", "fees"]
@@ -52027,7 +52276,7 @@
                                 },
                                 "status": {
                                     "type": "string",
-                                    "enum": ["awaiting-approval", "pending", "failed", "success"],
+                                    "enum": ["awaiting-approval", "pending", "failed", "success", "cancelled"],
                                     "description": "Current status of the signature"
                                 },
                                 "params": {
@@ -54355,7 +54604,7 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["awaiting-approval", "pending", "failed", "success"],
+                                            "enum": ["awaiting-approval", "pending", "failed", "success", "cancelled"],
                                             "description": "Current status of the transaction"
                                         },
                                         "approvals": {
@@ -55927,6 +56176,18 @@
                                                 }
                                             },
                                             "required": ["mode"]
+                                        },
+                                        "validUntil": {
+                                            "anyOf": [
+                                                {
+                                                    "description": "ISO 8601 formatted timestamp",
+                                                    "type": "number"
+                                                },
+                                                {
+                                                    "type": "string"
+                                                }
+                                            ],
+                                            "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                                         }
                                     },
                                     "required": [
@@ -56092,7 +56353,7 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["awaiting-approval", "pending", "failed", "success"],
+                                            "enum": ["awaiting-approval", "pending", "failed", "success", "cancelled"],
                                             "description": "Current status of the transaction"
                                         },
                                         "approvals": {
@@ -57664,6 +57925,18 @@
                                                 }
                                             },
                                             "required": ["mode"]
+                                        },
+                                        "validUntil": {
+                                            "anyOf": [
+                                                {
+                                                    "description": "ISO 8601 formatted timestamp",
+                                                    "type": "number"
+                                                },
+                                                {
+                                                    "type": "string"
+                                                }
+                                            ],
+                                            "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                                         }
                                     },
                                     "required": [
@@ -58085,7 +58358,7 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["awaiting-approval", "pending", "failed", "success"],
+                                            "enum": ["awaiting-approval", "pending", "failed", "success", "cancelled"],
                                             "description": "Current status of the transaction"
                                         },
                                         "approvals": {
@@ -59657,6 +59930,18 @@
                                                 }
                                             },
                                             "required": ["mode"]
+                                        },
+                                        "validUntil": {
+                                            "anyOf": [
+                                                {
+                                                    "description": "ISO 8601 formatted timestamp",
+                                                    "type": "number"
+                                                },
+                                                {
+                                                    "type": "string"
+                                                }
+                                            ],
+                                            "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                                         }
                                     },
                                     "required": [
@@ -59873,7 +60158,7 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["awaiting-approval", "pending", "failed", "success"],
+                                            "enum": ["awaiting-approval", "pending", "failed", "success", "cancelled"],
                                             "description": "Current status of the transaction"
                                         },
                                         "approvals": {
@@ -61445,6 +61730,18 @@
                                                 }
                                             },
                                             "required": ["mode"]
+                                        },
+                                        "validUntil": {
+                                            "anyOf": [
+                                                {
+                                                    "description": "ISO 8601 formatted timestamp",
+                                                    "type": "number"
+                                                },
+                                                {
+                                                    "type": "string"
+                                                }
+                                            ],
+                                            "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                                         }
                                     },
                                     "required": [
@@ -61652,7 +61949,7 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["awaiting-approval", "pending", "failed", "success"],
+                                            "enum": ["awaiting-approval", "pending", "failed", "success", "cancelled"],
                                             "description": "Current status of the transaction"
                                         },
                                         "approvals": {
@@ -63224,6 +63521,18 @@
                                                 }
                                             },
                                             "required": ["mode"]
+                                        },
+                                        "validUntil": {
+                                            "anyOf": [
+                                                {
+                                                    "description": "ISO 8601 formatted timestamp",
+                                                    "type": "number"
+                                                },
+                                                {
+                                                    "type": "string"
+                                                }
+                                            ],
+                                            "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                                         }
                                     },
                                     "required": [
@@ -63269,7 +63578,7 @@
                     },
                     "status": {
                         "type": "string",
-                        "enum": ["awaiting-approval", "pending", "failed", "success"],
+                        "enum": ["awaiting-approval", "pending", "failed", "success", "cancelled"],
                         "description": "Current status of the signature"
                     },
                     "params": {
@@ -65503,7 +65812,7 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["awaiting-approval", "pending", "failed", "success"],
+                                "enum": ["awaiting-approval", "pending", "failed", "success", "cancelled"],
                                 "description": "Current status of the transaction"
                             },
                             "approvals": {
@@ -66978,6 +67287,18 @@
                                     }
                                 },
                                 "required": ["mode"]
+                            },
+                            "validUntil": {
+                                "anyOf": [
+                                    {
+                                        "description": "ISO 8601 formatted timestamp",
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ],
+                                "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                             }
                         },
                         "required": ["chainType", "walletType", "params", "onChain", "id", "status", "createdAt"],
@@ -67135,7 +67456,7 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["awaiting-approval", "pending", "failed", "success"],
+                                "enum": ["awaiting-approval", "pending", "failed", "success", "cancelled"],
                                 "description": "Current status of the transaction"
                             },
                             "approvals": {
@@ -68610,6 +68931,18 @@
                                     }
                                 },
                                 "required": ["mode"]
+                            },
+                            "validUntil": {
+                                "anyOf": [
+                                    {
+                                        "description": "ISO 8601 formatted timestamp",
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ],
+                                "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                             }
                         },
                         "required": ["chainType", "walletType", "params", "onChain", "id", "status", "createdAt"],
@@ -69023,7 +69356,7 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["awaiting-approval", "pending", "failed", "success"],
+                                "enum": ["awaiting-approval", "pending", "failed", "success", "cancelled"],
                                 "description": "Current status of the transaction"
                             },
                             "approvals": {
@@ -70498,6 +70831,18 @@
                                     }
                                 },
                                 "required": ["mode"]
+                            },
+                            "validUntil": {
+                                "anyOf": [
+                                    {
+                                        "description": "ISO 8601 formatted timestamp",
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ],
+                                "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                             }
                         },
                         "required": ["chainType", "walletType", "params", "onChain", "id", "status", "createdAt"],
@@ -70706,7 +71051,7 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["awaiting-approval", "pending", "failed", "success"],
+                                "enum": ["awaiting-approval", "pending", "failed", "success", "cancelled"],
                                 "description": "Current status of the transaction"
                             },
                             "approvals": {
@@ -72181,6 +72526,18 @@
                                     }
                                 },
                                 "required": ["mode"]
+                            },
+                            "validUntil": {
+                                "anyOf": [
+                                    {
+                                        "description": "ISO 8601 formatted timestamp",
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ],
+                                "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                             }
                         },
                         "required": ["chainType", "walletType", "params", "onChain", "id", "status", "createdAt"],
@@ -72380,7 +72737,7 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["awaiting-approval", "pending", "failed", "success"],
+                                "enum": ["awaiting-approval", "pending", "failed", "success", "cancelled"],
                                 "description": "Current status of the transaction"
                             },
                             "approvals": {
@@ -73855,6 +74212,18 @@
                                     }
                                 },
                                 "required": ["mode"]
+                            },
+                            "validUntil": {
+                                "anyOf": [
+                                    {
+                                        "description": "ISO 8601 formatted timestamp",
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ],
+                                "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                             }
                         },
                         "required": ["chainType", "walletType", "params", "onChain", "id", "status", "createdAt"],
@@ -85935,6 +86304,25 @@
                                     }
                                 ],
                                 "description": "The recovery method to add."
+                            },
+                            "approvingMembers": {
+                                "description": "When `approver` is a Solana quorum, the members designated to approve: exactly `threshold` distinct member locators. Required for a Solana quorum: only the designated members are asked to approve, and all of them must.",
+                                "items": {
+                                    "description": "A signer locator that can be either a of format '<signerAddress>' for external wallet type signers or '<signerType>:<signerIdentifier>'",
+                                    "examples": [
+                                        "passkey:cWtP7gmZbd98HbKUuGXx5Q",
+                                        "api-key:123456789",
+                                        "external-wallet:0x1234567890123456789012345678901234567890",
+                                        "server:0x1234567890123456789012345678901234567890",
+                                        "email:test@example.com",
+                                        "phone:+1234567890",
+                                        "device:BIVmCqMz8QJB+se2kJEpGQ...",
+                                        "quorum:123e4567-e89b-12d3-a456-426614174000"
+                                    ],
+                                    "title": "Signer Locator",
+                                    "type": "string"
+                                },
+                                "type": "array"
                             }
                         },
                         "required": ["approver", "recoveryMethods"],
@@ -88377,13 +88765,25 @@
                                     },
                                     "status": {
                                         "description": "Current status of the transaction",
-                                        "enum": ["awaiting-approval", "failed", "pending", "success"],
+                                        "enum": ["awaiting-approval", "failed", "pending", "success", "cancelled"],
                                         "type": "string"
                                     },
                                     "walletType": {
                                         "description": "The wallet type (smart or mpc)",
                                         "enum": ["mpc", "smart"],
                                         "type": "string"
+                                    },
+                                    "validUntil": {
+                                        "anyOf": [
+                                            {
+                                                "description": "ISO 8601 formatted timestamp",
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            }
+                                        ],
+                                        "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                                     }
                                 },
                                 "required": [
@@ -90326,13 +90726,25 @@
                                     },
                                     "status": {
                                         "description": "Current status of the transaction",
-                                        "enum": ["awaiting-approval", "failed", "pending", "success"],
+                                        "enum": ["awaiting-approval", "failed", "pending", "success", "cancelled"],
                                         "type": "string"
                                     },
                                     "walletType": {
                                         "description": "The wallet type (smart or mpc)",
                                         "enum": ["mpc", "smart"],
                                         "type": "string"
+                                    },
+                                    "validUntil": {
+                                        "anyOf": [
+                                            {
+                                                "description": "ISO 8601 formatted timestamp",
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            }
+                                        ],
+                                        "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                                     }
                                 },
                                 "required": [
@@ -92082,13 +92494,25 @@
                                     },
                                     "status": {
                                         "description": "Current status of the transaction",
-                                        "enum": ["awaiting-approval", "failed", "pending", "success"],
+                                        "enum": ["awaiting-approval", "failed", "pending", "success", "cancelled"],
                                         "type": "string"
                                     },
                                     "walletType": {
                                         "description": "The wallet type (smart or mpc)",
                                         "enum": ["mpc", "smart"],
                                         "type": "string"
+                                    },
+                                    "validUntil": {
+                                        "anyOf": [
+                                            {
+                                                "description": "ISO 8601 formatted timestamp",
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            }
+                                        ],
+                                        "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                                     }
                                 },
                                 "required": [
@@ -94048,13 +94472,25 @@
                                     },
                                     "status": {
                                         "description": "Current status of the transaction",
-                                        "enum": ["awaiting-approval", "failed", "pending", "success"],
+                                        "enum": ["awaiting-approval", "failed", "pending", "success", "cancelled"],
                                         "type": "string"
                                     },
                                     "walletType": {
                                         "description": "The wallet type (smart or mpc)",
                                         "enum": ["mpc", "smart"],
                                         "type": "string"
+                                    },
+                                    "validUntil": {
+                                        "anyOf": [
+                                            {
+                                                "description": "ISO 8601 formatted timestamp",
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            }
+                                        ],
+                                        "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                                     }
                                 },
                                 "required": [
@@ -95808,13 +96244,25 @@
                                     },
                                     "status": {
                                         "description": "Current status of the transaction",
-                                        "enum": ["awaiting-approval", "failed", "pending", "success"],
+                                        "enum": ["awaiting-approval", "failed", "pending", "success", "cancelled"],
                                         "type": "string"
                                     },
                                     "walletType": {
                                         "description": "The wallet type (smart or mpc)",
                                         "enum": ["mpc", "smart"],
                                         "type": "string"
+                                    },
+                                    "validUntil": {
+                                        "anyOf": [
+                                            {
+                                                "description": "ISO 8601 formatted timestamp",
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            }
+                                        ],
+                                        "description": "ISO timestamp after which a transaction still awaiting approval is cancelled. Present only on Solana quorum transactions, which stay valid while their approvals are collected."
                                     }
                                 },
                                 "required": [
