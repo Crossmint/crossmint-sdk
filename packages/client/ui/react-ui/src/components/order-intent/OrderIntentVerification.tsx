@@ -15,6 +15,11 @@ const AGENTIC_API_URLS = {
     test: "https://api.test.basistheory.com/agentic",
 } as const;
 
+// After an `openRedirect` launch, Basis Theory polls `complete` 6 × this many times, every 2 s, and
+// stops at the allowance's expiry. Its default (10) gives the buyer 2 minutes, too short for an
+// issuer approval plus a passkey; 25 gives 5 minutes, the same as the popup flow.
+const OPEN_REDIRECT_COMPLETE_POLL_ATTEMPTS = 25;
+
 export interface OrderIntentVerificationProps {
     /** The order intent returned by the API, including its `verificationConfig`. */
     orderIntent: OrderIntentWithVerification;
@@ -24,6 +29,15 @@ export interface OrderIntentVerificationProps {
     /** Called once the user has approved the allowance. Refetch the order intent afterwards. */
     onVerificationComplete?: () => void;
     onVerificationError?: (error: unknown) => void;
+    /**
+     * Opens the card network's hosted verification page (Mastercard) instead of `window.open`.
+     * Set it when the component runs in a WebView: open `uri` in an in-app browser that shares
+     * the system browser's storage and passkeys, such as `ASWebAuthenticationSession` on iOS or
+     * Chrome Custom Tabs on Android. Completion is then confirmed by polling, so the page does
+     * not need to report back. `onVerificationComplete` can fire while Mastercard still offers to
+     * save a passkey, so do not close the browser from it; let the buyer finish and close it.
+     */
+    openRedirect?: (uri: string) => void;
 }
 
 /**
@@ -37,9 +51,13 @@ export function OrderIntentVerification({
     appearance,
     onVerificationComplete,
     onVerificationError,
+    openRedirect,
 }: OrderIntentVerificationProps) {
     const completeRef = useRef(onVerificationComplete);
     const errorRef = useRef(onVerificationError);
+    // A ref, so a host that passes a new function on every render does not restart verification.
+    const openRedirectRef = useRef(openRedirect);
+    const hasOpenRedirect = openRedirect != null;
     // Optional: this component can be mounted without a CrossmintProvider.
     const logger = useContext(LoggerContext);
     const loggerRef = useRef(logger);
@@ -65,6 +83,10 @@ export function OrderIntentVerification({
     useEffect(() => {
         errorRef.current = onVerificationError;
     }, [onVerificationError]);
+
+    useEffect(() => {
+        openRedirectRef.current = openRedirect;
+    }, [openRedirect]);
 
     useEffect(() => {
         loggerRef.current = logger;
@@ -114,6 +136,8 @@ export function OrderIntentVerification({
                               errorColor,
                           }
                         : undefined,
+                    openRedirect: hasOpenRedirect ? (uri: string) => openRedirectRef.current?.(uri) : undefined,
+                    completePollAttempts: hasOpenRedirect ? OPEN_REDIRECT_COMPLETE_POLL_ATTEMPTS : undefined,
                 });
                 loggerRef.current?.info("react.orderIntentVerification.start", logContext);
                 await verification.verifyAllowance(allowanceId, {
@@ -170,6 +194,7 @@ export function OrderIntentVerification({
         errorColor,
         fontColor,
         hasAgenticAppearance,
+        hasOpenRedirect,
         orderIntentId,
         pendingProvider,
         primaryColor,
