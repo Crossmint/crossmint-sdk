@@ -126,6 +126,69 @@ import {
     waitForTransactionCompletion,
 } from "./services/operation-poller";
 
+// ─── DACS-Standard Guardrail (§9.5.7 & §14.4) ─────────────────────────────
+
+export interface DacsMandateMeta {
+    /** Signed DACS mandate identifier or URI. */
+    dacsMandate?: string;
+    /** Active DACS session identifier. */
+    dacsSessionId?: string;
+    /** Hard authorized spend ceiling (decimal token amount or atomic integer units). */
+    dacsMaxAmount?: bigint | string | number;
+}
+
+function parseDacsFixedPoint(value: bigint | string | number): bigint {
+    if (typeof value === "bigint") {
+        return value * 10n ** 18n;
+    }
+    const raw = String(value).trim();
+    if (!/^-?\d+(\.\d+)?$/.test(raw)) {
+        throw new Error(`Invalid numeric value: "${raw}"`);
+    }
+    const negative = raw.startsWith("-");
+    const unsigned = negative ? raw.slice(1) : raw;
+    const [wholePart, fracPart = ""] = unsigned.split(".");
+    const paddedFrac = (fracPart + "0".repeat(18)).slice(0, 18);
+    const scaled = BigInt(wholePart) * 10n ** 18n + BigInt(paddedFrac);
+    return negative ? -scaled : scaled;
+}
+
+export function assertDacsSpendMandate(
+    requestedAmount: bigint | string | number,
+    meta?: DacsMandateMeta
+): void {
+    if (!meta || (!meta.dacsMandate && !meta.dacsSessionId)) {
+        return;
+    }
+
+    if (meta.dacsMaxAmount !== undefined) {
+        let ceiling: bigint;
+        let requested: bigint;
+        try {
+            ceiling = parseDacsFixedPoint(meta.dacsMaxAmount);
+            requested = parseDacsFixedPoint(requestedAmount);
+        } catch {
+            throw new InvalidTransferAmountError(
+                `[DACS-Standard §9.5.7] Invalid numeric amount or dacsMaxAmount ceiling.`
+            );
+        }
+
+        if (ceiling < 0n) {
+            throw new InvalidTransferAmountError(
+                `[DACS-Standard §9.5.7] Invalid negative dacsMaxAmount ceiling: "${meta.dacsMaxAmount}".`
+            );
+        }
+
+        if (requested > ceiling) {
+            throw new InvalidTransferAmountError(
+                `[DACS-Standard §9.5.7] Wallet.send execution aborted: requested spend (${requestedAmount}) exceeds authorized mandate ceiling (${meta.dacsMaxAmount}).`
+            );
+        }
+    }
+}
+
+export type DacsSendTokenTransactionOptions = SendTokenTransactionOptions & DacsMandateMeta;
+
 type WalletContructorType<C extends Chain> = {
     chain: C;
     address: string;
@@ -178,6 +241,8 @@ export class Wallet<C extends Chain> {
     #quorumMemberLocator: SignerLocator | null = null;
     // approve() calls in flight, by request id: a second call for the same request joins the first (one signing pass).
     #approving = new Map<string, Promise<unknown>>();
+    // Optional session-level DACS-Standard (§9.5.7) spend mandate ceiling.
+    #dacsMandate?: DacsMandateMeta;
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
         const {
@@ -284,6 +349,14 @@ export class Wallet<C extends Chain> {
     }
 
     /**
+     * Configure or update a DACS-Standard (§9.5.7) delegated spend mandate ceiling for this wallet instance.
+     */
+    public setDacsMandate(mandate?: DacsMandateMeta): this {
+        this.#dacsMandate = mandate;
+        return this;
+    }
+
+    /**
      * Wait for the wallet's internal signer initialization to complete.
      * After this resolves, `needsRecovery()` reflects the true state.
      */
@@ -381,6 +454,7 @@ export class Wallet<C extends Chain> {
     /** A chain wallet built from `source` keeps the server recovery keys `source` resolved, so it can still sign. */
     protected static copyServerRecoveryKeys(source: Wallet<Chain>, copy: Wallet<Chain>): void {
         copy.#serverSignerResolver.adoptRecoveryResolutions(source.#serverSignerResolver);
+        copy.#dacsMandate = source.#dacsMandate;
     }
 
     protected static getApiRecoveryServerSignerAddresses<C extends Chain>(wallet: Wallet<C>): string[] {
@@ -659,7 +733,7 @@ export class Wallet<C extends Chain> {
             return { chain: thisArg.chain, address: thisArg.address };
         },
     })
-    public async send<T extends SendTokenTransactionOptions | undefined = undefined>(
+    public async send<T extends DacsSendTokenTransactionOptions | undefined = undefined>(
         to: string | UserLocator,
         token: string,
         amount: string,
@@ -671,6 +745,17 @@ export class Wallet<C extends Chain> {
                 `Invalid transfer amount: "${amount}". Amount must be a positive number greater than zero.`
             );
         }
+
+        // DACS-Standard (§9.5.7 & §14.4) pre-flight spend mandate ceiling check
+        const effectiveDacsMeta: DacsMandateMeta | undefined =
+            this.#dacsMandate || options?.dacsMandate || options?.dacsSessionId
+                ? {
+                      dacsMandate: options?.dacsMandate ?? this.#dacsMandate?.dacsMandate,
+                      dacsSessionId: options?.dacsSessionId ?? this.#dacsMandate?.dacsSessionId,
+                      dacsMaxAmount: options?.dacsMaxAmount ?? this.#dacsMandate?.dacsMaxAmount,
+                  }
+                : undefined;
+        assertDacsSpendMandate(amount, effectiveDacsMeta);
 
         const recipient = toRecipientLocator(to);
         const resolvedChain = this.resolveChainForEnvironment();
