@@ -180,6 +180,13 @@ const QUORUM_REQUEST_ERROR_REASONS = [
     "SCOPED_QUORUM_CANNOT_SIGN",
     // Removing the wallet's only recovery method.
     "LAST_RECOVERY_SIGNER",
+    "QUORUM_APPROVING_MEMBERS_REQUIRED",
+    "QUORUM_MEMBER_NOT_DESIGNATED",
+    "QUORUM_TOO_MANY_ENVELOPE_SIGNERS",
+    "SIGNER_KEY_IN_USE",
+    "QUORUM_THRESHOLD_TOO_HIGH_FOR_CHAIN",
+    "QUORUM_THRESHOLD_UNSUPPORTED",
+    "PENDING_QUORUM_TRANSACTIONS_CAP_EXCEEDED",
 ] as const;
 
 export type QuorumRequestErrorReason = (typeof QUORUM_REQUEST_ERROR_REASONS)[number];
@@ -477,6 +484,26 @@ export class TransactionExpiredError extends TransactionFailedError {
     }
 }
 
+/** The transaction was cancelled while it awaited approval (its approval window ended or a signer changed); create a new one. */
+export class TransactionCancelledError extends TransactionFailedError {
+    readonly transactionId?: string;
+
+    constructor(message: string, transactionId: string | undefined, details?: string) {
+        super(message, details);
+        this.transactionId = transactionId;
+    }
+}
+
+export const TRANSACTION_CANCELLED_MESSAGE =
+    "The transaction was cancelled before it could be submitted. Create a new transaction.";
+
+/** Throws `TransactionCancelledError` for a stored transaction whose status is `cancelled`. */
+export function throwIfTransactionCancelled(response: unknown, transactionId: string): void {
+    if (isResponseBody<{ status?: unknown }>(response) && response.status === "cancelled") {
+        throw new TransactionCancelledError(TRANSACTION_CANCELLED_MESSAGE, transactionId, JSON.stringify(response));
+    }
+}
+
 /** The request a call site was acting on; the API error body does not carry its id. */
 export type ExpiredRequest = { transactionId?: string; signatureId?: string };
 
@@ -621,7 +648,7 @@ export function throwIfApprovalRejected(
     throw new QuorumApprovalRejectedError(response.message, request, rejectedSigner, JSON.stringify(response));
 }
 
-/** Throws the typed error for a quorum API code or `TRANSACTION_EXPIRED`; returns for any other response. */
+/** Throws the typed error for a quorum API code, `TRANSACTION_EXPIRED` or `TRANSACTION_CANCELLED`; returns for any other. */
 export function throwIfQuorumApiError(response: unknown, request: ExpiredRequest = {}): void {
     if (!isResponseBody<CrossmintApiErrorBody>(response) || response.code == null) {
         return;
@@ -631,6 +658,13 @@ export function throwIfQuorumApiError(response: unknown, request: ExpiredRequest
     const code = response.code;
     if (code === "TRANSACTION_EXPIRED") {
         throw new TransactionExpiredError(response.message ?? TRANSACTION_EXPIRED_MESSAGE, request, details);
+    }
+    if (code === "TRANSACTION_CANCELLED") {
+        throw new TransactionCancelledError(
+            response.message ?? TRANSACTION_CANCELLED_MESSAGE,
+            request.transactionId,
+            details
+        );
     }
     if (isQuorumRequestErrorReason(code)) {
         throw new QuorumRequestError(
@@ -708,6 +742,7 @@ export type WalletError =
     | ApprovalSigningTimeoutError
     | SignerOperationRejectedError
     | TransactionExpiredError
+    | TransactionCancelledError
     | PendingApprovalsError
     | InvalidAddressError
     | UnsupportedBrowserError

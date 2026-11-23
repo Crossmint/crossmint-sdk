@@ -5,6 +5,7 @@ import {
     SignatureNotAvailableError,
     SigningFailedError,
     TransactionAwaitingApprovalError,
+    TransactionCancelledError,
     TransactionConfirmationTimeoutError,
     TransactionExpiredError,
     TransactionHashNotFoundError,
@@ -292,6 +293,69 @@ describe("operation-poller", () => {
 
                 expect(error).toBeInstanceOf(TransactionExpiredError);
                 expect(error.transactionId).toBe("txn-expired");
+            });
+        });
+        describe("when the transaction was cancelled while polling", () => {
+            it("throws TransactionCancelledError with the transaction id", async () => {
+                mockApiClient.getTransaction
+                    .mockResolvedValueOnce({ id: "txn-cancelled", status: "pending" } as any)
+                    .mockResolvedValue({ id: "txn-cancelled", status: "cancelled", onChain: {} } as any);
+
+                const error = await settleError(pollTx("txn-cancelled"));
+
+                expect(error).toBeInstanceOf(TransactionCancelledError);
+                expect(error.transactionId).toBe("txn-cancelled");
+            });
+        });
+
+        describe("when only quorum members must still approve a transaction with a validUntil", () => {
+            it.each([
+                { given: "2026-11-24T10:00:00.000Z", exposed: "2026-11-24T10:00:00.000Z" },
+                { given: Date.parse("2026-11-24T10:00:00.000Z"), exposed: "2026-11-24T10:00:00.000Z" },
+            ])("returns it as an ISO string next to the transaction id ($given)", async ({ given, exposed }) => {
+                const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
+                mockApiClient.getTransaction.mockResolvedValue({
+                    ...txAwaiting("txn-window", { pending: [entry] }),
+                    validUntil: given,
+                });
+
+                expect(await settleValue(pollTx("txn-window"))).toStrictEqual({
+                    hash: undefined,
+                    explorerLink: undefined,
+                    transactionId: "txn-window",
+                    validUntil: exposed,
+                });
+            });
+        });
+
+        describe("when the validUntil is not a date", () => {
+            it("returns it as given, keeping the transaction id", async () => {
+                const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
+                mockApiClient.getTransaction.mockResolvedValue({
+                    ...txAwaiting("txn-odd", { pending: [entry] }),
+                    validUntil: "soon",
+                });
+
+                expect(await settleValue(pollTx("txn-odd"))).toMatchObject({
+                    transactionId: "txn-odd",
+                    validUntil: "soon",
+                });
+            });
+        });
+
+        describe("when a landed transaction carries a validUntil", () => {
+            it("returns it next to the hash", async () => {
+                mockApiClient.getTransaction.mockResolvedValue({
+                    ...txSuccess("txn-landed", { txId: "0xhash" }),
+                    validUntil: "2026-11-24T10:00:00.000Z",
+                });
+
+                expect(await settleValue(pollTx("txn-landed"))).toStrictEqual({
+                    hash: "0xhash",
+                    explorerLink: "",
+                    transactionId: "txn-landed",
+                    validUntil: "2026-11-24T10:00:00.000Z",
+                });
             });
         });
     });

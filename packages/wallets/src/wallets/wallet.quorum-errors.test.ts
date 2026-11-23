@@ -10,6 +10,7 @@ import {
     SignatureFailedError,
     SignatureNotCreatedError,
     SignerOperationRejectedError,
+    TransactionCancelledError,
     TransactionExpiredError,
     TransactionFailedError,
     TransactionNotCreatedError,
@@ -32,6 +33,19 @@ import {
 } from "./__tests__/test-helpers";
 
 const QUORUM_CODE = "QUORUM_SIZE_INVALID";
+// Every quorum code the API answers with; the Solana ones (EDD 008 and 009) follow the E-milestone ones.
+const QUORUM_CODES = [
+    QUORUM_CODE,
+    "QUORUM_APPROVING_MEMBERS_REQUIRED",
+    "QUORUM_APPROVING_MEMBERS_COUNT_MISMATCH",
+    "QUORUM_APPROVING_MEMBER_INVALID",
+    "APPROVING_MEMBERS_NOT_APPLICABLE",
+    "QUORUM_MEMBER_NOT_DESIGNATED",
+    "QUORUM_TOO_MANY_ENVELOPE_SIGNERS",
+    "SIGNER_KEY_IN_USE",
+    "QUORUM_THRESHOLD_TOO_HIGH_FOR_CHAIN",
+    "QUORUM_THRESHOLD_UNSUPPORTED",
+];
 const UNRELATED_CODE = "SOME_OTHER_ERROR";
 const RECIPIENT = "0x1111111111111111111111111111111111111111";
 const NEW_SIGNER = "0x4560000000000000000000000000000000000456";
@@ -199,8 +213,8 @@ describe("quorum API errors at wallet call sites", () => {
         });
 
         describe("when the API answers with a quorum error code", () => {
-            it("throws QuorumRequestError with the code as reason and the API message", async () => {
-                arrange(api, errorBody(QUORUM_CODE));
+            it.each(QUORUM_CODES)("throws QuorumRequestError with %s as reason and the API message", async (code) => {
+                arrange(api, errorBody(code));
 
                 const error = await act(wallet).then(
                     () => expect.fail("Expected the call to throw"),
@@ -208,8 +222,8 @@ describe("quorum API errors at wallet call sites", () => {
                 );
 
                 expect(error).toBeInstanceOf(QuorumRequestError);
-                expect((error as QuorumRequestError).reason).toBe(QUORUM_CODE);
-                expect((error as QuorumRequestError).message).toBe(`rejected: ${QUORUM_CODE}`);
+                expect((error as QuorumRequestError).reason).toBe(code);
+                expect((error as QuorumRequestError).message).toBe(`rejected: ${code}`);
             });
         });
 
@@ -270,6 +284,38 @@ describe("quorum API errors at wallet call sites", () => {
         });
     });
 
+    describe("when the API answers 422 PENDING_QUORUM_TRANSACTIONS_CAP_EXCEEDED", () => {
+        const CAP_CODE = "PENDING_QUORUM_TRANSACTIONS_CAP_EXCEEDED";
+        const CAP_SITES = ERROR_SITES.filter(({ name }) =>
+            [
+                "addSigner",
+                "addRecoveryMethod",
+                "send",
+                "EVM sendTransaction",
+                "Solana sendTransaction",
+                "Stellar sendTransaction",
+                "approve (transaction)",
+            ].includes(name)
+        );
+
+        it.each(CAP_SITES)(
+            "$name throws QuorumRequestError with the cap reason",
+            async ({ chain, signerType, arrange, act }) => {
+                const wallet = await createMockWallet(chain, api, signerType);
+                arrange(api, { ...errorBody(CAP_CODE), statusCode: 422 });
+
+                const error = await act(wallet).then(
+                    () => expect.fail("Expected the call to throw"),
+                    (thrown: unknown) => thrown
+                );
+
+                expect(error).toBeInstanceOf(QuorumRequestError);
+                expect((error as QuorumRequestError).reason).toBe(CAP_CODE);
+                expect((error as QuorumRequestError).message).toBe(`rejected: ${CAP_CODE}`);
+            }
+        );
+    });
+
     describe("approve, when the request expired", () => {
         const EXPIRED = { error: true, code: "TRANSACTION_EXPIRED", message: "The transaction expired." };
 
@@ -302,6 +348,47 @@ describe("quorum API errors at wallet call sites", () => {
             expect(error).toBeInstanceOf(TransactionExpiredError);
             expect((error as TransactionExpiredError).signatureId).toBe("sig-1");
             expect((error as TransactionExpiredError).transactionId).toBeUndefined();
+        });
+    });
+
+    describe("approve, when the API answers the approval with TRANSACTION_CANCELLED", () => {
+        it("throws TransactionCancelledError with the transaction id", async () => {
+            const wallet = await createMockWallet("solana", api, "external-wallet");
+            api.getTransaction.mockResolvedValue({ ...AWAITING_TRANSACTION, chainType: "solana" } as never);
+            api.approveTransaction.mockResolvedValue({
+                error: true,
+                code: "TRANSACTION_CANCELLED",
+                message: "The transaction was cancelled.",
+            } as never);
+
+            const error = await wallet.approve({ transactionId: "txn-1", options: { approval: APPROVAL } }).then(
+                () => expect.fail("Expected approve to throw"),
+                (thrown: unknown) => thrown
+            );
+
+            expect(error).toBeInstanceOf(TransactionCancelledError);
+            expect((error as TransactionCancelledError).transactionId).toBe("txn-1");
+        });
+    });
+
+    describe("approve, when the transaction was cancelled before the approval", () => {
+        it("throws TransactionCancelledError with the transaction id and sends no approval", async () => {
+            const wallet = await createMockWallet("solana", api, "external-wallet");
+            api.getTransaction.mockResolvedValue({
+                id: "txn-1",
+                status: "cancelled",
+                chainType: "solana",
+                approvals: { pending: [], submitted: [] },
+            } as never);
+
+            const error = await wallet.approve({ transactionId: "txn-1", options: { approval: APPROVAL } }).then(
+                () => expect.fail("Expected approve to throw"),
+                (thrown: unknown) => thrown
+            );
+
+            expect(error).toBeInstanceOf(TransactionCancelledError);
+            expect((error as TransactionCancelledError).transactionId).toBe("txn-1");
+            expect(api.approveTransaction).not.toHaveBeenCalled();
         });
     });
 
@@ -470,10 +557,10 @@ describe("quorum API errors at wallet creation", () => {
     });
 
     describe("when the API answers with a quorum error code", () => {
-        it("throws QuorumRequestError with the code as reason", async () => {
-            createWallet.mockResolvedValue(errorBody(QUORUM_CODE));
+        it.each(QUORUM_CODES)("throws QuorumRequestError with %s as reason", async (code) => {
+            createWallet.mockResolvedValue(errorBody(code));
 
-            await expect(createSolanaWallet()).rejects.toMatchObject({ reason: QUORUM_CODE });
+            await expect(createSolanaWallet()).rejects.toMatchObject({ reason: code });
             await expect(createSolanaWallet()).rejects.toBeInstanceOf(QuorumRequestError);
         });
     });
