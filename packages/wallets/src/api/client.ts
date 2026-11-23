@@ -281,6 +281,7 @@ class ApiClient extends CrossmintApiClient {
         if (params.approver != null) {
             queryParams.append("approver", params.approver);
         }
+        appendApprovingMembers(queryParams, params.approvingMembers);
         const url = `${this.apiPrefix}/${walletLocator}/signers/${encodedSigner}${queryParams.size > 0 ? `?${queryParams.toString()}` : ""}`;
         const response = await this.delete(url, {
             headers: this.headers,
@@ -310,6 +311,7 @@ class ApiClient extends CrossmintApiClient {
             queryParams.append("chain", params.chain);
         }
         queryParams.append("approver", params.approver);
+        appendApprovingMembers(queryParams, params.approvingMembers);
         const response = await this.delete(
             `${this.apiPrefix}/${walletLocator}/recovery-methods/${encodedSigner}?${queryParams.toString()}`,
             {
@@ -392,3 +394,9 @@ class ApiClient extends CrossmintApiClient {
 }
 
 export { ApiClient };
+
+function appendApprovingMembers(queryParams: URLSearchParams, approvingMembers: string[] | undefined): void {
+    for (const member of approvingMembers ?? []) {
+        queryParams.append("approvingMembers", member);
+    }
+}
