@@ -5,6 +5,7 @@ import {
     InvalidChainError,
     InvalidEnvironmentError,
     InvalidRecoveryConfigError,
+    InvalidSignerError,
     WalletCreationError,
 } from "../utils/errors";
 import { walletsLogger } from "../logger";
@@ -1870,6 +1871,37 @@ describe("WalletFactory - creating quorums", () => {
     describe.each([{ chain: "base-sepolia" }, { chain: "solana" }, { chain: "stellar" }] as const)(
         "on $chain",
         ({ chain }) => {
+            describe("createWallet with a quorum that has a passkey member", () => {
+                const passkey = { type: "passkey", id: "cred-dave", name: "Dave", publicKey: { x: "11", y: "22" } };
+                const withPasskey = () => {
+                    const { config } = createQuorumFixture(chain);
+                    return { ...config, members: [...config.members.filter((m) => m.type !== "passkey"), passkey] };
+                };
+
+                it(
+                    chain === "solana" ? "throws InvalidSignerError and creates nothing" : "creates the wallet",
+                    async () => {
+                        const quorum = createQuorumFixture(chain);
+                        mockApiClient.createWallet.mockResolvedValue(
+                            walletResponse(chain, { recoveryMethods: [quorum.entry] })
+                        );
+
+                        const creating = walletFactory.createWallet({
+                            chain,
+                            recoveryMethods: [withPasskey()],
+                        } as never);
+
+                        if (chain === "solana") {
+                            await expect(creating).rejects.toBeInstanceOf(InvalidSignerError);
+                            expect(mockApiClient.createWallet).not.toHaveBeenCalled();
+                        } else {
+                            await creating;
+                            expect(mockApiClient.createWallet).toHaveBeenCalledTimes(1);
+                        }
+                    }
+                );
+            });
+
             describe("createWallet with a recovery quorum", () => {
                 it("sends each member's identity fields only, under recoveryMethods", async () => {
                     const quorum = createQuorumFixture(chain);
