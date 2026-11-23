@@ -231,7 +231,7 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     private async createTransaction(
         transaction: FormattedEVMTransaction,
-        signerParams: { signer: string }
+        signerParams: { signer: string; approvingMembers?: string[] }
     ): Promise<CreateTransactionSuccessResponse> {
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {

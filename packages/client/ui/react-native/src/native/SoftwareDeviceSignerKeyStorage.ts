@@ -234,6 +234,14 @@ export class SoftwareDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
         return signerLocatorStore.getSavedSignerLocator(address);
     }
 
+    saveApprovingMembers(address: string, memberLocators: string[] | null): Promise<void> {
+        return signerLocatorStore.saveApprovingMembers(address, memberLocators);
+    }
+
+    getSavedApprovingMembers(address: string): Promise<string[] | null> {
+        return signerLocatorStore.getSavedApprovingMembers(address);
+    }
+
     getDeviceName(): string {
         const model = Device.deviceName ?? Device.modelName ?? Device.brand;
         const os = Device.osName;

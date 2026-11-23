@@ -23,6 +23,7 @@ export const solanaChainAdapter: ChainAdapter = {
     walletLocatorPrefix: "me:solana:smart",
     supportsSignatures: false,
     supportsQuorumApprovals: false,
+    requiresApprovingMembers: true,
 
     addSignerChain(_chain: Chain): AddSignerChain | undefined {
         return undefined;

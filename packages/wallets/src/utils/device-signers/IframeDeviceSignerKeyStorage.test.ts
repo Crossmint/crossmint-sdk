@@ -165,3 +165,44 @@ describe("IframeDeviceSignerKeyStorage — recovers from a fatal IndexedDB error
         );
     });
 });
+
+describe("IframeDeviceSignerKeyStorage — a device recovery's approving members", () => {
+    const WALLET = "SoLWaLLet111";
+    const MEMBERS = ["external-wallet:Alice111", "email:bob@example.com"];
+
+    beforeEach(() => {
+        setChromeUserAgent();
+        window.localStorage.clear();
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it("reads back the members saved for the wallet, and none for another wallet", async () => {
+        const storage = new IframeDeviceSignerKeyStorage(API_KEY);
+
+        await storage.saveApprovingMembers(WALLET, MEMBERS);
+
+        expect(await new IframeDeviceSignerKeyStorage(API_KEY).getSavedApprovingMembers(WALLET)).toEqual(MEMBERS);
+        expect(await storage.getSavedApprovingMembers("OtherWallet")).toBeNull();
+    });
+
+    it("clears them when saved as null", async () => {
+        const storage = new IframeDeviceSignerKeyStorage(API_KEY);
+        await storage.saveApprovingMembers(WALLET, MEMBERS);
+
+        await storage.saveApprovingMembers(WALLET, null);
+
+        expect(await storage.getSavedApprovingMembers(WALLET)).toBeNull();
+    });
+
+    it("returns none when the saved value is not JSON", async () => {
+        const storage = new IframeDeviceSignerKeyStorage(API_KEY);
+        await storage.saveApprovingMembers(WALLET, MEMBERS);
+        const key = Object.keys(window.localStorage).find((k) => window.localStorage.getItem(k)?.includes("Alice111"));
+        window.localStorage.setItem(key as string, "not-json");
+
+        expect(await storage.getSavedApprovingMembers(WALLET)).toBeNull();
+    });
+});

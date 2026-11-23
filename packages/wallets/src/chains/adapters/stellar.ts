@@ -11,6 +11,7 @@ export const stellarChainAdapter: ChainAdapter = {
     walletLocatorPrefix: "me:stellar:smart",
     supportsSignatures: false,
     supportsQuorumApprovals: true,
+    requiresApprovingMembers: false,
 
     addSignerChain(_chain: Chain): AddSignerChain | undefined {
         return undefined;

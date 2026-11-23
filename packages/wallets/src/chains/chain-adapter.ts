@@ -17,6 +17,8 @@ export interface ChainAdapter {
     readonly supportsSignatures: boolean;
     /** Whether this client signs as a quorum member on the chain; each chain's quorum milestone turns it on. */
     readonly supportsQuorumApprovals: boolean;
+    /** Whether a quorum's request must name its approving members when it is created. */
+    readonly requiresApprovingMembers: boolean;
     addSignerChain(chain: Chain): AddSignerChain | undefined;
     extractAddSignerOperation(
         response: RegisterSignerResponse,

@@ -110,4 +110,24 @@ export abstract class DeviceSignerKeyStorage {
     async getSavedSignerLocator(_address: string): Promise<string | null> {
         return null;
     }
+
+    /**
+     * Save the locators of the quorum members that approve a device recovery for a wallet, or `null` to clear them.
+     * On Solana a recovery quorum's request names the members that approve it; the SDK reads them back to remove the
+     * old device signer on a later visit. Only member locators are saved, never keys.
+     * The default implementation does not save them.
+     * @param address - The wallet address.
+     * @param memberLocators - The member locators, or `null` to clear them.
+     */
+    async saveApprovingMembers(_address: string, _memberLocators: string[] | null): Promise<void> {}
+
+    /**
+     * Get the member locators that {@link saveApprovingMembers} saved for a wallet.
+     * The default implementation always returns `null`.
+     * @param address - The wallet address.
+     * @returns The saved member locators, or `null` if the storage has none for the wallet.
+     */
+    async getSavedApprovingMembers(_address: string): Promise<string[] | null> {
+        return null;
+    }
 }

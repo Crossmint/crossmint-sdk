@@ -22,6 +22,7 @@ export {
     QuorumSignerNotSupportedError,
     TransactionAwaitingApprovalError,
     QuorumSelectionAmbiguousError,
+    QuorumApprovingMembersRequiredError,
     QuorumRequestError,
     type QuorumRequestErrorReason,
     TransactionExpiredError,
@@ -89,6 +90,9 @@ export type {
     AddRecoveryMethodReturnType,
     RemoveRecoveryMethodReturnType,
     RecoverResult,
+    RecoverOptions,
+    ApprovingMember,
+    ApprovingMembersOption,
 } from "./wallets/types";
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 

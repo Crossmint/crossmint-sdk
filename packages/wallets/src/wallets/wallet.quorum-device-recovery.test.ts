@@ -73,6 +73,8 @@ const deviceKeyStorage = () => {
             savedLocator = locator;
         }),
         getSavedSignerLocator: vi.fn(async () => savedLocator),
+        saveApprovingMembers: vi.fn().mockResolvedValue(undefined),
+        getSavedApprovingMembers: vi.fn().mockResolvedValue(null),
     };
 };
 
@@ -298,6 +300,18 @@ describe.each(CHAINS)(
                 expect(wallet.needsRecovery()).toBe(false);
                 expect(wallet.signer?.locator()).toBe(NEW_DEVICE);
                 expect(storage.saveSignerLocator).toHaveBeenCalledWith(address, NEW_DEVICE);
+            });
+
+            it("saves no approving members, even when recover() is given some, as this chain needs none", async () => {
+                await storage.saveSignerLocator("any", OLD_DEVICE);
+                const wallet = await recoveringWallet([deviceEntry(OLD_DEVICE, { status: "success" })]);
+                await wallet.recover({ approvingMembers: [aliceMember.locator] as never });
+                api.getSigner.mockResolvedValue(deviceEntry(NEW_DEVICE, request("tx-add", "success")) as never);
+
+                await wallet.recover({ approvingMembers: [aliceMember.locator] as never });
+
+                expect(storage.saveApprovingMembers).not.toHaveBeenCalled();
+                expect(storage.getSavedApprovingMembers).not.toHaveBeenCalled();
             });
 
             it("logs the removal it starts, so automatic recovery leaves a trace", async () => {

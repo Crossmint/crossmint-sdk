@@ -16,6 +16,7 @@ const DEFAULT_TIMEOUT_MS = 60_000;
 const INDEXEDDB_FATAL_CODE = "indexeddb-fatal";
 
 const SIGNER_LOCATOR_STORAGE_PREFIX = "crossmint:device-signer-locator:";
+const APPROVING_MEMBERS_STORAGE_PREFIX = "crossmint:device-recovery-approving-members:";
 
 type IframeRpcResponse =
     | { type: "response"; id: string; result: unknown }
@@ -376,6 +377,29 @@ export class IframeDeviceSignerKeyStorage extends DeviceSignerKeyStorage {
             return window.localStorage.getItem(`${SIGNER_LOCATOR_STORAGE_PREFIX}${address}`);
         } catch (error) {
             walletsLogger.warn("deviceSignerKeyStorage.getSavedSignerLocator.failed", { error });
+            return null;
+        }
+    }
+
+    async saveApprovingMembers(address: string, memberLocators: string[] | null): Promise<void> {
+        try {
+            const key = `${APPROVING_MEMBERS_STORAGE_PREFIX}${address}`;
+            if (memberLocators == null) {
+                window.localStorage.removeItem(key);
+            } else {
+                window.localStorage.setItem(key, JSON.stringify(memberLocators));
+            }
+        } catch (error) {
+            walletsLogger.warn("deviceSignerKeyStorage.saveApprovingMembers.failed", { error });
+        }
+    }
+
+    async getSavedApprovingMembers(address: string): Promise<string[] | null> {
+        try {
+            const saved = window.localStorage.getItem(`${APPROVING_MEMBERS_STORAGE_PREFIX}${address}`);
+            return saved == null ? null : (JSON.parse(saved) as string[]);
+        } catch (error) {
+            walletsLogger.warn("deviceSignerKeyStorage.getSavedApprovingMembers.failed", { error });
             return null;
         }
     }
