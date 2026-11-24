@@ -430,3 +430,92 @@ describe("CrossmintWalletBaseProvider — createWallet", () => {
         expect(initializeWebView).not.toHaveBeenCalled();
     });
 });
+
+describe("CrossmintWalletBaseProvider — React Native wallet loaded with an email key the args do not name", () => {
+    test("starts the WebView and loads the wallet again with its connection", async () => {
+        // Mirrors the RN provider: the connection throws until initializeWebView runs.
+        let ready = false;
+        const connection = { name: "signer-webview" };
+        const initializeWebView = vi.fn(() => {
+            ready = true;
+            return Promise.resolve();
+        });
+        const clientTEEConnection = () => {
+            if (!ready) {
+                throw new Error("WebView not ready or handshake incomplete");
+            }
+            return connection;
+        };
+        // Returning user: the wallet on the server has email recovery (e.g. created under an older app config).
+        const getWallet = vi.fn(async ({ chain }: { chain: string }) => ({
+            chain,
+            alias: undefined,
+            recoveryMethods: [{ type: "email", email: "alice@example.com" }],
+        }));
+        vi.mocked(createCrossmint).mockImplementation(() => ({ apiKey: MOCK_API_KEY, jwt: "jwt", setJwt: vi.fn() }));
+        vi.spyOn(CrossmintWallets, "from").mockReturnValue({ getWallet, createWallet: vi.fn() } as never);
+
+        const { getByTestId } = render(
+            <CrossmintProvider apiKey={MOCK_API_KEY}>
+                <CrossmintWalletBaseProvider
+                    createOnLogin={{
+                        chain: "base-sepolia",
+                        recovery: {
+                            type: "external-wallet",
+                            address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                            onSign: vi.fn(),
+                        },
+                    }}
+                    initializeWebView={initializeWebView}
+                    clientTEEConnection={clientTEEConnection as never}
+                >
+                    <TestConsumer />
+                </CrossmintWalletBaseProvider>
+            </CrossmintProvider>
+        );
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+        const options = (getWallet.mock.calls.at(-1)?.[0] as unknown as { options: { clientTEEConnection?: unknown } })
+            .options;
+        // The wallet SDK builds the email signer from this connection; without it NcsSigner falls back to the DOM iframe.
+        expect(options.clientTEEConnection).toBe(connection);
+        expect(initializeWebView).toHaveBeenCalledTimes(1);
+    });
+    test("loads once without the WebView when the wallet holds no email or phone key", async () => {
+        const initializeWebView = vi.fn().mockResolvedValue(undefined);
+        const getWallet = vi.fn(async ({ chain }: { chain: string }) => ({
+            chain,
+            alias: undefined,
+            recoveryMethods: [{ type: "external-wallet", address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }],
+        }));
+        vi.mocked(createCrossmint).mockImplementation(() => ({ apiKey: MOCK_API_KEY, jwt: "jwt", setJwt: vi.fn() }));
+        vi.spyOn(CrossmintWallets, "from").mockReturnValue({ getWallet, createWallet: vi.fn() } as never);
+
+        const { getByTestId } = render(
+            <CrossmintProvider apiKey={MOCK_API_KEY}>
+                <CrossmintWalletBaseProvider
+                    createOnLogin={{
+                        chain: "base-sepolia",
+                        recovery: {
+                            type: "external-wallet",
+                            address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                            onSign: vi.fn(),
+                        },
+                    }}
+                    initializeWebView={initializeWebView}
+                    clientTEEConnection={
+                        (() => {
+                            throw new Error("WebView not ready or handshake incomplete");
+                        }) as never
+                    }
+                >
+                    <TestConsumer />
+                </CrossmintWalletBaseProvider>
+            </CrossmintProvider>
+        );
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+        expect(initializeWebView).not.toHaveBeenCalled();
+        expect(getWallet).toHaveBeenCalledTimes(1);
+    });
+});
