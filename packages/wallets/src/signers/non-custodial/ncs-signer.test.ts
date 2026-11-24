@@ -398,4 +398,13 @@ describe("NonCustodialSigner on React Native without clientTEEConnection", () =>
 
         expect(rejections.map(String)).toEqual([]);
     });
+
+    it("rejects signing with guidance to pass clientTEEConnection", async () => {
+        (globalThis as { window?: unknown }).window = globalThis;
+        const signer = new EVMNonCustodialSigner(makeConfig({ clientTEEConnection: undefined }));
+
+        await expect(signer.ensureAuthenticated()).rejects.toThrow(
+            "email signer needs clientTEEConnection outside a browser"
+        );
+    });
 });
