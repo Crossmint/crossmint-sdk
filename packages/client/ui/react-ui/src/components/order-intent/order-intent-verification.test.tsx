@@ -385,6 +385,7 @@ describe("<OrderIntentVerification />", () => {
 
                 launch?.(REDIRECT_URI);
                 launch?.(REDIRECT_URI);
+                expect(openRedirect).toHaveBeenCalledTimes(2);
                 await act(async () => {
                     if (outcome === "resolve") {
                         firstBrowser.resolve();
