@@ -187,7 +187,7 @@ describe("<OrderIntentVerification />", () => {
     });
 
     describe("when the host opens the network page itself", () => {
-        const redirectUri = "https://src.mastercard.com/verify?session=abc";
+        const REDIRECT_URI = "https://src.mastercard.com/verify?session=abc";
 
         async function launchedRedirect() {
             await waitFor(() => {
@@ -209,9 +209,9 @@ describe("<OrderIntentVerification />", () => {
             const openRedirect = vi.fn();
 
             render(<OrderIntentVerification orderIntent={orderIntent("agentpay")} openRedirect={openRedirect} />);
-            (await launchedRedirect())?.(redirectUri);
+            (await launchedRedirect())?.(REDIRECT_URI);
 
-            expect(openRedirect).toHaveBeenCalledWith(redirectUri);
+            expect(openRedirect).toHaveBeenCalledWith(REDIRECT_URI);
         });
 
         test("polls for 5 minutes, so the buyer has time for the issuer step and the passkey", async () => {
@@ -236,12 +236,12 @@ describe("<OrderIntentVerification />", () => {
             rerender(
                 <OrderIntentVerification orderIntent={orderIntent("agentpay")} openRedirect={latestOpenRedirect} />
             );
-            launch?.(redirectUri);
+            launch?.(REDIRECT_URI);
 
             expect(basisTheory.create).toHaveBeenCalledOnce();
             expect(basisTheory.dispose).not.toHaveBeenCalled();
             expect(firstOpenRedirect).not.toHaveBeenCalled();
-            expect(latestOpenRedirect).toHaveBeenCalledWith(redirectUri);
+            expect(latestOpenRedirect).toHaveBeenCalledWith(REDIRECT_URI);
         });
     });
 

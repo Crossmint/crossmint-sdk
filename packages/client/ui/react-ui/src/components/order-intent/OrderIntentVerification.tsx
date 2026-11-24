@@ -30,12 +30,8 @@ export interface OrderIntentVerificationProps {
     onVerificationComplete?: () => void;
     onVerificationError?: (error: unknown) => void;
     /**
-     * Opens the card network's hosted verification page (Mastercard) instead of `window.open`.
-     * Set it when the component runs in a WebView: open `uri` in an in-app browser that shares
-     * the system browser's storage and passkeys, such as `ASWebAuthenticationSession` on iOS or
-     * Chrome Custom Tabs on Android. Completion is then confirmed by polling, so the page does
-     * not need to report back. `onVerificationComplete` can fire while Mastercard still offers to
-     * save a passkey, so do not close the browser from it; let the buyer finish and close it.
+     * In a WebView, open `uri` (Mastercard) in ASWebAuthenticationSession or Custom Tabs so passkeys persist.
+     * Do not close it from `onVerificationComplete`; let the buyer close it.
      */
     openRedirect?: (uri: string) => void;
 }

@@ -71,12 +71,8 @@ export interface CrossmintAgentCardAuthorizationProps {
     displayName: string;
     appearance?: AgentCardAuthorizationAppearance;
     /**
-     * Opens the card network's hosted verification page (Mastercard) instead of `window.open`.
-     * Set it when the component runs in a WebView: open `uri` in an in-app browser that shares
-     * the system browser's storage and passkeys, such as `ASWebAuthenticationSession` on iOS or
-     * Chrome Custom Tabs on Android. Completion is then confirmed by polling.
-     * `onAuthorized` can fire while Mastercard still offers to save a passkey, so do not close
-     * the browser from `onAuthorized`; let the buyer finish and close it.
+     * In a WebView, open `uri` (Mastercard) in ASWebAuthenticationSession or Custom Tabs so passkeys persist.
+     * Do not close it from `onAuthorized`; let the buyer close it.
      */
     openRedirect?: (uri: string) => void;
     onAuthorized: (result: AgentCardAuthorizationResult) => void;
