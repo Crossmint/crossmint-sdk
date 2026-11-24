@@ -25,12 +25,30 @@ export function quorumsWithComposition(
 }
 
 function isSameLocatorSet(left: string[], right: string[]): boolean {
-    const leftSet = new Set(left.map(comparableLocator));
-    const rightSet = new Set(right.map(comparableLocator));
+    const leftSet = new Set(left.map(memberKey));
+    const rightSet = new Set(right.map(memberKey));
     return (
         leftSet.size === left.length &&
         rightSet.size === right.length &&
         leftSet.size === rightSet.size &&
-        right.every((locator) => leftSet.has(comparableLocator(locator)))
+        right.every((locator) => leftSet.has(memberKey(locator)))
     );
+}
+
+// A server member and an external wallet at the same address are the same key, and the API lists a
+// recovery quorum's server member as `external-wallet:` while it lists a delegated one as `server:`.
+function memberKey(locator: string): string {
+    return comparableLocator(
+        locator.startsWith(SERVER_PREFIX) ? `external-wallet:${locator.slice(SERVER_PREFIX.length)}` : locator
+    );
+}
+
+const SERVER_PREFIX = "server:";
+
+/** True when a pending request's designated members are known and differ from the ones the caller now gives. */
+export function designatesOtherMembers(
+    designated: string[] | null | undefined,
+    requested: string[] | undefined
+): boolean {
+    return designated != null && requested != null && !isSameLocatorSet(designated, requested);
 }

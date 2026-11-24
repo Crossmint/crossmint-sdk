@@ -19,7 +19,12 @@ import {
 } from "../../signers/types";
 import { InvalidRecoveryConfigError, RecoveryMethodRequiredError } from "../../utils/errors";
 import { getSignerLocator, hasQuorumLocatorPrefix, isSameSignerLocator } from "../../utils/signer-locator";
-import { getPendingSignerOperation, mapApiSignerToSigner, registrationQuorum } from "../../utils/signer-mapping";
+import {
+    getPendingSignerOperation,
+    mapApiSignerToSigner,
+    registrationDesignatedMembers,
+    registrationQuorum,
+} from "../../utils/signer-mapping";
 import { resolveSignerChangeRole } from "../../quorum/roles";
 import { walletsLogger } from "../../logger";
 import type { PendingSignerOperation, Signer as WalletSigner, SignerStatus, WalletOptions } from "../types";
@@ -511,6 +516,8 @@ export class SignerManager<C extends Chain> {
         pendingOperation: PendingSignerOperation | null;
         /** The quorum that approves the registration, when its request names one: its members sign with `approve`. */
         approvingQuorum: QuorumLocator | null;
+        /** The members that quorum designated to approve the registration, when it names them. */
+        designatedMembers?: string[] | null;
         /** The signer could not be read (the request threw, other than a 404), so whether it is registered is unknown. */
         lookupFailed: boolean;
     }> {
@@ -537,6 +544,7 @@ export class SignerManager<C extends Chain> {
             signer,
             pendingOperation: getPendingSignerOperation(signerResponse, this.#chain),
             approvingQuorum: registrationQuorum(signerResponse, this.#chain),
+            designatedMembers: registrationDesignatedMembers(signerResponse, this.#chain),
             lookupFailed: false,
         };
     }

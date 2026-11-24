@@ -5,16 +5,6 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const NPMJS = "https://registry.npmjs.org/";
 
-// TODO(WAL-13249): Chainguard withheld these versions on 2026-10-27, so they pin npmjs.org. The
-// follow-up should first evaluate whether these packages are needed at all.
-const NPMJS_PINNED = new Set([
-    "bitcoinjs-lib@6.1.10",
-    "@dynamic-labs/wallet-book@4.100.5",
-    "@noxcturnal/noxcturnal-linux-arm64-gnu@0.1.2",
-    "@noxcturnal/noxcturnal-win32-arm64-msvc@0.1.2",
-    "@noxcturnal/noxcturnal-win32-x64-msvc@0.1.2",
-]);
-
 const routing = { default: NPMJS, scopes: {} };
 for (const line of readFileSync(join(root, ".npmrc"), "utf8").split("\n")) {
     const match = /^(@[^:]+:)?registry=(\S+)$/.exec(line.trim());
@@ -66,7 +56,7 @@ for (const [key, resolution] of entries) {
         continue;
     }
     const scope = name.startsWith("@") ? name.split("/")[0] : null;
-    const expected = NPMJS_PINNED.has(key) ? NPMJS : (scope && routing.scopes[scope]) || routing.default;
+    const expected = (scope && routing.scopes[scope]) || routing.default;
     if (new URL(tarball).origin !== new URL(expected).origin) {
         problems.push(`${key}: ${tarball} is not on ${expected}`);
     }

@@ -91,7 +91,7 @@ export function mapApiSignerToSigner(apiSigner: APISigner, chain: Chain): Signer
         // For Solana/Stellar, status comes from the transaction field
         let status: SignerStatus = "success";
         if ("transaction" in apiSigner && apiSigner.transaction != null) {
-            status = apiSigner.transaction.status;
+            status = apiSigner.transaction.status === "cancelled" ? "failed" : apiSigner.transaction.status;
         }
         return { ...base, status, ...(scopes != null && { scopes }) } as Signer;
     }
@@ -120,6 +120,23 @@ export function isSignerOnChain(
 export function registrationQuorum(apiSigner: APISigner, chain: Chain): QuorumLocator | null {
     const quorumEntry = registrationApprovals(apiSigner, chain).find((entry) => entry.signer.type === "quorum");
     return quorumEntry == null ? null : requireQuorumLocator(quorumEntry.signer.locator);
+}
+
+/** The members the registration's quorum entry designated (pending or signed), or null when no quorum approves it. */
+export function registrationDesignatedMembers(apiSigner: APISigner, chain: Chain): string[] | null {
+    const quorumEntry = registrationApprovals(apiSigner, chain).find((entry) => entry.signer.type === "quorum") as
+        | {
+              quorumApprovals?: {
+                  pending?: Array<{ member: { locator: string } }>;
+                  submitted?: Array<{ member: { locator: string } }>;
+              };
+          }
+        | undefined;
+    if (quorumEntry?.quorumApprovals == null) {
+        return null;
+    }
+    const { pending = [], submitted = [] } = quorumEntry.quorumApprovals;
+    return [...pending, ...submitted].map(({ member }) => member.locator);
 }
 
 function registrationApprovals(

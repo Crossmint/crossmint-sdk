@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 // Environment variables and configuration
 export const AUTH_CONFIG = {
     crossmintApiKey: process.env.TESTS_CROSSMINT_API_KEY || "",
+    crossmintServerApiKey: process.env.TESTS_CROSSMINT_SERVER_API_KEY || "",
     mailosaurApiKey: process.env.MAILOSAUR_API_KEY || "",
     mailosaurServerId: process.env.MAILOSAUR_SERVER_ID || "",
     mailosaurPhoneNumber: process.env.MAILOSAUR_PHONE_NUMBER || "",
@@ -29,6 +30,13 @@ export function validateUITestConfig(): void {
 export function validateAPITestConfig(): void {
     if (!AUTH_CONFIG.crossmintApiKey) {
         throw new Error("TESTS_CROSSMINT_API_KEY environment variable must be set to run API/SDK tests");
+    }
+}
+
+// Faucet and balance calls run from Node, so they need a server key
+export function validateFaucetConfig(): void {
+    if (!AUTH_CONFIG.crossmintServerApiKey) {
+        throw new Error("TESTS_CROSSMINT_SERVER_API_KEY environment variable must be set to fund wallets");
     }
 }
 

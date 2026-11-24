@@ -9,6 +9,7 @@ import {
     type ServerSignerConfig,
     type SignerLocator,
 } from "../signers/types";
+import { InvalidRecoveryConfigError, InvalidSignerError } from "../utils/errors";
 import { secureWipe } from "../utils/secure-wipe";
 import { getSignerLocator } from "../utils/signer-locator";
 import { quorumsWithComposition } from "./members";
@@ -23,6 +24,13 @@ export function toQuorumSignerInput(
     config: QuorumSignerConfig<Chain>,
     derivation: ServerMemberDerivation
 ): QuorumSignerInput {
+    // Plain JavaScript callers can pass anything, so the members list is checked before it is mapped.
+    if (!Array.isArray(config.members)) {
+        throw new InvalidRecoveryConfigError("A quorum needs a `members` list.");
+    }
+    if (derivation.chain === "solana" && config.members.some((member) => member?.type === "passkey")) {
+        throw new InvalidSignerError("A Solana quorum takes no passkey members");
+    }
     return {
         type: "quorum",
         threshold: config.threshold,
@@ -31,7 +39,7 @@ export function toQuorumSignerInput(
 }
 
 function toQuorumMemberInput(member: QuorumMemberConfig<Chain>, derivation: ServerMemberDerivation): QuorumMemberInput {
-    switch (member.type) {
+    switch (member?.type) {
         case "email":
             return { type: "email", email: member.email };
         case "phone":
@@ -45,7 +53,15 @@ function toQuorumMemberInput(member: QuorumMemberConfig<Chain>, derivation: Serv
             return { type: "server", address: serverMemberAddress(member, derivation) };
         case "passkey":
             return { type: "passkey", id: member.id, name: member.name, publicKey: member.publicKey };
+        default:
+            throw unsupportedMemberError(member);
     }
+}
+
+function unsupportedMemberError(member: { type?: unknown } | null | undefined): InvalidRecoveryConfigError {
+    return new InvalidRecoveryConfigError(
+        `A quorum member of type "${String(member?.type)}" is not supported. Use email, phone, external-wallet, server or passkey.`
+    );
 }
 
 // Members sign approvals with the primary derivation only (E1), so a member's address is always that one.
@@ -53,6 +69,14 @@ function serverMemberAddress(member: ServerSignerConfig, { chain, projectId, env
     const { derivedAddress, derivedKeyBytes } = deriveServerSignerDetails(member, chain, projectId, environment);
     secureWipe(derivedKeyBytes);
     return derivedAddress;
+}
+
+/** A member's locator: a server member given by its secret is named by its derived address. */
+export function quorumMemberLocator(
+    member: QuorumMemberConfig<Chain>,
+    derivation: ServerMemberDerivation
+): SignerLocator {
+    return memberInputLocator(toQuorumMemberInput(member, derivation));
 }
 
 /** The quorums with the input's threshold and member set, members in any order. */

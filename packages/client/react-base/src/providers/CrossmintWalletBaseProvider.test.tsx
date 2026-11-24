@@ -1,8 +1,8 @@
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 
-import { createCrossmint } from "@crossmint/common-sdk-base";
-import { CrossmintWallets, WalletNotAvailableError } from "@crossmint/wallets-sdk";
+import { createCrossmint, CrossmintSDKError, WalletErrorCode } from "@crossmint/common-sdk-base";
+import { CrossmintWallets, type DeviceSignerKeyStorage, WalletNotAvailableError } from "@crossmint/wallets-sdk";
 
 import { CrossmintProvider } from "@/providers/CrossmintProvider";
 import { CrossmintWalletBaseProvider } from "./CrossmintWalletBaseProvider";
@@ -227,5 +227,206 @@ describe("CrossmintWalletBaseProvider — createOnLogin switched while a load is
 
         await waitFor(() => expect(getByTestId("chain").textContent).toBe("solana"), { timeout: 1500 });
         expect(createWallet).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe("CrossmintWalletBaseProvider — device signer key storage", () => {
+    const deviceSignerKeyStorage = {} as DeviceSignerKeyStorage;
+
+    function renderWithStorage(wallets: Partial<CrossmintWallets>) {
+        vi.mocked(createCrossmint).mockImplementation(() => ({ apiKey: MOCK_API_KEY, jwt: "jwt", setJwt: vi.fn() }));
+        vi.spyOn(CrossmintWallets, "from").mockReturnValue(wallets as CrossmintWallets);
+        return render(
+            <CrossmintProvider apiKey={MOCK_API_KEY}>
+                <CrossmintWalletBaseProvider
+                    createOnLogin={{ chain: "base-sepolia" }}
+                    deviceSignerKeyStorage={deviceSignerKeyStorage}
+                >
+                    <TestConsumer />
+                </CrossmintWalletBaseProvider>
+            </CrossmintProvider>
+        );
+    }
+
+    test("reaches the wallet the provider reads", async () => {
+        const getWallet = vi.fn().mockResolvedValue({ chain: "base-sepolia", alias: undefined });
+        const { getByTestId } = renderWithStorage({ getWallet, createWallet: vi.fn() });
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+        expect(getWallet.mock.calls[0][0].options.deviceSignerKeyStorage).toBe(deviceSignerKeyStorage);
+    });
+
+    test("reaches the wallet the provider creates", async () => {
+        const createWallet = vi.fn().mockResolvedValue({ chain: "base-sepolia", alias: undefined });
+        const { getByTestId } = renderWithStorage({
+            getWallet: vi.fn().mockRejectedValue(new WalletNotAvailableError("not found")),
+            createWallet,
+        });
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+        expect(createWallet.mock.calls[0][0].options.deviceSignerKeyStorage).toBe(deviceSignerKeyStorage);
+    });
+});
+
+describe("CrossmintWalletBaseProvider — createWallet", () => {
+    function CreateWalletConsumer({ args }: { args: Parameters<ReturnType<typeof useWallet>["createWallet"]>[0] }) {
+        const { createWallet, status, error } = useWallet();
+        return (
+            <div>
+                <div data-testid="status">{status}</div>
+                <div data-testid="error">{error == null ? "" : `${error.code}/${error.sdkCode}: ${error.message}`}</div>
+                <button
+                    type="button"
+                    onClick={() => {
+                        createWallet(args);
+                        createWallet(args);
+                    }}
+                >
+                    create twice
+                </button>
+            </div>
+        );
+    }
+
+    function renderCreateWallet(
+        wallets: object,
+        args: Parameters<ReturnType<typeof useWallet>["createWallet"]>[0],
+        props: Partial<Parameters<typeof CrossmintWalletBaseProvider>[0]> = {}
+    ) {
+        vi.mocked(createCrossmint).mockImplementation(() => ({ apiKey: MOCK_API_KEY, jwt: "jwt", setJwt: vi.fn() }));
+        vi.spyOn(CrossmintWallets, "from").mockReturnValue(wallets as unknown as CrossmintWallets);
+        return render(
+            <CrossmintProvider apiKey={MOCK_API_KEY}>
+                <CrossmintWalletBaseProvider {...props}>
+                    <CreateWalletConsumer args={args} />
+                </CrossmintWalletBaseProvider>
+            </CrossmintProvider>
+        );
+    }
+
+    test("sends one request when called twice in the same tick", async () => {
+        const createWallet = vi.fn().mockResolvedValue({ chain: "stellar", alias: undefined });
+        const { getByTestId, getByText } = renderCreateWallet({ createWallet }, { chain: "stellar" });
+
+        fireEvent.click(getByText("create twice"));
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+        expect(createWallet).toHaveBeenCalledTimes(1);
+        expect(getByTestId("error").textContent).toBe("");
+    });
+
+    test("keeps the code of an SDK error", async () => {
+        const createWallet = vi
+            .fn()
+            .mockRejectedValue(
+                new CrossmintSDKError("A quorum needs a `members` list.", WalletErrorCode.SIGNER_INVALID)
+            );
+        const { getByTestId, getByText } = renderCreateWallet({ createWallet }, { chain: "stellar" });
+
+        fireEvent.click(getByText("create twice"));
+
+        await waitFor(() =>
+            expect(getByTestId("error").textContent).toBe(
+                "unknown/wallet:signer-invalid: A quorum needs a `members` list."
+            )
+        );
+    });
+
+    test("starts the WebView for an email member of a recovery quorum", async () => {
+        const initializeWebView = vi.fn().mockResolvedValue(undefined);
+        const createWallet = vi.fn().mockResolvedValue({ chain: "stellar", alias: undefined });
+        const quorum = {
+            type: "quorum",
+            threshold: 1,
+            members: [{ type: "email", email: "member@example.com" }],
+        };
+        const { getByTestId, getByText } = renderCreateWallet(
+            { createWallet },
+            { chain: "stellar", recoveryMethods: [quorum] } as never,
+            { initializeWebView }
+        );
+
+        fireEvent.click(getByText("create twice"));
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+        expect(initializeWebView).toHaveBeenCalledTimes(1);
+    });
+
+    test.each([
+        ["a null member", [null]],
+        ["a members value that is not a list", "alice@example.com"],
+    ])("leaves a quorum with %s for the wallet SDK to reject with its code", async (_label, members) => {
+        const createWallet = vi
+            .fn()
+            .mockRejectedValue(
+                new CrossmintSDKError("A quorum needs a `members` list.", WalletErrorCode.SIGNER_INVALID)
+            );
+        const { getByTestId, getByText } = renderCreateWallet({ createWallet }, {
+            chain: "stellar",
+            recoveryMethods: [{ type: "quorum", threshold: 1, members }],
+        } as never);
+
+        fireEvent.click(getByText("create twice"));
+
+        await waitFor(() => expect(getByTestId("error").textContent).toMatch(/^unknown\/wallet:signer-invalid: /));
+    });
+
+    test("creates a wallet whose signers need no WebView while the TEE connection is not ready", async () => {
+        const createWallet = vi.fn().mockResolvedValue({ chain: "stellar", alias: undefined });
+        const clientTEEConnection = () => {
+            throw new Error("WebView not ready or handshake incomplete");
+        };
+        const { getByTestId, getByText } = renderCreateWallet({ createWallet }, { chain: "stellar" }, {
+            clientTEEConnection,
+        } as never);
+
+        fireEvent.click(getByText("create twice"));
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+        expect(createWallet.mock.calls[0][0].options.clientTEEConnection).toBeUndefined();
+    });
+
+    test.each([
+        ["a delegated email signer", { type: "email", email: "alice@example.com" }],
+        ["a delegated phone signer", { type: "phone", phone: "+15555550100" }],
+        [
+            "a delegated quorum with an email member",
+            {
+                type: "quorum",
+                threshold: 1,
+                members: [{ type: "email", email: "member@example.com" }],
+            },
+        ],
+    ])("starts the WebView for %s", async (_label, signer) => {
+        const initializeWebView = vi.fn().mockResolvedValue(undefined);
+        const createWallet = vi.fn().mockResolvedValue({ chain: "stellar", alias: undefined });
+        const { getByTestId, getByText } = renderCreateWallet(
+            { createWallet },
+            { chain: "stellar", signers: [signer] } as never,
+            { initializeWebView }
+        );
+
+        fireEvent.click(getByText("create twice"));
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+        expect(initializeWebView).toHaveBeenCalledTimes(1);
+    });
+
+    test("skips the WebView for delegated signers with no email or phone key", async () => {
+        const initializeWebView = vi.fn().mockResolvedValue(undefined);
+        const createWallet = vi.fn().mockResolvedValue({ chain: "stellar", alias: undefined });
+        const { getByTestId, getByText } = renderCreateWallet(
+            { createWallet },
+            {
+                chain: "stellar",
+                signers: [{ type: "external-wallet", address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }],
+            } as never,
+            { initializeWebView }
+        );
+
+        fireEvent.click(getByText("create twice"));
+
+        await waitFor(() => expect(getByTestId("status").textContent).toBe("loaded"));
+        expect(initializeWebView).not.toHaveBeenCalled();
     });
 });

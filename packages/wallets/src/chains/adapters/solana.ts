@@ -22,7 +22,8 @@ export const solanaChainAdapter: ChainAdapter = {
     nativeToken: "sol",
     walletLocatorPrefix: "me:solana:smart",
     supportsSignatures: false,
-    supportsQuorumApprovals: false,
+    supportsQuorumApprovals: true,
+    requiresApprovingMembers: true,
 
     addSignerChain(_chain: Chain): AddSignerChain | undefined {
         return undefined;

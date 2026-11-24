@@ -1,12 +1,14 @@
 import { useState, useCallback } from "react";
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import { PopupWindow } from "@crossmint/client-sdk-window";
-import { useCrossmintAuth } from "@/hooks";
+import { useCrossmint, useCrossmintAuth } from "@/hooks";
+import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import { z } from "zod";
 
 type OAuthUrlMap = Record<OAuthProvider, string>;
 
 export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (error: string | null) => void) => {
+    const { crossmint } = useCrossmint();
     const { crossmintAuth } = useCrossmintAuth();
     // Track which OAuth provider's window is currently being interacted with
     const [activeOAuthProvider, setActiveOAuthProvider] = useState<OAuthProvider | null>(null);
@@ -26,6 +28,9 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
                     width: 400,
                     height: 700,
                     incomingEvents,
+                    // The OAuth callback page is served from the Crossmint base URL. Any page can be loaded into
+                    // a named popup, so the source window alone does not identify the sender.
+                    targetOrigin: new URL(createCrossmintApiClient(crossmint).baseUrl).origin,
                 });
 
                 const prefetchedUrl = oauthUrlMap[provider];
@@ -100,7 +105,7 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
                 clearInterval(checkWindowClosure);
             };
         },
-        [oauthUrlMap, crossmintAuth, setError]
+        [oauthUrlMap, crossmint, crossmintAuth, setError]
     );
 
     return {

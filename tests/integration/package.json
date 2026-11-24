@@ -1,9 +1,10 @@
 {
     "name": "@crossmint/integration-tests",
-    "version": "0.0.17",
+    "version": "0.0.19",
     "private": true,
     "scripts": {
-        "test:integration": "vitest run"
+        "test:integration": "vitest run",
+        "test:heartbeat": "vitest run --config vitest.heartbeat.config.ts"
     },
     "dependencies": {
         "@crossmint/common-sdk-base": "workspace:*",

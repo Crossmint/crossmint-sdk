@@ -3,12 +3,12 @@ import type { Chain } from "../chains/chains";
 import type { QuorumMember, RecoverySignerConfigForChain, SignerConfigForChain } from "../signers/types";
 import {
     InvalidSignerError,
-    QuorumSignerNotSupportedError,
     SignatureFailedError,
     TransactionExpiredError,
     TransactionFailedError,
 } from "../utils/errors";
 import { Base64, Hex } from "ox";
+import bs58 from "bs58";
 import type { Wallet } from "./wallet";
 import {
     activeSignerMember,
@@ -557,34 +557,51 @@ describe("approve() with an api-key active signer", () => {
     });
 });
 
-describe("approve() with an api-key active signer on a chain without quorum approvals", () => {
-    it("leaves a pending quorum entry to the API and sends nothing, as before", async () => {
+// A Solana member message: the base58 of the bytes the member signs, as the wallets API sends it.
+const randomSolanaMessage = () => bs58.encode(crypto.getRandomValues(new Uint8Array(64)));
+
+describe("approve() with an api-key active signer on Solana", () => {
+    let api: MockedApiClient;
+    let wallet: Wallet<Chain>;
+
+    beforeEach(async () => {
+        vi.clearAllMocks();
         vi.useFakeTimers();
-        const api = createMockApiClient();
-        const wallet = await createMockWallet("solana", api, "api-key");
-        const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
-        api.getTransaction.mockResolvedValueOnce(awaiting("txn-1", [entry], "solana") as never);
-        api.getTransaction.mockResolvedValue(SUCCESS as never);
+        api = createMockApiClient();
+        api.approveTransaction.mockResolvedValue({ id: "txn-1", status: "pending" } as never);
+        wallet = await createMockWallet("solana", api, "api-key");
+    });
 
-        const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
-
-        expect(error).toBeUndefined();
-        expect(api.approveTransaction).not.toHaveBeenCalled();
+    afterEach(() => {
         vi.useRealTimers();
     });
 
-    it("returns the transaction id without a hash while only the quorum can still approve, as on other chains", async () => {
-        vi.useFakeTimers();
-        const api = createMockApiClient();
-        const wallet = await createMockWallet("solana", api, "api-key");
-        const entry = createQuorumPendingApproval({ quorum: createQuorumApiEntry() });
+    it("signs the held member passed in additionalSigners over its own message", async () => {
+        const held = createQuorumApiEntry().members[0];
+        const entry = createQuorumPendingApproval({ quorum: quorumWith([held]), createMessage: randomSolanaMessage });
+        api.getTransaction.mockResolvedValueOnce(awaiting("txn-1", [entry], "solana") as never);
+        api.getTransaction.mockResolvedValue(SUCCESS as never);
+
+        await settle(
+            wallet.approve({ transactionId: "txn-1", options: { additionalSigners: [createHeldSigner(held.locator)] } })
+        );
+
+        expect(sentApprovals(api)).toEqual([
+            [{ signer: held.locator, signature: signatureOver(entry.quorumApprovals.pending[0].message) }],
+        ]);
+    });
+
+    it("throws InvalidSignerError and sends nothing when no member is held, as on other chains", async () => {
+        const entry = createQuorumPendingApproval({
+            quorum: createQuorumApiEntry(),
+            createMessage: randomSolanaMessage,
+        });
         api.getTransaction.mockResolvedValue(awaiting("txn-1", [entry], "solana") as never);
 
-        const { value } = await settle(wallet.approve({ transactionId: "txn-1" }));
+        const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
 
+        expect(error).toBeInstanceOf(InvalidSignerError);
         expect(api.approveTransaction).not.toHaveBeenCalled();
-        expect(value).toStrictEqual(AWAITING_TRANSACTION);
-        vi.useRealTimers();
     });
 });
 
@@ -618,18 +635,93 @@ describe("send() with a quorum as signer, then approve()", () => {
 });
 
 describe("approve() on a Solana transaction with a pending quorum entry", () => {
-    it("throws QuorumSignerNotSupportedError and signs nothing, since Solana has no quorum approvals", async () => {
+    let api: MockedApiClient;
+    let wallet: Wallet<Chain>;
+    const designated = createQuorumApiEntry().members.slice(0, 2);
+    const notDesignated = createQuorumApiEntry().members[0];
+    const quorum = { ...createQuorumApiEntry(), members: [...designated, notDesignated] };
+    // The API seeds only the designated members (`approvingMembers`) as pending.
+    const entry = () =>
+        createQuorumPendingApproval({ quorum, pending: designated, createMessage: randomSolanaMessage });
+
+    beforeEach(async () => {
+        vi.clearAllMocks();
         vi.useFakeTimers();
-        const api = createMockApiClient();
-        const wallet = await createSigningWallet("solana", api);
-        const entry = createQuorumPendingApproval({ quorum: quorumWith([activeSignerMember("solana")]) });
-        api.getTransaction.mockResolvedValue(awaiting("txn-1", [entry], "solana") as never);
+        api = createMockApiClient();
+        api.approveTransaction.mockResolvedValue({ id: "txn-1", status: "pending" } as never);
+        wallet = await createMockWallet("solana", api, "api-key");
+    });
 
-        const { error } = await settle(wallet.approve({ transactionId: "txn-1" }));
-
-        expect(error).toBeInstanceOf(QuorumSignerNotSupportedError);
-        expect(api.approveTransaction).not.toHaveBeenCalled();
+    afterEach(() => {
         vi.useRealTimers();
+    });
+
+    it("signs each held designated member over its own message and returns the landed transaction", async () => {
+        const pending = entry();
+        api.getTransaction.mockResolvedValueOnce(awaiting("txn-1", [pending], "solana") as never);
+        api.getTransaction.mockResolvedValue(SUCCESS as never);
+
+        const { value } = await settle(
+            wallet.approve({
+                transactionId: "txn-1",
+                options: { additionalSigners: designated.map((member) => createHeldSigner(member.locator)) },
+            })
+        );
+
+        expect(sentApprovals(api)).toEqual([
+            pending.quorumApprovals.pending.map(({ member, message }) => ({
+                signer: member.locator,
+                signature: signatureOver(message),
+            })),
+        ]);
+        expect(value).toMatchObject({ transactionId: "txn-1", hash: "0xhash" });
+    });
+
+    it("never asks a held member that was not designated, and fails as when no member is held", async () => {
+        const notDesignatedSigner = createHeldSigner(notDesignated.locator);
+        api.getTransaction.mockResolvedValue(awaiting("txn-1", [entry()], "solana") as never);
+
+        const { error } = await settle(
+            wallet.approve({ transactionId: "txn-1", options: { additionalSigners: [notDesignatedSigner] } })
+        );
+
+        expect(error).toBeInstanceOf(InvalidSignerError);
+        expect(notDesignatedSigner.signTransaction).not.toHaveBeenCalled();
+        expect(notDesignatedSigner.signMessage).not.toHaveBeenCalled();
+        expect(api.approveTransaction).not.toHaveBeenCalled();
+    });
+
+    it("returns the transaction id without a hash, with its validUntil, while the other member must still sign", async () => {
+        const [first, second] = designated;
+        const validUntil = "2026-11-24T10:00:00.000Z";
+        api.getTransaction.mockResolvedValueOnce({ ...awaiting("txn-1", [entry()], "solana"), validUntil } as never);
+        api.getTransaction.mockResolvedValue({
+            ...awaiting(
+                "txn-1",
+                [
+                    createQuorumPendingApproval({
+                        quorum,
+                        pending: [second],
+                        submitted: [first],
+                        remaining: 1,
+                        createMessage: randomSolanaMessage,
+                    }),
+                ],
+                "solana"
+            ),
+            validUntil,
+        } as never);
+
+        const { value, error } = await settle(
+            wallet.approve({
+                transactionId: "txn-1",
+                options: { additionalSigners: [createHeldSigner(first.locator)] },
+            })
+        );
+
+        expect(error).toBeUndefined();
+        expect(sentApprovals(api)).toHaveLength(1);
+        expect(value).toStrictEqual({ ...AWAITING_TRANSACTION, validUntil });
     });
 });
 

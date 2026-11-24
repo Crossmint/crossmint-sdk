@@ -1,6 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { CrossmintWallets, EVMWallet, createCrossmint, type QuorumSigner } from "@crossmint/wallets-sdk";
+import { Keypair as SolanaKeypair, type VersionedTransaction } from "@solana/web3.js";
 import { Keypair as StellarKeypair } from "@stellar/stellar-sdk";
+import { Base58 } from "ox";
 import { createPublicClient, http, isHex, type Hex } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
@@ -11,7 +13,8 @@ import {
 } from "../../../shared/constants/globalConstants";
 import { MockDeviceSignerKeyStorage } from "../../helpers/mock-device-storage";
 
-// Live quorum flows on staging: EVM needs `release_evmQuorumSigner` on for the API key's project; Stellar needs nothing.
+// Live quorum flows on staging: EVM needs `release_evmQuorumSigner` on for the API key's project, Solana the Solana
+// quorum flags; Stellar needs nothing.
 const API_KEY = AUTH_CONFIG.crossmintApiKey;
 
 function assertQuorum(entry: { type: string }): asserts entry is QuorumSigner {
@@ -49,6 +52,21 @@ function stellarMember() {
     };
 }
 
+// An Ed25519 key: it signs a transaction it is a signer of, and raw message bytes (base58) with the same key.
+function solanaMember() {
+    const keypair = SolanaKeypair.generate();
+    const ed25519 = StellarKeypair.fromRawEd25519Seed(Buffer.from(keypair.secretKey.slice(0, 32)));
+    return {
+        type: "external-wallet" as const,
+        address: keypair.publicKey.toBase58(),
+        onSign: async (transaction: VersionedTransaction) => {
+            transaction.sign([keypair]);
+            return transaction;
+        },
+        onSignBytes: async (payload: string) => Base58.fromBytes(ed25519.sign(Buffer.from(Base58.toBytes(payload)))),
+    };
+}
+
 // The request a quorum-approved call returned, as approve() takes it.
 function requestOf(result: { transactionId?: string; signatureId?: string } | undefined) {
     if (result?.signatureId != null) {
@@ -60,12 +78,17 @@ function requestOf(result: { transactionId?: string; signatureId?: string } | un
     throw new Error(`Expected a request for quorum members to approve, got ${JSON.stringify(result)}`);
 }
 
+// Solana names the members that approve a quorum's request when it is created; the others need not.
 const CHAINS = [
     { chain: "base-sepolia" as const, member: evmMember, recipient: TEST_RECIPIENT_WALLET_ADDRESSES.evm },
     { chain: "stellar" as const, member: stellarMember, recipient: TEST_RECIPIENT_WALLET_ADDRESSES.stellar },
+    { chain: "solana" as const, member: solanaMember, recipient: TEST_RECIPIENT_WALLET_ADDRESSES.solana },
 ];
 
 for (const { chain, member, recipient } of CHAINS) {
+    const approving = (...members: Array<{ address: string }>) =>
+        chain === "solana" ? { approvingMembers: members.map((m) => `external-wallet:${m.address}` as const) } : {};
+
     test.describe(`Quorum on ${chain} — SDK`, { tag: "@quorum" }, () => {
         test.beforeAll(() => {
             validateAPITestConfig();
@@ -100,7 +123,7 @@ for (const { chain, member, recipient } of CHAINS) {
             await wallet.useRecoveryMethod(alice);
             const added = await wallet.addSigner(
                 { type: "quorum", threshold: 2, members: [dave, erin, frank] },
-                { prepareOnly: true }
+                { prepareOnly: true, ...approving(alice, bob) }
             );
             expect(added.locator).toMatch(/^quorum:/);
             const addRequest = requestOf(added);
@@ -113,7 +136,10 @@ for (const { chain, member, recipient } of CHAINS) {
 
             // Dave is only a member of the delegated quorum, so he acts as it; Erin's approval lands the send.
             await wallet.useSigner(dave);
-            const sent = await wallet.send(recipient, "usdxm", "0.0001", { prepareOnly: true });
+            const sent = await wallet.send(recipient, "usdxm", "0.0001", {
+                prepareOnly: true,
+                ...approving(dave, erin),
+            });
             expect(sent.hash).toBeUndefined();
             const first = await wallet.approve({ transactionId: sent.transactionId });
             expect(first.hash).toBeUndefined();
@@ -144,12 +170,14 @@ for (const { chain, member, recipient } of CHAINS) {
             expect(wallet.needsRecovery()).toBe(true);
 
             await wallet.useRecoveryMethod(alice);
-            const registration = requestOf(await wallet.recover());
-            expect(await wallet.recover()).toEqual(registration);
+            const recoverOptions = approving(alice, bob);
+            const registration = requestOf(await wallet.recover(recoverOptions));
+            expect(await wallet.recover(recoverOptions)).toEqual(registration);
             expect(await wallet.approve(registration)).toMatchObject({ hash: undefined });
             await wallet.useRecoveryMethod(bob);
             await wallet.approve(registration);
 
+            // The members recover() was given are saved with the device, so the automatic recovery removes the lost one.
             const removal = requestOf(await wallet.recover());
             expect(wallet.needsRecovery()).toBe(false);
             expect(wallet.signer?.locator()).not.toBe(lostDevice);

@@ -6,6 +6,8 @@ import {
     SignatureNotAvailableError,
     SigningFailedError,
     TransactionAwaitingApprovalError,
+    TransactionCancelledError,
+    TRANSACTION_CANCELLED_MESSAGE,
     TransactionConfirmationTimeoutError,
     TransactionHashNotFoundError,
     TransactionNotAvailableError,
@@ -28,7 +30,7 @@ const AWAITING_APPROVAL_MESSAGE =
     "Transaction is awaiting approval. Please submit required approvals before waiting for completion.";
 
 /** Only quorum members can still approve the transaction. */
-export type AwaitingApproval = { status: "awaiting-approval"; transactionId: string };
+export type AwaitingApproval = { status: "awaiting-approval"; transactionId: string; validUntil?: string };
 
 export type TransactionOutcome = { status: "success"; transaction: Transaction<false> } | AwaitingApproval;
 
@@ -45,7 +47,12 @@ export async function waitForTransactionCompletion(
     const outcome = await waitForTransactionOutcome(apiClient, walletLocator, transactionId, options);
     if (outcome.status === "awaiting-approval") {
         // The prepareOnly shape under the full result type, which the EDD keeps: callers check `hash == null`.
-        const transaction: Transaction<true> = { hash: undefined, explorerLink: undefined, transactionId };
+        const transaction: Transaction<true> = {
+            hash: undefined,
+            explorerLink: undefined,
+            transactionId,
+            ...(outcome.validUntil != null && { validUntil: outcome.validUntil }),
+        };
         return transaction as Transaction<false>;
     }
     return outcome.transaction;
@@ -106,6 +113,14 @@ export async function waitForTransactionOutcome(
         throw error;
     }
 
+    if (transactionResponse.status === "cancelled") {
+        throw new TransactionCancelledError(
+            TRANSACTION_CANCELLED_MESSAGE,
+            transactionId,
+            JSON.stringify(transactionResponse)
+        );
+    }
+
     if (transactionResponse.status === "awaiting-approval") {
         return awaitingApprovalOf(transactionResponse, transactionId);
     }
@@ -126,6 +141,7 @@ export async function waitForTransactionOutcome(
             hash: transactionHash,
             explorerLink: transactionResponse.onChain.explorerLink ?? "",
             transactionId: transactionResponse.id,
+            ...validUntilOf(transactionResponse),
         },
     };
 }
@@ -134,7 +150,18 @@ function awaitingApprovalOf(transaction: GetTransactionSuccessResponse, transact
     if (!awaitsQuorumRequest(transaction)) {
         throw new TransactionAwaitingApprovalError(AWAITING_APPROVAL_MESSAGE, { transactionId });
     }
-    return { status: "awaiting-approval", transactionId };
+    return { status: "awaiting-approval", transactionId, ...validUntilOf(transaction) };
+}
+
+/** A transaction's `validUntil` as an ISO string, when it has one. */
+export function validUntilOf(transaction: { validUntil?: string | number }): { validUntil?: string } {
+    if (transaction.validUntil == null) {
+        return {};
+    }
+    if (typeof transaction.validUntil === "string") {
+        return { validUntil: transaction.validUntil };
+    }
+    return { validUntil: new Date(transaction.validUntil).toISOString() };
 }
 
 /** Only quorum members can still approve the signature. */

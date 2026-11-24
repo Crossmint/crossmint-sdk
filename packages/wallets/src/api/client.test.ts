@@ -1138,11 +1138,46 @@ describe("ApiClient - removeSigner()", () => {
             { chain: "base-sepolia" as const, approver: "passkey:abc" },
             "?chain=base-sepolia&approver=passkey%3Aabc",
         ],
+        [
+            "an approver and two approving members",
+            { approver: "quorum:q1", approvingMembers: ["external-wallet:Alice", "email:bob@example.com"] },
+            "?approver=quorum%3Aq1&approvingMembers=external-wallet%3AAlice&approvingMembers=email%3Abob%40example.com",
+        ],
+        ["an empty approving members list", { approvingMembers: [] }, ""],
     ])("encodes %s in the query string", async (_name, params, expectedQuery) => {
         await apiClient.removeSigner(WALLET_LOCATORS.EVM_SMART_WALLET, "external-wallet:0x456", params);
 
         const [url] = mockDelete.mock.calls[0];
         expect(url.endsWith(`/signers/external-wallet%3A0x456${expectedQuery}`)).toBe(true);
+    });
+});
+
+describe("ApiClient - removeRecoveryMethod()", () => {
+    let apiClient: ApiClient;
+    let mockDelete: MockedFunction<ApiClient["delete"]>;
+
+    beforeEach(() => {
+        apiClient = createTestApiClient();
+        mockDelete = vi.spyOn(apiClient, "delete") as MockedFunction<ApiClient["delete"]>;
+        mockDelete.mockResolvedValue(createMockSuccessResponse({ id: "txn-1" }));
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it.each([
+        ["an approver", { approver: "api-key" }, "?approver=api-key"],
+        [
+            "an approver and two approving members",
+            { approver: "quorum:q1", approvingMembers: ["external-wallet:Alice", "server:Srv"] },
+            "?approver=quorum%3Aq1&approvingMembers=external-wallet%3AAlice&approvingMembers=server%3ASrv",
+        ],
+    ])("encodes %s in the query string", async (_name, params, expectedQuery) => {
+        await apiClient.removeRecoveryMethod(WALLET_LOCATORS.EVM_SMART_WALLET, "external-wallet:0x456", params);
+
+        const [url] = mockDelete.mock.calls[0];
+        expect(url.endsWith(`/recovery-methods/external-wallet%3A0x456${expectedQuery}`)).toBe(true);
     });
 });
 
