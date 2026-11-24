@@ -449,20 +449,22 @@ export function CrossmintWalletBaseProvider({
                 let wallet: Awaited<ReturnType<typeof wallets.getWallet<C>>> | undefined;
                 try {
                     wallet = await getExistingWallet(wallets, args, walletOptions, logger);
-                    if (
-                        walletOptions.clientTEEConnection == null &&
-                        initializeWebView != null &&
-                        loadedWalletNeedsTEE(wallet)
-                    ) {
-                        // Its email or phone signer was built without the WebView: start it and load again.
-                        await initializeWebView();
-                        wallet = await getExistingWallet(wallets, args, buildWalletOptions(args.options), logger);
-                    }
                 } catch (error) {
                     if (!(error instanceof WalletNotAvailableError)) {
                         throw error;
                     }
                     // Wallet doesn't exist yet, create it
+                }
+
+                if (
+                    wallet != null &&
+                    walletOptions.clientTEEConnection == null &&
+                    initializeWebView != null &&
+                    loadedWalletNeedsTEE(wallet)
+                ) {
+                    // Its email or phone signer was built without the WebView: start it and load again.
+                    await initializeWebView();
+                    wallet = await getExistingWallet(wallets, args, buildWalletOptions(args.options), logger);
                 }
 
                 if (wallet == null) {
