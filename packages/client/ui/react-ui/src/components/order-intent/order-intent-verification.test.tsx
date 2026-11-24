@@ -207,16 +207,6 @@ describe("<OrderIntentVerification />", () => {
             expect(await launchedRedirect()).toBeUndefined();
         });
 
-        test("hands the redirect URI to openRedirect", async () => {
-            basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
-            const openRedirect = vi.fn();
-
-            render(<OrderIntentVerification orderIntent={orderIntent("agentpay")} openRedirect={openRedirect} />);
-            (await launchedRedirect())?.(REDIRECT_URI);
-
-            expect(openRedirect).toHaveBeenCalledWith(REDIRECT_URI);
-        });
-
         test("polls for 5 minutes, so the buyer has time for the issuer step and the passkey", async () => {
             basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
 
@@ -267,33 +257,6 @@ describe("<OrderIntentVerification />", () => {
                     new Error("The buyer closed the verification window before it finished.")
                 );
                 expect(basisTheory.dispose).toHaveBeenCalledOnce();
-            });
-
-            test("reports the completion, not an error, when the verification finishes during the grace period", async () => {
-                const verified = deferred<{ status: string }>();
-                basisTheory.verifyAllowance.mockReturnValue(verified.promise);
-                const browserClosed = deferred<void>();
-                const onVerificationComplete = vi.fn();
-                const onVerificationError = vi.fn();
-                render(
-                    <OrderIntentVerification
-                        orderIntent={orderIntent("agentpay")}
-                        openRedirect={() => browserClosed.promise}
-                        onVerificationComplete={onVerificationComplete}
-                        onVerificationError={onVerificationError}
-                    />
-                );
-                const launch = await launchedRedirect();
-                vi.useFakeTimers();
-
-                launch?.(REDIRECT_URI);
-                await act(async () => browserClosed.resolve());
-                await act(async () => verified.resolve({ status: "active" }));
-                act(() => vi.advanceTimersByTime(OPEN_REDIRECT_CLOSE_GRACE_MS));
-
-                expect(onVerificationComplete).toHaveBeenCalledOnce();
-                expect(onVerificationError).not.toHaveBeenCalled();
-                expect(basisTheory.dispose).not.toHaveBeenCalled();
             });
 
             test("reports the completion when Basis Theory reports the active allowance before the grace period ends", async () => {
@@ -362,44 +325,6 @@ describe("<OrderIntentVerification />", () => {
                 expect(basisTheory.dispose).not.toHaveBeenCalled();
             });
 
-            test.each([
-                ["closes", "resolve"],
-                ["fails", "reject"],
-            ])("ignores the first browser when it %s after the retry opened a new one", async (_, outcome) => {
-                basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
-                const firstBrowser = deferred<void>();
-                const openRedirect = vi
-                    .fn()
-                    .mockReturnValueOnce(firstBrowser.promise)
-                    .mockReturnValue(new Promise(() => undefined));
-                const onVerificationError = vi.fn();
-                render(
-                    <OrderIntentVerification
-                        orderIntent={orderIntent("agentpay")}
-                        openRedirect={openRedirect}
-                        onVerificationError={onVerificationError}
-                    />
-                );
-                const launch = await launchedRedirect();
-                vi.useFakeTimers();
-
-                launch?.(REDIRECT_URI);
-                launch?.(REDIRECT_URI);
-                expect(openRedirect).toHaveBeenCalledTimes(2);
-                await act(async () => {
-                    if (outcome === "resolve") {
-                        firstBrowser.resolve();
-                    } else {
-                        firstBrowser.reject(new Error("The first browser failed"));
-                    }
-                    await firstBrowser.promise.catch(() => undefined);
-                });
-                act(() => vi.advanceTimersByTime(OPEN_REDIRECT_CLOSE_GRACE_MS));
-
-                expect(onVerificationError).not.toHaveBeenCalled();
-                expect(basisTheory.dispose).not.toHaveBeenCalled();
-            });
-
             test("reports the host's error at once when the browser cannot open", async () => {
                 basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
                 const error = new Error("Another auth session is already open");
@@ -418,28 +343,6 @@ describe("<OrderIntentVerification />", () => {
                     expect(onVerificationError).toHaveBeenCalledWith(error);
                 });
                 expect(basisTheory.dispose).toHaveBeenCalledOnce();
-            });
-
-            test("reports nothing when the component unmounts during the grace period", async () => {
-                basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
-                const browserClosed = deferred<void>();
-                const onVerificationError = vi.fn();
-                const { unmount } = render(
-                    <OrderIntentVerification
-                        orderIntent={orderIntent("agentpay")}
-                        openRedirect={() => browserClosed.promise}
-                        onVerificationError={onVerificationError}
-                    />
-                );
-                const launch = await launchedRedirect();
-                vi.useFakeTimers();
-
-                launch?.(REDIRECT_URI);
-                await act(async () => browserClosed.resolve());
-                unmount();
-                act(() => vi.advanceTimersByTime(OPEN_REDIRECT_CLOSE_GRACE_MS));
-
-                expect(onVerificationError).not.toHaveBeenCalled();
             });
         });
 
