@@ -447,11 +447,16 @@ describe("CrossmintWalletBaseProvider — React Native wallet loaded with an ema
             return connection;
         };
         // Returning user: the wallet on the server has email recovery (e.g. created under an older app config).
-        const getWallet = vi.fn(async ({ chain }: { chain: string }) => ({
-            chain,
-            alias: undefined,
-            recoveryMethods: [{ type: "email", email: "alice@example.com" }],
-        }));
+        // Like the wallet SDK, the load with the args' external-wallet recovery fails, and the base load succeeds.
+        const getWallet = vi.fn(async ({ chain, recovery }: { chain: string; recovery?: unknown }) => {
+            if (recovery != null) {
+                throw new CrossmintSDKError(
+                    "The wallet recovery signer type does not match the existing wallet's recovery signer type",
+                    WalletErrorCode.WALLET_CREATION_FAILED
+                );
+            }
+            return { chain, alias: undefined, recoveryMethods: [{ type: "email", email: "alice@example.com" }] };
+        });
         vi.mocked(createCrossmint).mockImplementation(() => ({ apiKey: MOCK_API_KEY, jwt: "jwt", setJwt: vi.fn() }));
         vi.spyOn(CrossmintWallets, "from").mockReturnValue({ getWallet, createWallet: vi.fn() } as never);
 
@@ -479,6 +484,7 @@ describe("CrossmintWalletBaseProvider — React Native wallet loaded with an ema
             .options;
         // The wallet SDK builds the email signer from this connection; without it NcsSigner falls back to the DOM iframe.
         expect(options.clientTEEConnection).toBe(connection);
+        expect(getWallet.mock.calls.at(-1)?.[0]).not.toHaveProperty("recovery");
         expect(initializeWebView).toHaveBeenCalledTimes(1);
     });
     test("loads once without the WebView when the wallet holds no email or phone key", async () => {
