@@ -72,7 +72,7 @@ export interface CrossmintAgentCardAuthorizationProps {
     appearance?: AgentCardAuthorizationAppearance;
     /**
      * In a WebView, open `uri` (Mastercard) in ASWebAuthenticationSession or Custom Tabs so passkeys persist.
-     * Do not close it from `onAuthorized`; return a promise that settles when the buyer closes it.
+     * Do not close it from `onAuthorized`; return a promise: resolve on close, reject if it cannot open.
      */
     openRedirect?: (uri: string) => void | Promise<unknown>;
     onAuthorized: (result: AgentCardAuthorizationResult) => void;

@@ -296,6 +296,72 @@ describe("<OrderIntentVerification />", () => {
                 expect(basisTheory.dispose).not.toHaveBeenCalled();
             });
 
+            test("reports the completion when Basis Theory reports the active allowance before the grace period ends", async () => {
+                const verified = deferred<{ status: string }>();
+                basisTheory.verifyAllowance.mockReturnValue(verified.promise);
+                const browserClosed = deferred<void>();
+                const onVerificationComplete = vi.fn();
+                const onVerificationError = vi.fn();
+                render(
+                    <OrderIntentVerification
+                        orderIntent={orderIntent("agentpay")}
+                        openRedirect={() => browserClosed.promise}
+                        onVerificationComplete={onVerificationComplete}
+                        onVerificationError={onVerificationError}
+                    />
+                );
+                const launch = await launchedRedirect();
+                const { onEvent } = basisTheory.create.mock.calls[0][0];
+                vi.useFakeTimers();
+
+                launch?.(REDIRECT_URI);
+                await act(async () => browserClosed.resolve());
+                act(() => onEvent({ type: "state_change", action: "VERIFY", status: "active" }));
+                act(() => vi.advanceTimersByTime(OPEN_REDIRECT_CLOSE_GRACE_MS));
+                expect(onVerificationError).not.toHaveBeenCalled();
+                await act(async () => verified.resolve({ status: "active" }));
+
+                expect(onVerificationComplete).toHaveBeenCalledOnce();
+                expect(basisTheory.dispose).not.toHaveBeenCalled();
+            });
+
+            test.each([
+                ["opens a new browser", "launch"],
+                ["restarts the challenge", "restart"],
+            ])("keeps waiting when Basis Theory %s after the first browser closed", async (_, retry) => {
+                basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
+                const firstClosed = deferred<void>();
+                const openRedirect = vi
+                    .fn()
+                    .mockReturnValueOnce(firstClosed.promise)
+                    .mockReturnValue(new Promise(() => undefined));
+                const onVerificationError = vi.fn();
+                render(
+                    <OrderIntentVerification
+                        orderIntent={orderIntent("agentpay")}
+                        openRedirect={openRedirect}
+                        onVerificationError={onVerificationError}
+                    />
+                );
+                const launch = await launchedRedirect();
+                const { onEvent } = basisTheory.create.mock.calls[0][0];
+                vi.useFakeTimers();
+
+                launch?.(REDIRECT_URI);
+                await act(async () => firstClosed.resolve());
+                act(() => {
+                    if (retry === "launch") {
+                        launch?.(REDIRECT_URI);
+                    } else {
+                        onEvent({ type: "restart", reason: "user_retry" });
+                    }
+                });
+                act(() => vi.advanceTimersByTime(OPEN_REDIRECT_CLOSE_GRACE_MS));
+
+                expect(onVerificationError).not.toHaveBeenCalled();
+                expect(basisTheory.dispose).not.toHaveBeenCalled();
+            });
+
             test("reports the host's error at once when the browser cannot open", async () => {
                 basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
                 const error = new Error("Another auth session is already open");

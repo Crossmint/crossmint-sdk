@@ -34,7 +34,7 @@ export interface OrderIntentVerificationProps {
     onVerificationError?: (error: unknown) => void;
     /**
      * In a WebView, open `uri` (Mastercard) in ASWebAuthenticationSession or Custom Tabs so passkeys persist.
-     * Do not close it from `onVerificationComplete`; return a promise that settles when the buyer closes it.
+     * Do not close it from `onVerificationComplete`; return a promise: resolve on close, reject if it cannot open.
      */
     openRedirect?: (uri: string) => void | Promise<unknown>;
 }
@@ -109,10 +109,23 @@ export function OrderIntentVerification({
         let lastAction: string | undefined;
         let closeTimer: ReturnType<typeof setTimeout> | undefined;
         let verification: AgenticVerificationInstance | undefined;
+        // Basis Theory reports the active allowance before `verifyAllowance` resolves (it shows a
+        // success dialog first), so a close timer must not fire in that window.
+        let verified = false;
+        // Identifies the current browser: a Basis Theory retry opens a new one, and the old one's
+        // close must not end the new attempt.
+        let redirectId = 0;
 
         function onEvent(event: Record<string, unknown>) {
             if (event.type === "state_change" && typeof event.action === "string") {
                 lastAction = event.action;
+                if (event.status === "active") {
+                    verified = true;
+                    clearTimeout(closeTimer);
+                }
+            } else if (event.type === "restart") {
+                redirectId++;
+                clearTimeout(closeTimer);
             } else if (event.type === "ceremony_open") {
                 loggerRef.current?.info("react.orderIntentVerification.ceremonyOpen", {
                     ...logContext,
@@ -122,7 +135,7 @@ export function OrderIntentVerification({
         }
 
         function abandon(error: unknown) {
-            if (cancelled || settled) {
+            if (cancelled || settled || verified) {
                 return;
             }
             settled = true;
@@ -132,13 +145,16 @@ export function OrderIntentVerification({
         }
 
         function launchRedirect(uri: string) {
+            redirectId++;
+            const launchId = redirectId;
+            clearTimeout(closeTimer);
             const closed = openRedirectRef.current?.(uri);
             if (closed == null || typeof closed.then !== "function") {
                 return;
             }
             closed.then(
                 () => {
-                    if (cancelled || settled) {
+                    if (cancelled || settled || verified || launchId !== redirectId) {
                         return;
                     }
                     closeTimer = setTimeout(
@@ -146,7 +162,11 @@ export function OrderIntentVerification({
                         OPEN_REDIRECT_CLOSE_GRACE_MS
                     );
                 },
-                (error: unknown) => abandon(error)
+                (error: unknown) => {
+                    if (launchId === redirectId) {
+                        abandon(error);
+                    }
+                }
             );
         }
 
