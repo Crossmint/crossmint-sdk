@@ -362,6 +362,43 @@ describe("<OrderIntentVerification />", () => {
                 expect(basisTheory.dispose).not.toHaveBeenCalled();
             });
 
+            test.each([
+                ["closes", "resolve"],
+                ["fails", "reject"],
+            ])("ignores the first browser when it %s after the retry opened a new one", async (_, outcome) => {
+                basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
+                const firstBrowser = deferred<void>();
+                const openRedirect = vi
+                    .fn()
+                    .mockReturnValueOnce(firstBrowser.promise)
+                    .mockReturnValue(new Promise(() => undefined));
+                const onVerificationError = vi.fn();
+                render(
+                    <OrderIntentVerification
+                        orderIntent={orderIntent("agentpay")}
+                        openRedirect={openRedirect}
+                        onVerificationError={onVerificationError}
+                    />
+                );
+                const launch = await launchedRedirect();
+                vi.useFakeTimers();
+
+                launch?.(REDIRECT_URI);
+                launch?.(REDIRECT_URI);
+                await act(async () => {
+                    if (outcome === "resolve") {
+                        firstBrowser.resolve();
+                    } else {
+                        firstBrowser.reject(new Error("The first browser failed"));
+                    }
+                    await firstBrowser.promise.catch(() => undefined);
+                });
+                act(() => vi.advanceTimersByTime(OPEN_REDIRECT_CLOSE_GRACE_MS));
+
+                expect(onVerificationError).not.toHaveBeenCalled();
+                expect(basisTheory.dispose).not.toHaveBeenCalled();
+            });
+
             test("reports the host's error at once when the browser cannot open", async () => {
                 basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
                 const error = new Error("Another auth session is already open");
