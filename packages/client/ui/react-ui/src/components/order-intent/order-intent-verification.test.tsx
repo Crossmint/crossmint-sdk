@@ -1,10 +1,13 @@
 import "@testing-library/jest-dom/vitest";
 
 import type { OrderIntentWithVerification } from "@crossmint/client-sdk-base";
-import { cleanup, render, waitFor } from "@testing-library/react";
+import { act, cleanup, render, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { OrderIntentVerification } from "./OrderIntentVerification";
+
+// How long the component waits for Basis Theory after the host reports that the browser closed.
+const OPEN_REDIRECT_CLOSE_GRACE_MS = 10_000;
 
 const basisTheory = vi.hoisted(() => ({
     create: vi.fn(),
@@ -221,6 +224,118 @@ describe("<OrderIntentVerification />", () => {
 
             await waitFor(() => {
                 expect(basisTheory.create).toHaveBeenCalledWith(expect.objectContaining({ completePollAttempts: 25 }));
+            });
+        });
+
+        describe("when openRedirect returns a promise that settles when the browser closes", () => {
+            afterEach(() => {
+                vi.useRealTimers();
+            });
+
+            function deferred<T>() {
+                let resolve!: (value: T) => void;
+                let reject!: (reason: unknown) => void;
+                const promise = new Promise<T>((res, rej) => {
+                    resolve = res;
+                    reject = rej;
+                });
+                return { promise, resolve, reject };
+            }
+
+            test("reports an error when the allowance is not verified 10 s after the browser closed", async () => {
+                basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
+                const browserClosed = deferred<void>();
+                const onVerificationError = vi.fn();
+                render(
+                    <OrderIntentVerification
+                        orderIntent={orderIntent("agentpay")}
+                        openRedirect={() => browserClosed.promise}
+                        onVerificationError={onVerificationError}
+                    />
+                );
+                const launch = await launchedRedirect();
+                vi.useFakeTimers();
+
+                launch?.(REDIRECT_URI);
+                await act(async () => browserClosed.resolve());
+                act(() => vi.advanceTimersByTime(OPEN_REDIRECT_CLOSE_GRACE_MS - 1));
+                expect(onVerificationError).not.toHaveBeenCalled();
+                act(() => vi.advanceTimersByTime(1));
+
+                expect(onVerificationError).toHaveBeenCalledOnce();
+                expect(onVerificationError.mock.calls[0][0]).toEqual(
+                    new Error("The buyer closed the verification window before it finished.")
+                );
+                expect(basisTheory.dispose).toHaveBeenCalledOnce();
+            });
+
+            test("reports the completion, not an error, when the verification finishes during the grace period", async () => {
+                const verified = deferred<{ status: string }>();
+                basisTheory.verifyAllowance.mockReturnValue(verified.promise);
+                const browserClosed = deferred<void>();
+                const onVerificationComplete = vi.fn();
+                const onVerificationError = vi.fn();
+                render(
+                    <OrderIntentVerification
+                        orderIntent={orderIntent("agentpay")}
+                        openRedirect={() => browserClosed.promise}
+                        onVerificationComplete={onVerificationComplete}
+                        onVerificationError={onVerificationError}
+                    />
+                );
+                const launch = await launchedRedirect();
+                vi.useFakeTimers();
+
+                launch?.(REDIRECT_URI);
+                await act(async () => browserClosed.resolve());
+                await act(async () => verified.resolve({ status: "active" }));
+                act(() => vi.advanceTimersByTime(OPEN_REDIRECT_CLOSE_GRACE_MS));
+
+                expect(onVerificationComplete).toHaveBeenCalledOnce();
+                expect(onVerificationError).not.toHaveBeenCalled();
+                expect(basisTheory.dispose).not.toHaveBeenCalled();
+            });
+
+            test("reports the host's error at once when the browser cannot open", async () => {
+                basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
+                const error = new Error("Another auth session is already open");
+                const onVerificationError = vi.fn();
+                render(
+                    <OrderIntentVerification
+                        orderIntent={orderIntent("agentpay")}
+                        openRedirect={() => Promise.reject(error)}
+                        onVerificationError={onVerificationError}
+                    />
+                );
+
+                (await launchedRedirect())?.(REDIRECT_URI);
+
+                await waitFor(() => {
+                    expect(onVerificationError).toHaveBeenCalledWith(error);
+                });
+                expect(basisTheory.dispose).toHaveBeenCalledOnce();
+            });
+
+            test("reports nothing when the component unmounts during the grace period", async () => {
+                basisTheory.verifyAllowance.mockReturnValue(new Promise(() => undefined));
+                const browserClosed = deferred<void>();
+                const onVerificationError = vi.fn();
+                const { unmount } = render(
+                    <OrderIntentVerification
+                        orderIntent={orderIntent("agentpay")}
+                        openRedirect={() => browserClosed.promise}
+                        onVerificationError={onVerificationError}
+                    />
+                );
+                const launch = await launchedRedirect();
+                vi.useFakeTimers();
+
+                launch?.(REDIRECT_URI);
+                await act(async () => browserClosed.resolve());
+                unmount();
+                act(() => vi.advanceTimersByTime(OPEN_REDIRECT_CLOSE_GRACE_MS));
+
+                expect(onVerificationError).not.toHaveBeenCalled();
             });
         });
 

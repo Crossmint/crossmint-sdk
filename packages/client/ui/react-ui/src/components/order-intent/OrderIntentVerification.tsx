@@ -19,6 +19,9 @@ const AGENTIC_API_URLS = {
 // stops at the allowance's expiry. Its default (10) gives the buyer 2 minutes, too short for an
 // issuer approval plus a passkey; 25 gives 5 minutes, the same as the popup flow.
 const OPEN_REDIRECT_COMPLETE_POLL_ATTEMPTS = 25;
+// After the host reports that the browser closed, Basis Theory gets this long to confirm the
+// verification (a few polls) before the component stops waiting.
+const OPEN_REDIRECT_CLOSE_GRACE_MS = 10_000;
 
 export interface OrderIntentVerificationProps {
     /** The order intent returned by the API, including its `verificationConfig`. */
@@ -31,9 +34,9 @@ export interface OrderIntentVerificationProps {
     onVerificationError?: (error: unknown) => void;
     /**
      * In a WebView, open `uri` (Mastercard) in ASWebAuthenticationSession or Custom Tabs so passkeys persist.
-     * Do not close it from `onVerificationComplete`; let the buyer close it.
+     * Do not close it from `onVerificationComplete`; return a promise that settles when the buyer closes it.
      */
-    openRedirect?: (uri: string) => void;
+    openRedirect?: (uri: string) => void | Promise<unknown>;
 }
 
 /**
@@ -100,8 +103,11 @@ export function OrderIntentVerification({
         }
 
         let cancelled = false;
+        // Set once a terminal callback fired, so a closed browser and the verification result
+        // never both report.
         let settled = false;
         let lastAction: string | undefined;
+        let closeTimer: ReturnType<typeof setTimeout> | undefined;
         let verification: AgenticVerificationInstance | undefined;
 
         function onEvent(event: Record<string, unknown>) {
@@ -113,6 +119,35 @@ export function OrderIntentVerification({
                     network: event.network,
                 });
             }
+        }
+
+        function abandon(error: unknown) {
+            if (cancelled || settled) {
+                return;
+            }
+            settled = true;
+            verification?.dispose();
+            loggerRef.current?.info("react.orderIntentVerification.browserClosed", { ...logContext, lastAction });
+            errorRef.current?.(error);
+        }
+
+        function launchRedirect(uri: string) {
+            const closed = openRedirectRef.current?.(uri);
+            if (closed == null || typeof closed.then !== "function") {
+                return;
+            }
+            closed.then(
+                () => {
+                    if (cancelled || settled) {
+                        return;
+                    }
+                    closeTimer = setTimeout(
+                        () => abandon(new Error("The buyer closed the verification window before it finished.")),
+                        OPEN_REDIRECT_CLOSE_GRACE_MS
+                    );
+                },
+                (error: unknown) => abandon(error)
+            );
         }
 
         async function verifyAllowance() {
@@ -132,20 +167,28 @@ export function OrderIntentVerification({
                               errorColor,
                           }
                         : undefined,
-                    openRedirect: hasOpenRedirect ? (uri: string) => openRedirectRef.current?.(uri) : undefined,
+                    openRedirect: hasOpenRedirect ? launchRedirect : undefined,
                     completePollAttempts: hasOpenRedirect ? OPEN_REDIRECT_COMPLETE_POLL_ATTEMPTS : undefined,
                 });
                 loggerRef.current?.info("react.orderIntentVerification.start", logContext);
                 await verification.verifyAllowance(allowanceId, {
                     provider: pendingProvider,
                 });
+                if (settled) {
+                    return;
+                }
                 settled = true;
+                clearTimeout(closeTimer);
                 if (!cancelled) {
                     loggerRef.current?.info("react.orderIntentVerification.success", logContext);
                     completeRef.current?.();
                 }
             } catch (error) {
+                if (settled) {
+                    return;
+                }
                 settled = true;
+                clearTimeout(closeTimer);
                 if (!cancelled) {
                     const { level, context } = describeVerificationError(error);
                     loggerRef.current?.[level]("react.orderIntentVerification.failed", {
@@ -180,6 +223,7 @@ export function OrderIntentVerification({
             cancelled = true;
             window.removeEventListener("pagehide", onPageHide);
             logAbandoned();
+            clearTimeout(closeTimer);
             verification?.dispose();
         };
     }, [
