@@ -1,5 +1,21 @@
 # @crossmint/wallets-sdk
 
+## 1.25.0
+
+### Minor Changes
+
+- 3ec685e: Quorum (m-of-n) signers on Solana, as on EVM and Stellar. `approve()` signs every held member the API designated, each over its own message; a quorum is created, added, removed and acts as recovery method or signer, a key that is only a member acts as its quorum, and `recover()` registers the device signer through a recovery quorum. This supersedes the earlier notes that the API takes no quorum signer on Solana and that signing as a quorum there throws `QuorumSignerNotSupportedError`.
+
+  New `approvingMembers` option on `send`, `sendTransaction`, `addSigner`, `removeSigner`, `addRecoveryMethod`, `removeRecoveryMethod` and `recover`: the members that approve a quorum's request, as locators or member configs (a server member given by its secret is sent as its derived address). On Solana a quorum signer or approver needs them: without them the call throws `QuorumApprovingMembersRequiredError` before any request. On Solana `recover({ approvingMembers })` saves the member locators (never keys) in the device signer key storage, next to the saved device locator, so a later recovery, the automatic one included, removes the old device signer with them; a removal that cannot be created keeps both for the next visit, and they are cleared once it is created. `DeviceSignerKeyStorage` gains `saveApprovingMembers` and `getSavedApprovingMembers` (no-op defaults; the browser and React Native storages implement them). The SDK never picks members. EVM and Stellar forward them, and the API validates them.
+
+  Transaction results carry `validUntil` (ISO string) when the API sends one: a Solana quorum transaction awaiting approval is cancelled after it. A cancelled transaction throws `TransactionCancelledError` (a `TransactionFailedError` with `transactionId`) from `approve()` and from the wait for it to land. `QUORUM_APPROVING_MEMBERS_REQUIRED`, `QUORUM_MEMBER_NOT_DESIGNATED`, `QUORUM_TOO_MANY_ENVELOPE_SIGNERS`, `SIGNER_KEY_IN_USE`, `QUORUM_THRESHOLD_TOO_HIGH_FOR_CHAIN` and `QUORUM_THRESHOLD_UNSUPPORTED` surface as `QuorumRequestError` reasons. `send()` sends `approvingMembers` to the token-transfers endpoint, which takes them once the API's send-token change ships.
+
+### Patch Changes
+
+- bc9a07f: API rejections in the quorum flows now surface as typed errors that keep the API's message and `code` instead of the raw response body: `removeSigner`/`removeRecoveryMethod` throw `SignerOperationRejectedError` (and `QuorumRequestError` for `LAST_RECOVERY_SIGNER` and the other quorum codes), `approve()` throws the new `QuorumApprovalRejectedError` — carrying the rejected member's `signerLocator` — when the API rejects the approval of a member of a pending quorum while the request still awaits the others (other rejected approvals still throw `TransactionFailedError` / `SignatureFailedError`), and `WalletCreationError` exposes the API message plus `apiErrorCode`. `TransactionFailedError` is now exported from the package.
+- bc9a07f: Quorum signer QA fixes: a quorum with a missing `members` list or an unsupported member type throws `InvalidRecoveryConfigError` instead of a `TypeError` or a `null` member; a server member the API lists as `external-wallet` matches its quorum, so `createWallet` no longer throws for a wallet it just created; `useRecoveryMethod` rereads the wallet's recovery quorums when it does not find a member locally; a key that does not sign an approval within 5 minutes throws `ApprovalSigningTimeoutError` instead of blocking later approvals. In the React and React Native providers, an SDK error keeps `code: "unknown"` and carries its own code in the new `sdkCode` field, only fetch failures count as `network`, two `createWallet` calls in the same tick send one request, and an email, phone or passkey member of a recovery quorum starts the WebView or passkey setup like a top-level recovery method does.
+  - @crossmint/common-sdk-auth@1.1.40
+
 ## 1.24.1
 
 ### Patch Changes

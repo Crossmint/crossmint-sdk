@@ -1,5 +1,24 @@
 # @crossmint/client-sdk-react-ui
 
+## 5.5.0
+
+### Minor Changes
+
+- 01bd7e4: `CrossmintAgentCardAuthorization` and `OrderIntentVerification` take an optional `openRedirect(uri)` prop. When it is set, the Mastercard verification page opens through the host instead of `window.open`. Use it when the component runs in a mobile WebView: open `uri` in `ASWebAuthenticationSession` (iOS) or Chrome Custom Tabs (Android), so Mastercard recognizes the device and verifies the existing passkey instead of asking for a new one. Do not close that browser from `onAuthorized` or `onVerificationComplete`: they can fire while Mastercard still offers to save a passkey. `openRedirect` can return a promise that resolves when the browser closes, including a dismissal (for example `openAuthSessionAsync` in `expo-web-browser`, not `openBrowserAsync`, which resolves when the tab opens on Android), and rejects only when the browser cannot open; if the order intent is not verified 10 seconds later, the component reports the error at once instead of after 5 minutes, and the buyer can try again. `@basis-theory/web-agentic` is now 1.4.1.
+
+### Patch Changes
+
+- c48cac6: The OAuth login popup accepts its sign-in result only from the Crossmint origin of the configured environment (or `overrideBaseUrl`). Before, it also accepted a result from any other page that was loaded into the popup.
+- Updated dependencies [01bd7e4]
+- Updated dependencies [bc9a07f]
+- Updated dependencies [bc9a07f]
+- Updated dependencies [46adb45]
+- Updated dependencies [3ec685e]
+  - @crossmint/client-sdk-base@5.3.0
+  - @crossmint/wallets-sdk@1.25.0
+  - @crossmint/client-sdk-react-base@2.6.3
+  - @crossmint/common-sdk-auth@1.1.40
+
 ## 5.4.0
 
 ### Minor Changes
