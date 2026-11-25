@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { OnboardingSessionExpiredError, OtpValidationError, SignerAuthenticationError } from "../types";
@@ -377,5 +377,34 @@ describe("NonCustodialSigner onboarding recovery", () => {
         // not throw "session expired" and leave the auth promise pending forever.
         await expect(verifyOtp?.("stale-otp")).resolves.toBeUndefined();
         await expect(authSettled).resolves.toBe("resolved");
+    });
+});
+
+describe("NonCustodialSigner on React Native without clientTEEConnection", () => {
+    afterEach(() => {
+        (globalThis as { window?: unknown }).window = undefined;
+    });
+
+    it("skips the DOM iframe fallback instead of leaving an unhandled rejection", async () => {
+        const rejections: unknown[] = [];
+        const onRejection = (reason: unknown) => rejections.push(reason);
+        process.on("unhandledRejection", onRejection);
+        // React Native: `window` is the global object, with no `location` and no `document`.
+        (globalThis as { window?: unknown }).window = globalThis;
+
+        new EVMNonCustodialSigner(makeConfig({ clientTEEConnection: undefined }));
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        process.off("unhandledRejection", onRejection);
+
+        expect(rejections.map(String)).toEqual([]);
+    });
+
+    it("rejects signing with guidance to pass clientTEEConnection", async () => {
+        (globalThis as { window?: unknown }).window = globalThis;
+        const signer = new EVMNonCustodialSigner(makeConfig({ clientTEEConnection: undefined }));
+
+        await expect(signer.ensureAuthenticated()).rejects.toThrow(
+            "email signer needs clientTEEConnection outside a browser"
+        );
     });
 });

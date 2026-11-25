@@ -21,6 +21,9 @@ import type { SignerInputEvent, SignerOutputEvent } from "@crossmint/client-sign
 import { walletsLogger } from "../../logger";
 import { normalizeEmail } from "../../utils/signer-validation";
 
+// The fallback signer iframe needs a DOM; React Native has a `window` but no `document`, and passes clientTEEConnection.
+const canHostSignerIframe = () => typeof window !== "undefined" && typeof document !== "undefined";
+
 export abstract class NonCustodialSigner implements SignerAdapter {
     public readonly type: "email" | "phone";
     private _needsAuth = true;
@@ -40,8 +43,8 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
     constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         this.#config = config;
-        // Only initialize the signer if running client-side
-        if (typeof window !== "undefined") {
+        // Only initialize the signer iframe in a browser
+        if (canHostSignerIframe()) {
             this._initializationPromise = this.initialize();
         }
         this.type = this.config.type;
@@ -107,6 +110,12 @@ export abstract class NonCustodialSigner implements SignerAdapter {
 
     private async initializeTEEConnection(): Promise<void> {
         walletsLogger.info("TEE connection not initialized, initializing now");
+        if (!canHostSignerIframe()) {
+            throw new Error(
+                `${this.type} signer needs clientTEEConnection outside a browser. ` +
+                    `If using our React Native SDK, the provider passes it once the signer WebView is ready.`
+            );
+        }
 
         const parsedAPIKey = validateAPIKey(this.config.crossmint.apiKey);
         if (!parsedAPIKey.isValid) {

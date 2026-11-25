@@ -252,6 +252,24 @@ export function mapWalletError(error: unknown): WalletContextError {
     return { code: "unknown", message: error instanceof Error ? error.message : String(error) };
 }
 
+// Members are scanned leniently: a malformed list is left for the wallet SDK to reject with its own code.
+function includesTEESigner(signers: unknown): boolean {
+    const needsTEE = (signer: unknown) => {
+        const type = (signer as { type?: unknown } | null | undefined)?.type;
+        return type === "email" || type === "phone";
+    };
+    const memberNeedsTEE = (signer: unknown) => {
+        const members = (signer as { members?: unknown } | null | undefined)?.members;
+        return Array.isArray(members) && members.some(needsTEE);
+    };
+    return Array.isArray(signers) && signers.some((signer) => needsTEE(signer) || memberNeedsTEE(signer));
+}
+
+/** A wallet loaded from the API can hold email or phone keys that the app's create args never named. */
+function loadedWalletNeedsTEE(wallet: { recoveryMethods?: unknown; signer?: unknown }): boolean {
+    return includesTEESigner(wallet.recoveryMethods) || includesTEESigner([wallet.signer]);
+}
+
 // React Native throws until its WebView is up, and a wallet whose signers need none never starts it.
 function connectionIfReady<T>(getConnection?: () => T): T | undefined {
     try {
@@ -364,14 +382,7 @@ export function CrossmintWalletBaseProvider({
 
     const initializeWebViewIfNeeded = useCallback(
         async <C extends Chain>(args: Pick<WalletCreateArgs<C>, "recovery" | "recoveryMethods" | "signers">) => {
-            const signers = [...recoveryMethodsFromCreateArgs(args), ...(args.signers ?? [])];
-            // Members are scanned leniently: a malformed list is left for the wallet SDK to reject with its own code.
-            const needsTEE = (signer: { type?: unknown } | null | undefined) =>
-                signer?.type === "email" || signer?.type === "phone";
-            const memberNeedsTEE = (members: unknown) => Array.isArray(members) && members.some(needsTEE);
-            if (
-                signers.some((signer) => needsTEE(signer) || memberNeedsTEE((signer as { members?: unknown }).members))
-            ) {
+            if (includesTEESigner([...recoveryMethodsFromCreateArgs(args), ...(args.signers ?? [])])) {
                 await initializeWebView?.();
             }
         },
@@ -445,6 +456,17 @@ export function CrossmintWalletBaseProvider({
                     // Wallet doesn't exist yet, create it
                 }
 
+                if (
+                    wallet != null &&
+                    walletOptions.clientTEEConnection == null &&
+                    initializeWebView != null &&
+                    loadedWalletNeedsTEE(wallet)
+                ) {
+                    // Its email or phone signer was built without the WebView: start it and load again.
+                    await initializeWebView();
+                    wallet = await getExistingWallet(wallets, args, buildWalletOptions(args.options), logger);
+                }
+
                 if (wallet == null) {
                     wallet = await wallets.createWallet<C>({
                         ...args,
@@ -478,6 +500,7 @@ export function CrossmintWalletBaseProvider({
             failedAttempt,
             walletError,
             initializeWebViewIfNeeded,
+            initializeWebView,
             buildWalletOptions,
         ]
     );
