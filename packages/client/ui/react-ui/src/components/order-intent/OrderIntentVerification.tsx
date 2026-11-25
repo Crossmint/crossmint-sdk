@@ -15,6 +15,14 @@ const AGENTIC_API_URLS = {
     test: "https://api.test.basistheory.com/agentic",
 } as const;
 
+// After an `openRedirect` launch, Basis Theory polls `complete` 6 × this many times, every 2 s, and
+// stops at the allowance's expiry. Its default (10) gives the buyer 2 minutes, too short for an
+// issuer approval plus a passkey; 25 gives 5 minutes, the same as the popup flow.
+const OPEN_REDIRECT_COMPLETE_POLL_ATTEMPTS = 25;
+// After the host reports that the browser closed, Basis Theory gets this long to confirm the
+// verification (a few polls) before the component stops waiting.
+const OPEN_REDIRECT_CLOSE_GRACE_MS = 10_000;
+
 export interface OrderIntentVerificationProps {
     /** The order intent returned by the API, including its `verificationConfig`. */
     orderIntent: OrderIntentWithVerification;
@@ -24,6 +32,11 @@ export interface OrderIntentVerificationProps {
     /** Called once the user has approved the allowance. Refetch the order intent afterwards. */
     onVerificationComplete?: () => void;
     onVerificationError?: (error: unknown) => void;
+    /**
+     * In a WebView, open `uri` (Mastercard) in ASWebAuthenticationSession or Custom Tabs so passkeys persist.
+     * Do not close it from `onVerificationComplete`; return a promise: resolve on close, reject if it cannot open.
+     */
+    openRedirect?: (uri: string) => void | Promise<unknown>;
 }
 
 /**
@@ -37,9 +50,13 @@ export function OrderIntentVerification({
     appearance,
     onVerificationComplete,
     onVerificationError,
+    openRedirect,
 }: OrderIntentVerificationProps) {
     const completeRef = useRef(onVerificationComplete);
     const errorRef = useRef(onVerificationError);
+    // A ref, so a host that passes a new function on every render does not restart verification.
+    const openRedirectRef = useRef(openRedirect);
+    const hasOpenRedirect = openRedirect != null;
     // Optional: this component can be mounted without a CrossmintProvider.
     const logger = useContext(LoggerContext);
     const loggerRef = useRef(logger);
@@ -67,6 +84,10 @@ export function OrderIntentVerification({
     }, [onVerificationError]);
 
     useEffect(() => {
+        openRedirectRef.current = openRedirect;
+    }, [openRedirect]);
+
+    useEffect(() => {
         loggerRef.current = logger;
     }, [logger]);
 
@@ -82,19 +103,71 @@ export function OrderIntentVerification({
         }
 
         let cancelled = false;
+        // Set once a terminal callback fired, so a closed browser and the verification result
+        // never both report.
         let settled = false;
         let lastAction: string | undefined;
+        let closeTimer: ReturnType<typeof setTimeout> | undefined;
         let verification: AgenticVerificationInstance | undefined;
+        // Basis Theory reports the active allowance before `verifyAllowance` resolves (it shows a
+        // success dialog first), so a close timer must not fire in that window.
+        let verified = false;
+        // Identifies the current browser: a Basis Theory retry opens a new one, and the old one's
+        // close must not end the new attempt.
+        let redirectId = 0;
 
         function onEvent(event: Record<string, unknown>) {
             if (event.type === "state_change" && typeof event.action === "string") {
                 lastAction = event.action;
+                if (event.status === "active") {
+                    verified = true;
+                    clearTimeout(closeTimer);
+                }
+            } else if (event.type === "restart") {
+                redirectId++;
+                clearTimeout(closeTimer);
             } else if (event.type === "ceremony_open") {
                 loggerRef.current?.info("react.orderIntentVerification.ceremonyOpen", {
                     ...logContext,
                     network: event.network,
                 });
             }
+        }
+
+        function abandon(error: unknown) {
+            if (cancelled || settled || verified) {
+                return;
+            }
+            settled = true;
+            verification?.dispose();
+            loggerRef.current?.info("react.orderIntentVerification.browserClosed", { ...logContext, lastAction });
+            errorRef.current?.(error);
+        }
+
+        function launchRedirect(uri: string) {
+            redirectId++;
+            const launchId = redirectId;
+            clearTimeout(closeTimer);
+            const closed = openRedirectRef.current?.(uri);
+            if (closed == null || typeof closed.then !== "function") {
+                return;
+            }
+            closed.then(
+                () => {
+                    if (cancelled || settled || verified || launchId !== redirectId) {
+                        return;
+                    }
+                    closeTimer = setTimeout(
+                        () => abandon(new Error("The buyer closed the verification window before it finished.")),
+                        OPEN_REDIRECT_CLOSE_GRACE_MS
+                    );
+                },
+                (error: unknown) => {
+                    if (launchId === redirectId) {
+                        abandon(error);
+                    }
+                }
+            );
         }
 
         async function verifyAllowance() {
@@ -114,18 +187,28 @@ export function OrderIntentVerification({
                               errorColor,
                           }
                         : undefined,
+                    openRedirect: hasOpenRedirect ? launchRedirect : undefined,
+                    completePollAttempts: hasOpenRedirect ? OPEN_REDIRECT_COMPLETE_POLL_ATTEMPTS : undefined,
                 });
                 loggerRef.current?.info("react.orderIntentVerification.start", logContext);
                 await verification.verifyAllowance(allowanceId, {
                     provider: pendingProvider,
                 });
+                if (settled) {
+                    return;
+                }
                 settled = true;
+                clearTimeout(closeTimer);
                 if (!cancelled) {
                     loggerRef.current?.info("react.orderIntentVerification.success", logContext);
                     completeRef.current?.();
                 }
             } catch (error) {
+                if (settled) {
+                    return;
+                }
                 settled = true;
+                clearTimeout(closeTimer);
                 if (!cancelled) {
                     const { level, context } = describeVerificationError(error);
                     loggerRef.current?.[level]("react.orderIntentVerification.failed", {
@@ -160,6 +243,7 @@ export function OrderIntentVerification({
             cancelled = true;
             window.removeEventListener("pagehide", onPageHide);
             logAbandoned();
+            clearTimeout(closeTimer);
             verification?.dispose();
         };
     }, [
@@ -170,6 +254,7 @@ export function OrderIntentVerification({
         errorColor,
         fontColor,
         hasAgenticAppearance,
+        hasOpenRedirect,
         orderIntentId,
         pendingProvider,
         primaryColor,

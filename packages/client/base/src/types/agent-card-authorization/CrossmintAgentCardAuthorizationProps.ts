@@ -70,6 +70,11 @@ export interface CrossmintAgentCardAuthorizationProps {
     /** Shown to the buyer by the rail verification UI. */
     displayName: string;
     appearance?: AgentCardAuthorizationAppearance;
+    /**
+     * In a WebView, open `uri` (Mastercard) in ASWebAuthenticationSession or Custom Tabs so passkeys persist.
+     * Do not close it from `onAuthorized`; return a promise: resolve on close, reject if it cannot open.
+     */
+    openRedirect?: (uri: string) => void | Promise<unknown>;
     onAuthorized: (result: AgentCardAuthorizationResult) => void;
     onError: (error: AgentCardAuthorizationError) => void;
 }
