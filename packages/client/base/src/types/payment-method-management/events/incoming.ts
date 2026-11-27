@@ -46,6 +46,18 @@ export const paymentMethodManagementIncomingEvents = {
     "ui:height.changed": z.object({
         height: z.number(),
     }),
+    // The form asks for the address suggestions iframe on this channel, which the two iframes share.
+    "ui:suggestions.mount": z.object({
+        channel: z.string().min(1),
+    }),
+    // Where to draw the suggestions iframe, in pixels from the form iframe's top left corner.
+    "ui:suggestions.layout": z.object({
+        open: z.boolean(),
+        top: z.number(),
+        left: z.number(),
+        width: z.number(),
+        height: z.number(),
+    }),
     "payment-method:selected": z.any(),
     // Once per iframe document, when a submit can first select or save.
     "payment-method:ready": z.object({}).passthrough(),
