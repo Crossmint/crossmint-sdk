@@ -3,8 +3,12 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { ApiClient, ApiClientError } from "./ApiClient";
 
 class TestApiClient extends ApiClient {
+    constructor(private readonly headers: HeadersInit = {}) {
+        super();
+    }
+
     get commonHeaders(): HeadersInit {
-        return {};
+        return this.headers;
     }
     get baseUrl(): string {
         return "https://example.com";
@@ -23,6 +27,61 @@ describe("ApiClient makeRequest", () => {
 
     afterEach(() => {
         vi.restoreAllMocks();
+    });
+
+    describe("when merging request headers", () => {
+        const commonHeaders: Array<{ name: string; headers: HeadersInit }> = [
+            { name: "record", headers: { "X-Common": "shared", "X-Mode": "common" } },
+            { name: "Headers", headers: new Headers({ "X-Common": "shared", "X-Mode": "common" }) },
+            {
+                name: "tuples",
+                headers: [
+                    ["X-Common", "shared"],
+                    ["X-Mode", "common"],
+                ],
+            },
+        ];
+        const requestHeaders: Array<{ name: string; headers: HeadersInit }> = [
+            { name: "record", headers: { "x-mode": "request", "X-Request": "custom" } },
+            { name: "Headers", headers: new Headers({ "x-mode": "request", "X-Request": "custom" }) },
+            {
+                name: "tuples",
+                headers: [
+                    ["x-mode", "request"],
+                    ["X-Request", "custom"],
+                ],
+            },
+        ];
+
+        for (const common of commonHeaders) {
+            for (const request of requestHeaders) {
+                test(`preserves ${common.name} defaults and applies ${request.name} overrides case-insensitively`, async () => {
+                    const fetchSpy = vi
+                        .spyOn(globalThis, "fetch")
+                        .mockResolvedValue(mockResponse(200, "{}", "application/json"));
+
+                    await new TestApiClient(common.headers).get("items", { headers: request.headers });
+
+                    const headers = new Headers(fetchSpy.mock.calls[0][1]?.headers);
+                    expect(headers.get("x-common")).toBe("shared");
+                    expect(headers.get("x-mode")).toBe("request");
+                    expect(headers.get("x-request")).toBe("custom");
+                    expect(headers.has("0")).toBe(false);
+                    expect(new Headers(common.headers).get("x-mode")).toBe("common");
+                    expect(new Headers(request.headers).has("x-common")).toBe(false);
+                });
+            }
+        }
+
+        test("preserves common headers when request headers are omitted", async () => {
+            const fetchSpy = vi
+                .spyOn(globalThis, "fetch")
+                .mockResolvedValue(mockResponse(200, "{}", "application/json"));
+
+            await new TestApiClient(new Headers({ "X-Common": "shared" })).get("items", {});
+
+            expect(new Headers(fetchSpy.mock.calls[0][1]?.headers).get("x-common")).toBe("shared");
+        });
     });
 
     describe("when the response is a non-ok status with a non-JSON body", () => {

@@ -15,9 +15,13 @@ export abstract class ApiClient {
     abstract get baseUrl(): string;
 
     private async makeRequest(path: string, init: RequestInit) {
+        const headers = new Headers(this.commonHeaders);
+        // Request headers override defaults, regardless of the HeadersInit shape or header casing.
+        new Headers(init.headers).forEach((value, key) => headers.set(key, value));
+
         const response = await fetch(this.buildUrl(path), {
             ...init,
-            headers: { ...this.commonHeaders, ...init.headers }, // commonHeaders intentionally first, in case sub class wants to override
+            headers,
         });
 
         // Throw on server errors (5xx) and on any non-ok response whose body is not JSON
