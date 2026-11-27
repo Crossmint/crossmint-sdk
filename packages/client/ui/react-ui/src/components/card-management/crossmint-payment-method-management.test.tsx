@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => ({
     handshakeWithChild: vi.fn().mockResolvedValue(undefined),
     on: vi.fn().mockReturnValue("subscription"),
     getUrl: vi.fn().mockReturnValue("https://staging.crossmint.com/sdk/unstable/payment-method-management"),
+    getSuggestionsUrl: vi.fn(),
     createClient: vi.fn(),
 }));
 vi.mock("@crossmint/client-sdk-base", async (original) => ({
@@ -23,6 +24,7 @@ vi.mock("@crossmint/client-sdk-base", async (original) => ({
     createPaymentMethodManagementService: () => ({
         iframe: {
             getUrl: mocks.getUrl,
+            getSuggestionsUrl: mocks.getSuggestionsUrl,
             createClient: mocks.createClient,
         },
     }),
@@ -74,6 +76,10 @@ beforeEach(() => {
     mocks.createClient.mockImplementation(() => ({ ...mocks }));
     mocks.getUrl.mockImplementation(
         (props) => `https://staging.crossmint.com/sdk/unstable/payment-method-management?jwt=${props.jwt}&hidden=true`
+    );
+    mocks.getSuggestionsUrl.mockImplementation(
+        (_props, channel) =>
+            `https://staging.crossmint.com/sdk/unstable/payment-method-management/suggestions?channel=${channel}`
     );
 });
 
@@ -442,5 +448,27 @@ describe("CrossmintPaymentMethodManagement ref", () => {
 
         expect(onChange).toHaveBeenLastCalledWith({ mode: "new", empty: false, complete: false });
         expect(onChange).toHaveBeenCalledTimes(2);
+    });
+
+    test("draws the address suggestions iframe the form asks for below its field, and only while open", () => {
+        const listener = (event: string) => mocks.on.mock.calls.filter(([name]) => name === event).at(-1)?.[1];
+        mount();
+        expect(screen.queryByTitle("Address suggestions")).toBeNull();
+
+        act(() => listener("ui:suggestions.mount")?.({ channel: "channel-1" }));
+        const frame = screen.getByTitle("Address suggestions") as HTMLIFrameElement;
+        expect(frame.src).toContain("/payment-method-management/suggestions?channel=channel-1");
+        expect(frame.style.height).toBe("0px");
+        expect(frame.style.pointerEvents).toBe("none");
+        expect(frame.inert).toBe(true);
+
+        act(() => listener("ui:suggestions.layout")?.({ open: true, top: 120, left: -4, width: 408, height: 260 }));
+        expect(frame.style).toMatchObject({ top: "120px", left: "-4px", width: "408px", height: "260px" });
+        expect(frame.style.pointerEvents).toBe("auto");
+        expect(frame.inert).toBe(false);
+
+        act(() => listener("ui:suggestions.layout")?.({ open: false, top: 120, left: -4, width: 408, height: 260 }));
+        expect(frame.style.height).toBe("0px");
+        expect(frame.inert).toBe(true);
     });
 });

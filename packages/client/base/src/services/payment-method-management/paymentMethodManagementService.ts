@@ -139,6 +139,16 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
         return `${urlWithPath}?${queryParams.toString()}`;
     }
 
+    // The suggestions iframe only draws the list the form sends it, so it gets the look and language but no credentials.
+    function getSuggestionsIFrameUrl(
+        { appearance, locale }: Pick<CrossmintPaymentMethodManagementProps, "appearance" | "locale">,
+        channel: string
+    ) {
+        const queryParams = new URLSearchParams();
+        appendObjectToQueryParams(queryParams, { appearance, locale, channel });
+        return `${apiClient.buildUrl("/sdk/unstable/payment-method-management/suggestions")}?${queryParams.toString()}`;
+    }
+
     function createIframeClient(iframe: HTMLIFrameElement) {
         return IFrameWindow.initExistingIFrame(iframe, {
             incomingEvents: paymentMethodManagementIncomingEvents,
@@ -149,6 +159,7 @@ export function createPaymentMethodManagementService({ apiClient }: PaymentMetho
     return {
         iframe: {
             getUrl: getIFrameUrl,
+            getSuggestionsUrl: getSuggestionsIFrameUrl,
             createClient: createIframeClient,
         },
     };

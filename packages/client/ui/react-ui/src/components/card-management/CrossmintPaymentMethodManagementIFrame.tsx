@@ -19,6 +19,8 @@ const REVEAL_UNREADY_AFTER_MS = 8_000;
 // The iframe can be ready and report a spinner's height just before its first screen draws.
 const FIRST_SCREEN_SETTLE_MS = 150;
 const FIRST_SCREEN_KEY = "crossmint.payment-method-management.first-screen:";
+// Matches the address suggestions panel opening in the iframe, as Stripe's Address Element does.
+const SUGGESTIONS_TRANSITION = "height 0.35s ease, opacity 0.35s ease";
 // A save is two Basis Theory tokenizations, the create call and the card art lookup.
 const SUBMIT_TIMEOUT_MS = 60_000;
 
@@ -117,6 +119,11 @@ const PaymentMethodConnection = forwardRef<
     const [revealUnready, setRevealUnready] = useState(false);
     const [settled, setSettled] = useState(false);
     const [openedOn, setOpenedOn] = useState<FirstScreen | "other" | null>(null);
+    // The form's address suggestions draw in a second iframe laid over the page below its address field, so the list
+    // can open downwards past the form without resizing it.
+    const [suggestionsChannel, setSuggestionsChannel] = useState<string | null>(null);
+    const [suggestionsLayout, setSuggestionsLayout] = useState<SuggestionsLayout>(CLOSED_SUGGESTIONS);
+    const suggestionsFrame = useRef<HTMLIFrameElement>(null);
     // Read after mount: the server has no storage, and hydration must match its render.
     const [remembered, setRemembered] = useState<RememberedScreen | null>(null);
     const guess = firstScreen(props);
@@ -136,6 +143,11 @@ const PaymentMethodConnection = forwardRef<
             iframe.current.inert = showSkeleton;
         }
     }, [showSkeleton]);
+    useCommittedLayoutEffect(() => {
+        if (suggestionsFrame.current != null) {
+            suggestionsFrame.current.inert = !suggestionsLayout.open;
+        }
+    }, [suggestionsChannel, suggestionsLayout.open]);
     const clientRef = useRef<{
         reloads: number;
         client: PaymentMethodManagementIFrameEmitter;
@@ -186,6 +198,7 @@ const PaymentMethodConnection = forwardRef<
                 setRevealUnready(false);
                 setSettled(false);
                 setOpenedOn(null);
+                setSuggestionsLayout(CLOSED_SUGGESTIONS);
             }
             const client = iframeService.iframe.createClient(iframe.current);
             // Keep successful readiness, but discard a failed handshake so a later
@@ -214,6 +227,16 @@ const PaymentMethodConnection = forwardRef<
                 onHeightChange(height);
             }
         });
+        const suggestionsMountListener = client.on("ui:suggestions.mount", ({ channel }) => {
+            if (connection.current === active) {
+                setSuggestionsChannel(channel);
+            }
+        });
+        const suggestionsLayoutListener = client.on("ui:suggestions.layout", (layout) => {
+            if (connection.current === active) {
+                setSuggestionsLayout(layout);
+            }
+        });
         const selectedListener = client.on("payment-method:selected", (method) => {
             if (connection.current === active) {
                 return latestProps.current.onPaymentMethodSelected?.(method);
@@ -234,6 +257,8 @@ const PaymentMethodConnection = forwardRef<
         });
         return () => {
             client.off(heightListener);
+            client.off(suggestionsMountListener);
+            client.off(suggestionsLayoutListener);
             client.off(selectedListener);
             client.off(readyListener);
             client.off(changeListener);
@@ -357,9 +382,38 @@ const PaymentMethodConnection = forwardRef<
                         : {}),
                 }}
             />
+            {suggestionsChannel != null ? (
+                <iframe
+                    ref={suggestionsFrame}
+                    src={iframeService.iframe.getSuggestionsUrl(props, suggestionsChannel)}
+                    title="Address suggestions"
+                    // The address field keeps focus and drives the list with the arrow keys.
+                    tabIndex={-1}
+                    style={{
+                        position: "absolute",
+                        zIndex: 1,
+                        top: `${suggestionsLayout.top}px`,
+                        left: `${suggestionsLayout.left}px`,
+                        width: `${suggestionsLayout.width}px`,
+                        height: `${suggestionsLayout.open ? suggestionsLayout.height : 0}px`,
+                        opacity: suggestionsLayout.open ? "1" : "0",
+                        pointerEvents: suggestionsLayout.open ? "auto" : "none",
+                        transition: SUGGESTIONS_TRANSITION,
+                        border: "none",
+                        padding: "0px",
+                        margin: "0px",
+                        display: "block",
+                        overflow: "hidden",
+                        backgroundColor: "transparent",
+                    }}
+                />
+            ) : null}
         </div>
     );
 });
+
+type SuggestionsLayout = { open: boolean; top: number; left: number; width: number; height: number };
+const CLOSED_SUGGESTIONS: SuggestionsLayout = { open: false, top: 0, left: 0, width: 0, height: 0 };
 
 // With saved methods allowed, the iframe opens on the choice between them and a new one (bare form when
 // nothing is saved yet); otherwise on the first type's form, of which only the card's has a skeleton.

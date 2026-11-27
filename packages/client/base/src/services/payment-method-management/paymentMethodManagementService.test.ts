@@ -51,6 +51,19 @@ describe("paymentMethodManagementService.getUrl", () => {
         expect(new URL(url).searchParams.get("locale")).toBe("fr-CA");
     });
 
+    it("gives the suggestions iframe the look, language and channel, but not the buyer's jwt", () => {
+        const appearance = { variables: { colors: { textPrimary: "#111111" } } };
+        const props: CrossmintPaymentMethodManagementProps = { jwt: "jwt-token", locale: "fr-CA", appearance };
+        const url = new URL(makeService().iframe.getSuggestionsUrl(props, "channel-1"));
+
+        expect(url.pathname).toMatch(/\/sdk\/unstable\/payment-method-management\/suggestions$/);
+        expect(Object.fromEntries(url.searchParams)).toEqual({
+            appearance: JSON.stringify(appearance),
+            locale: "fr-CA",
+            channel: "channel-1",
+        });
+    });
+
     it("omits optional props that are not provided", () => {
         const service = makeService();
 
