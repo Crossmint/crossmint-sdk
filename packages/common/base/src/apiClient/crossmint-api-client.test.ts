@@ -23,10 +23,10 @@ function clientFor(config: Partial<Crossmint>): CrossmintApiClient {
     return new CrossmintApiClient(crossmint, { internalConfig: { sdkMetadata: SDK_METADATA } });
 }
 
-async function headersSentBy(client: CrossmintApiClient): Promise<Record<string, string>> {
+async function headersSentBy(client: CrossmintApiClient): Promise<Headers> {
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}", { status: 200 }));
     await client.get("wallets/me", {});
-    return fetchSpy.mock.calls[0][1]?.headers as Record<string, string>;
+    return new Headers(fetchSpy.mock.calls[0][1]?.headers);
 }
 
 async function urlRequestedBy(client: CrossmintApiClient): Promise<string> {
@@ -45,30 +45,30 @@ describe("CrossmintApiClient", () => {
         test("identify the SDK and carry the API key on every request", async () => {
             const headers = await headersSentBy(clientFor({}));
 
-            expect(headers["x-api-key"]).toBe("ck_staging_test");
-            expect(headers["x-client-name"]).toBe(SDK_METADATA.name);
-            expect(headers["x-client-version"]).toBe(SDK_METADATA.version);
+            expect(headers.get("x-api-key")).toBe("ck_staging_test");
+            expect(headers.get("x-client-name")).toBe(SDK_METADATA.name);
+            expect(headers.get("x-client-version")).toBe(SDK_METADATA.version);
         });
 
         test("omit app, extension and authorization headers when none are configured", async () => {
             const headers = await headersSentBy(clientFor({}));
 
-            expect(headers).not.toHaveProperty("x-app-identifier");
-            expect(headers).not.toHaveProperty("x-extension-id");
-            expect(headers).not.toHaveProperty("Authorization");
+            expect(headers.has("x-app-identifier")).toBe(false);
+            expect(headers.has("x-extension-id")).toBe(false);
+            expect(headers.has("Authorization")).toBe(false);
         });
 
         test("carry the app and extension identifiers when configured", async () => {
             const headers = await headersSentBy(clientFor({ appId: "app-1", extensionId: "ext-1" }));
 
-            expect(headers["x-app-identifier"]).toBe("app-1");
-            expect(headers["x-extension-id"]).toBe("ext-1");
+            expect(headers.get("x-app-identifier")).toBe("app-1");
+            expect(headers.get("x-extension-id")).toBe("ext-1");
         });
 
         test("send the JWT as a bearer token", async () => {
             const headers = await headersSentBy(clientFor({ jwt: "jwt-123" }));
 
-            expect(headers.Authorization).toBe("Bearer jwt-123");
+            expect(headers.get("Authorization")).toBe("Bearer jwt-123");
         });
 
         test("let a per-request header override the common one", async () => {
@@ -76,8 +76,8 @@ describe("CrossmintApiClient", () => {
 
             await clientFor({}).get("wallets/me", { headers: { "x-client-name": "override" } });
 
-            const headers = fetchSpy.mock.calls[0][1]?.headers as Record<string, string>;
-            expect(headers["x-client-name"]).toBe("override");
+            const headers = new Headers(fetchSpy.mock.calls[0][1]?.headers);
+            expect(headers.get("x-client-name")).toBe("override");
         });
     });
 
